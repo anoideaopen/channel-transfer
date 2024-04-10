@@ -1,0 +1,41 @@
+logLevel: debug
+logType: console
+profilePath: dev-data/sandbox/connection.yaml
+userName: User1
+useSmartBFT: true
+
+listenAPI:
+  accessToken: ea135929105c4f29a0f5117d2980926f
+  addressHTTP: localhost:5080
+  addressGRPC: localhost:5081
+
+service:
+  address: :3001
+
+options:
+  batchTxPreimagePrefix: batchTransactions
+  collectorsBufSize: 1
+  executeTimeout: 2s
+  retryExecuteAttempts: 5
+  retryExecuteMaxDelay: 2s
+  waitCommitAttempts: 3
+  waitCommitAttemptTimeout: 15s
+  ttl: 10800s
+  transfersInHandleOnChannel: 50
+  newestRequestStreamBufferSize: 50
+
+channels:
+  - fiat
+  - cc
+
+cryptoSrc: local
+
+redisStorage:
+  addr:
+    - localhost:6379
+  password: test
+  dbPrefix: transfer
+  afterTransferTTL: 3600s
+
+promMetrics:
+  prefix: transfer

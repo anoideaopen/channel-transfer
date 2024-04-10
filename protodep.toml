@@ -1,0 +1,14 @@
+proto_outdir = "./vendor_proto"
+
+[[dependencies]]
+target = "github.com/googleapis/googleapis"
+branch = "master"
+
+[[dependencies]]
+target = "github.com/protocolbuffers/protobuf/src/google"
+revision = "v22.2"
+path = "google"
+
+[[dependencies]]
+target = "github.com/grpc-ecosystem/grpc-gateway"
+revision = "v2.15.0"

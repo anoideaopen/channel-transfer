@@ -1,0 +1,25 @@
+proto_outdir = "./vendor_proto"
+
+[[dependencies]]
+  target = "github.com/googleapis/googleapis"
+  subgroup = ""
+  revision = "61b3dcadc1c255855cd6f27af870fde52fc7e98c"
+  branch = "master"
+  path = ""
+  protocol = ""
+
+[[dependencies]]
+  target = "github.com/protocolbuffers/protobuf/src/google"
+  subgroup = ""
+  revision = "81f89d509d6771dcccb619cbe26ac86cec472582"
+  branch = ""
+  path = "google"
+  protocol = ""
+
+[[dependencies]]
+  target = "github.com/grpc-ecosystem/grpc-gateway"
+  subgroup = ""
+  revision = "4f8ee0904ad515e35a50c9d1ccfcb440fa5da95f"
+  branch = ""
+  path = ""
+  protocol = ""

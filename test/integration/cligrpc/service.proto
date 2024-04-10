@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+package core.channel_transfer;
+option go_package = "github.com/anoideaopen/channel-transfer/proto";
+
+import "google/api/annotations.proto";
+import "google/protobuf/type.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+// ErrorResponse ответ с ошибкой
+message ErrorResponse {
+  string error = 1; // строка ошибки
+}
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Cross chanel transfer";
+    version: "1.0";
+    description: "";
+    license: {
+      name: "Apache-2.0";
+    };
+  };
+  schemes: HTTP;
+  consumes: "application/json";
+  produces: "application/json";
+  responses: {
+    key: "500"
+    value: {
+      description: "Internal server error"
+      schema:{
+        json_schema:{
+          ref: ".core.channel_transfer.ErrorResponse"
+        }
+      }
+    }
+  }
+};
+
+service API {
+  rpc TransferByCustomer(TransferBeginCustomerRequest) returns (TransferStatusResponse){
+    option (google.api.http) = {
+      post: "/v1/transfer/customer"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Transfer cross chanel be customer";
+      operation_id: "transferByCustomer";
+      tags: "Transfer";
+    };
+  }
+
+  rpc TransferByAdmin(TransferBeginAdminRequest) returns(TransferStatusResponse) {
+    option (google.api.http) = {
+      post: "/v1/transfer/admin"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Transfer cross chanel be admin";
+      operation_id: "transferByAdmin";
+      tags: "Transfer";
+    };
+  }
+
+  rpc TransferStatus(TransferStatusRequest) returns (TransferStatusResponse){//nolint
+    option (google.api.http) = {
+      get: "/v1/status/{id_transfer}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get status transfer by id transfer";
+      operation_id: "transferStatus";
+      tags: "Transfer";
+    };
+  }
+}
+
+// GeneralParams основные параметры любого запроса
+message GeneralParams {
+  string method_name = 1; // Имя метода
+  string request_id = 2; // ID для служеьных нужд (может быть пустым)
+  string chaincode = 3; // Имя чейнкода
+  string channel = 4; // Имя канала
+  string nonce = 5; // Нонс запроса
+  string public_key = 6; // Публичный ключ, подписавшего запрос
+  string sign = 7; // Подпись сообщения
+  repeated google.protobuf.Option options = 8;
+}
+
+// TransferBeginAdminRequest запрос о переводе токенов от Владельца токенов
+message TransferBeginCustomerRequest{
+  GeneralParams generals = 1; // Информация о транзакции
+  string id_transfer = 2; // ID трансфера (должно быть уникально)
+  string channel_to = 3; // Канал, в который переводят токены
+  string token = 4; // Токены которые хотят перевести
+  string amount = 5; // Сколько переводят токенов
+  repeated google.protobuf.Option options = 6;
+}
+
+// TransferBeginAdminRequest запрос о переводе токенов от Администратора платформы
+message TransferBeginAdminRequest{
+  GeneralParams generals = 1; // Информация о транзакции
+  string id_transfer = 2; // ID трансфера (должно быть уникально)
+  string channel_to = 3; // Канал, в который переводят токены
+  string address = 4; // Чьи токены переводят
+  string token = 5; // Токены которые хотят перевести
+  string amount = 6; // Сколько переводят токенов
+  repeated google.protobuf.Option options = 7;
+}
+
+// TransferStatusResponse содержит статус перевода
+message TransferStatusResponse {
+  enum Status {
+    STATUS_IN_PROCESS = 0;
+    STATUS_UNDEFINED = 1;
+    STATUS_COMPLETED = 2;
+    STATUS_CANCELED = 3;
+    STATUS_ERROR = 4;
+  }
+
+  string id_transfer = 1; // Идентификатор трансфера на перевод токенов
+  Status status = 2; // Статус перевода токенов
+  string message = 3; // Сообщение об ошибке (может быть пустой)
+}
+
+// TransferStatusRequest запрос на статус перевода
+message TransferStatusRequest {
+  string id_transfer = 1; // Идентификатор трансфера на перевод токенов
+  repeated google.protobuf.Option options = 2;
+}

@@ -1,0 +1,142 @@
+linters-settings:
+  gosec:
+    excludes:
+      - 'G107'
+      - 'G402'
+      - 'G404'
+  depguard:
+    rules:
+      # Name of a rule.
+      Main:
+        files:
+          - $all
+          - "!$test"
+        allow:
+          - $gostd
+          - github.com/anoideaopen/channel-transfer
+          - github.com/anoideaopen/cartridge
+          - github.com/anoideaopen/common-component
+          - github.com/anoideaopen/foundation/proto
+          - github.com/anoideaopen/foundation/core/cctransfer
+          - github.com/newity/glog
+          - github.com/alicebob/miniredis/v2
+          - github.com/avast/retry-go/v4
+          - github.com/felixge/httpsnoop
+          - github.com/flowchartsman/swaggerui
+          - github.com/go-playground/validator/v10
+          - github.com/golang/protobuf/proto
+          - github.com/hyperledger/fabric-protos-go
+          - github.com/hyperledger/fabric-sdk-go/pkg
+          - github.com/spf13/viper
+          - github.com/grpc-ecosystem/go-grpc-middleware
+          - github.com/grpc-ecosystem/grpc-gateway/v2/runtime
+          - github.com/slok/go-http-metrics/metrics/prometheus
+          - github.com/slok/go-http-metrics/middleware
+          - github.com/prometheus/client_golang/prometheus
+          - github.com/pkg/errors
+          - github.com/redis/go-redis/v9
+          - github.com/google/uuid
+        Test:
+          files:
+          - $test
+          allow:
+          - $gostd
+          - github.com/stretchr/testify
+          - github.com/anoideaopen/channel-transfer
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - asciicheck
+    - bodyclose
+    - depguard
+    - dogsled
+    - dupl
+    - errorlint
+    - exportloopref
+    - misspell
+    - nestif
+    - noctx
+    - nolintlint
+    - prealloc
+    - stylecheck
+    - funlen
+    - gci
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - gofumpt
+    - goheader
+    - goimports
+    - gomnd
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - tparallel
+    - unconvert
+    - unparam
+    - whitespace
+    - revive
+    - usestdlibvars
+    - tenv
+    - tagliatelle
+    - promlinter
+    - nosprintfhostport
+    - nilnil
+    - logrlint
+    - grouper
+    - execinquery
+    - errname
+    - decorder
+    - durationcheck
+    - nilerr
+    - forcetypeassert
+    - interfacebloat
+    - contextcheck
+    - loggercheck
+    - reassign
+    - testableexamples
+    - dupword
+    - gocheckcompilerdirectives
+  disable:
+    - godot
+    - wsl
+    - lll
+    - maligned
+    - paralleltest
+    - godox
+    - testpackage
+    - nlreturn
+    - scopelint
+    - golint
+    - interfacer
+    - rowserrcheck
+    - sqlclosecheck
+    - ireturn
+    - wastedassign
+    - deadcode
+    - structcheck
+    - varcheck
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - funlen
+
+run:
+  # The default concurrency value is the number of available CPU.
+  go: '1.18'
+  concurrency: 4
+  timeout: 5m
+#  skip-files:
+#    - proto/batch.pb.go
+#    - proto/report.pb.go

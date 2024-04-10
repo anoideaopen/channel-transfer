@@ -1,0 +1,334 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Cross chanel transfer",
+    "version": "1.0",
+    "license": {
+      "name": "Apache-2.0"
+    }
+  },
+  "tags": [
+    {
+      "name": "API"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/status/{idTransfer}": {
+      "get": {
+        "summary": "Get status transfer by id transfer",
+        "operationId": "transferStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/channel_transferTransferStatusResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/channel_transferErrorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "idTransfer",
+            "description": "Идентификатор трансфера на перевод токенов",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Transfer"
+        ]
+      }
+    },
+    "/v1/transfer/admin": {
+      "post": {
+        "summary": "Transfer cross chanel be admin",
+        "operationId": "transferByAdmin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/channel_transferTransferStatusResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/channel_transferErrorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/channel_transferTransferBeginAdminRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Transfer"
+        ]
+      }
+    },
+    "/v1/transfer/customer": {
+      "post": {
+        "summary": "Transfer cross chanel be customer",
+        "operationId": "transferByCustomer",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/channel_transferTransferStatusResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/channel_transferErrorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/channel_transferTransferBeginCustomerRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Transfer"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "channel_transferErrorResponse": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string",
+          "title": "строка ошибки"
+        }
+      },
+      "title": "ErrorResponse ответ с ошибкой"
+    },
+    "channel_transferGeneralParams": {
+      "type": "object",
+      "properties": {
+        "methodName": {
+          "type": "string",
+          "title": "Имя метода"
+        },
+        "requestId": {
+          "type": "string",
+          "title": "ID для служеьных нужд (может быть пустым)"
+        },
+        "chaincode": {
+          "type": "string",
+          "title": "Имя чейнкода"
+        },
+        "channel": {
+          "type": "string",
+          "title": "Имя канала"
+        },
+        "nonce": {
+          "type": "string",
+          "title": "Нонс запроса"
+        },
+        "publicKey": {
+          "type": "string",
+          "title": "Публичный ключ, подписавшего запрос"
+        },
+        "sign": {
+          "type": "string",
+          "title": "Подпись сообщения"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufOption"
+          }
+        }
+      },
+      "title": "GeneralParams основные параметры любого запроса"
+    },
+    "channel_transferTransferBeginAdminRequest": {
+      "type": "object",
+      "properties": {
+        "generals": {
+          "$ref": "#/definitions/channel_transferGeneralParams",
+          "title": "Информация о транзакции"
+        },
+        "idTransfer": {
+          "type": "string",
+          "title": "ID трансфера (должно быть уникально)"
+        },
+        "channelTo": {
+          "type": "string",
+          "title": "Канал, в который переводят токены"
+        },
+        "address": {
+          "type": "string",
+          "title": "Чьи токены переводят"
+        },
+        "token": {
+          "type": "string",
+          "title": "Токены которые хотят перевести"
+        },
+        "amount": {
+          "type": "string",
+          "title": "Сколько переводят токенов"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufOption"
+          }
+        }
+      },
+      "title": "TransferBeginAdminRequest запрос о переводе токенов от Администратора платформы"
+    },
+    "channel_transferTransferBeginCustomerRequest": {
+      "type": "object",
+      "properties": {
+        "generals": {
+          "$ref": "#/definitions/channel_transferGeneralParams",
+          "title": "Информация о транзакции"
+        },
+        "idTransfer": {
+          "type": "string",
+          "title": "ID трансфера (должно быть уникально)"
+        },
+        "channelTo": {
+          "type": "string",
+          "title": "Канал, в который переводят токены"
+        },
+        "token": {
+          "type": "string",
+          "title": "Токены которые хотят перевести"
+        },
+        "amount": {
+          "type": "string",
+          "title": "Сколько переводят токенов"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufOption"
+          }
+        }
+      },
+      "title": "TransferBeginAdminRequest запрос о переводе токенов от Владельца токенов"
+    },
+    "channel_transferTransferStatusResponse": {
+      "type": "object",
+      "properties": {
+        "idTransfer": {
+          "type": "string",
+          "title": "Идентификатор трансфера на перевод токенов"
+        },
+        "status": {
+          "$ref": "#/definitions/channel_transferTransferStatusResponseStatus",
+          "title": "Статус перевода токенов"
+        },
+        "message": {
+          "type": "string",
+          "title": "Сообщение об ошибке (может быть пустой)"
+        }
+      },
+      "title": "TransferStatusResponse содержит статус перевода"
+    },
+    "channel_transferTransferStatusResponseStatus": {
+      "type": "string",
+      "enum": [
+        "STATUS_IN_PROCESS",
+        "STATUS_UNDEFINED",
+        "STATUS_COMPLETED",
+        "STATUS_CANCELED",
+        "STATUS_ERROR"
+      ],
+      "default": "STATUS_IN_PROCESS"
+    },
+    "googlerpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        }
+      },
+      "additionalProperties": {},
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n    // or ...\n    if (any.isSameTypeAs(Foo.getDefaultInstance())) {\n      foo = any.unpack(Foo.getDefaultInstance());\n    }\n\nExample 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\nExample 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := \u0026pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\nJSON\n\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    },
+    "protobufOption": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The option's name. For protobuf built-in options (options defined in\ndescriptor.proto), this is the short name. For example, `\"map_entry\"`.\nFor custom options, it should be the fully-qualified name. For example,\n`\"google.api.http\"`."
+        },
+        "value": {
+          "$ref": "#/definitions/protobufAny",
+          "description": "The option's value packed in an Any message. If the value is a primitive,\nthe corresponding wrapper type defined in google/protobuf/wrappers.proto\nshould be used. If the value is an enum, it should be stored as an int32\nvalue using the google.protobuf.Int32Value type."
+        }
+      },
+      "description": "A protocol buffer option, which can be attached to a message, field,\nenumeration, etc."
+    }
+  }
+}
