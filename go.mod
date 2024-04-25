@@ -6,6 +6,7 @@ require (
 	github.com/anoideaopen/cartridge v0.0.2
 	github.com/anoideaopen/common-component v0.0.2
 	github.com/anoideaopen/foundation v0.0.0-20240412063944-9a91dc2600fa
+	github.com/anoideaopen/glog v0.0.1
 	github.com/avast/retry-go/v4 v4.3.3
 	github.com/felixge/httpsnoop v1.0.3
 	github.com/flowchartsman/swaggerui v0.0.0-20221017034628-909ed4f3701b
@@ -17,7 +18,6 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0
 	github.com/hyperledger/fabric-protos-go v0.3.0
 	github.com/hyperledger/fabric-sdk-go v1.0.1-0.20210927191040-3e3a3c6aeec9
-	github.com/newity/glog v1.0.0
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.0.4
 	github.com/slok/go-http-metrics v0.10.0
@@ -37,7 +37,6 @@ require (
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.1.5 // indirect
 	cloud.google.com/go/secretmanager v1.11.4 // indirect
-	github.com/anoideaopen/glog v0.0.1 // indirect
 	github.com/cloudflare/cfssl v1.4.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.0.2 // indirect
 	github.com/go-kit/kit v0.10.0 // indirect

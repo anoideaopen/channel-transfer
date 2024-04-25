@@ -8,7 +8,7 @@ import (
 
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	hlfcontext "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
-	"github.com/newity/glog"
+	"github.com/anoideaopen/glog"
 )
 
 const (

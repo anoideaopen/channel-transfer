@@ -13,7 +13,7 @@ import (
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	grpcrecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	"github.com/newity/glog"
+	"github.com/anoideaopen/glog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )

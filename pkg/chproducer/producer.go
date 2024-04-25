@@ -16,7 +16,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/transfer"
 	"github.com/anoideaopen/channel-transfer/proto"
 	"github.com/anoideaopen/common-component/errorshlp"
-	"github.com/newity/glog"
+	"github.com/anoideaopen/glog"
 	"github.com/pkg/errors"
 	"go.uber.org/atomic"
 	"golang.org/x/sync/errgroup"

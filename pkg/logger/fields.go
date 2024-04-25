@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"github.com/newity/glog"
+	"github.com/anoideaopen/glog"
 )
 
 type Labels struct {

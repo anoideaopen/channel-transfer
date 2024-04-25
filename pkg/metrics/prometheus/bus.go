@@ -7,7 +7,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/metrics"
 	"github.com/anoideaopen/common-component/basemetrics"
 	"github.com/anoideaopen/common-component/basemetrics/baseprometheus"
-	"github.com/newity/glog"
+	"github.com/anoideaopen/glog"
 )
 
 type MetricsBus struct {

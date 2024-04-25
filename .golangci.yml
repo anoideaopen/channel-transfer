@@ -18,7 +18,7 @@ linters-settings:
           - github.com/anoideaopen/common-component
           - github.com/anoideaopen/foundation/proto
           - github.com/anoideaopen/foundation/core/cctransfer
-          - github.com/newity/glog
+          - github.com/anoideaopen/glog
           - github.com/alicebob/miniredis/v2
           - github.com/avast/retry-go/v4
           - github.com/felixge/httpsnoop

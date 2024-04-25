@@ -8,7 +8,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/data"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	dto "github.com/anoideaopen/channel-transfer/proto"
-	"github.com/newity/glog"
+	"github.com/anoideaopen/glog"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

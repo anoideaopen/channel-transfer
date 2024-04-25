@@ -28,7 +28,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/transfer"
 	"github.com/anoideaopen/common-component/basemetrics/baseprometheus"
 	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
-	"github.com/newity/glog"
+	"github.com/anoideaopen/glog"
 	"github.com/pkg/errors"
 	prometheus2 "github.com/prometheus/client_golang/prometheus"
 	redis3 "github.com/redis/go-redis/v9"
@@ -58,7 +58,6 @@ func main() {
 		}
 	}()
 
-	// unnecessary comment
 	cfgForLog, _ := json.MarshalIndent(cfg.WithoutSensitiveData(), "", "\t")
 	log.Infof("version: %s", AppInfoVer)
 	log.Infof("config: \n%s\n", cfgForLog)

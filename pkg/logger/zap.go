@@ -4,7 +4,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/newity/glog"
+	"github.com/anoideaopen/glog"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

@@ -11,7 +11,7 @@ import (
 	"github.com/anoideaopen/cartridge/manager"
 	"github.com/anoideaopen/channel-transfer/pkg/config"
 	"github.com/anoideaopen/channel-transfer/pkg/hlf/hlfprofile"
-	"github.com/newity/glog"
+	"github.com/anoideaopen/glog"
 	"github.com/pkg/errors"
 )
 
