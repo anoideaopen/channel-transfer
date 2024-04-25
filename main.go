@@ -58,6 +58,7 @@ func main() {
 		}
 	}()
 
+	// unnecessary comment
 	cfgForLog, _ := json.MarshalIndent(cfg.WithoutSensitiveData(), "", "\t")
 	log.Infof("version: %s", AppInfoVer)
 	log.Infof("config: \n%s\n", cfgForLog)
