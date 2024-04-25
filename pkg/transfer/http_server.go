@@ -15,7 +15,7 @@ import (
 	"github.com/felixge/httpsnoop"
 	"github.com/flowchartsman/swaggerui"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/newity/glog"
+	"github.com/anoideaopen/glog"
 	metrics "github.com/slok/go-http-metrics/metrics/prometheus"
 	middleware2 "github.com/slok/go-http-metrics/middleware"
 	mstd "github.com/slok/go-http-metrics/middleware/std"

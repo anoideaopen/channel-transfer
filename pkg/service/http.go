@@ -10,7 +10,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/helpers/nerrors"
 	"github.com/anoideaopen/channel-transfer/pkg/logger"
 	"github.com/anoideaopen/common-component/errorshlp"
-	"github.com/newity/glog"
+	"github.com/anoideaopen/glog"
 )
 
 type HTTPServer struct {

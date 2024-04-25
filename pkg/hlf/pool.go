@@ -21,7 +21,7 @@ import (
 	"github.com/anoideaopen/foundation/proto"
 	hlfcontext "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
-	"github.com/newity/glog"
+	"github.com/anoideaopen/glog"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )

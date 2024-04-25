@@ -8,7 +8,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/logger"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/common-component/errorshlp"
-	"github.com/newity/glog"
+	"github.com/anoideaopen/glog"
 	"github.com/pkg/errors"
 )
 
