@@ -1,114 +1,118 @@
-## Описание сервиса 
+## Service description 
 
-### Инициализация сервиса
+### Service initialization
 
 ```mermaid
 sequenceDiagram
-    ChannelTransferService ->> ChannelTransferService: проверка, что в параметрах конфигурации заданы каналы
+    ChannelTransferService ->> ChannelTransferService: check for channels are specified in the initialization parameters
     
-    ChannelTransferService ->> hlf: проверка подключения
-    ChannelTransferService ->> redis: проверка подключения 
+    ChannelTransferService ->> hlf: checking connection
+    ChannelTransferService ->> redis: checking connection 
     
-    ChannelTransferService ->> redis: запросить номер последнего обработанного блока по каждому каналу
-    
-```
-
-### Подписка на блоки ledger
-
-Получаем данные из ledger по всем каналам, заданным в конфигурации сервиса и найденным в параметре TO трансферов, и актуализируем данные в redis. 
-Сканирование каналов ledger начинается или с нулевого блока, или с последнего проанализированного сервисом блока,
-информация о котором автоматически сохраняется в redis. 
-
-```mermaid
-sequenceDiagram
-    ChannelTransferService ->> hlf: получать следующий по порядку блок
-    ChannelTransferService ->> hlf: распарсить блок
-    ChannelTransferService ->> hlf: проверка статусов транзакций блока на валидность
-    ChannelTransferService ->> hlf: перебрать валидные транзакции, отфильтровать активные транзакции трансфера
-    ChannelTransferService ->> redis: обновить (или добавить) данные о активных трансферах по найденным в ledger транзакциям
-    ChannelTransferService ->> hlf: ожидание нового блока
-
-```
-
-###  Синхронизация статусов трансферов в redis с ledger для каждого канала
-
-Процесс проверки выполнения транзакций переводов и актуализации статусов в redis
-
-```mermaid
-sequenceDiagram
-    ChannelTransferService ->> redis: получить список не активных трансферов канала
-    ChannelTransferService ->> ChannelTransferService: для каждого трансфера по транзакциям ledger определить статус
-    ChannelTransferService ->> ChannelTransferService: обновить значение статуса в redis
-
-```
-
-### Определение статуса трансфера
-
-Процесс вычисляет текущий статус трансфера на основе данных ledger 
-
-```mermaid
-sequenceDiagram
-    ChannelTransferService ->> hlf: выполняем запрос сhannelTransfersFrom в ledger
-    ChannelTransferService ->> ChannelTransferService: определяем валидность канала TO
-    ChannelTransferService ->> hlf: выполняем запрос сhannelTransferTo в ledger
-    ChannelTransferService ->> hlf: если запрос к метаданным трансфера в канале TO вернул данные, то проверяем наличие транзакции batchExecute 
-    ChannelTransferService ->> ChannelTransferService: на основе полученных данных вычисляем текущий статус трансфера  
-```
-
-### Обработка запроса к API на создание трансфера. 1 часть
-
-```mermaid
-sequenceDiagram
-    external ->> ChannelTransferService: проверка полей запроса
-    ChannelTransferService ->> redis: сохранить запрос
-    ChannelTransferService ->> hlf: выполнить channelTransferByCustomer/channelTransferByAdmin
-```
-
-### Завершение 1-й части трансфера - проверка batchExecute в канале FROM
-
-```mermaid
-sequenceDiagram
-    ChannelTransferService ->> redis: проверить batchExecute и результат выполнения транзакции по созданию трансфера
-    ChannelTransferService ->> hlf: если время выполнения истекло (timeout) или возникла ошибка - выполняется invoke cancelCCTransferFrom
-    ChannelTransferService ->> redis: если время выполнения истекло (timeout) или возникла ошибка - изменяем статус трансфера и заканчиваем его обработку 
-
-```
-### Создание 2-й части трансфера - перевод в канал TO
-
-```mermaid
-sequenceDiagram
-    ChannelTransferService ->> hlf: выполнить invoke createCCTransferTo
-
-```
-
-### Завершение 2-й части трансфера - проверка batchExecute в канале TO
-
-```mermaid
-sequenceDiagram
-    ChannelTransferService ->> redis: проверить batchExecute и результат выполнения транзакции по созданию трансфера
-    ChannelTransferService ->> hlf: если время выполнения истекло (timeout) или возникла ошибка - выполняется invoke cancelCCTransferFrom
-    ChannelTransferService ->> redis: если время выполнения истекло (timeout) или возникла ошибка - изменяем статус трансфера и заканчиваем его обработку 
-```
-### 3-я часть трансфера - выставляем признак 2-й фазы
-
-```mermaid
-sequenceDiagram
-    ChannelTransferService ->> hlf: выполняется invoke commitCCTransferFrom
+    ChannelTransferService ->> redis: requesting number of the last processed block for each channel
     
 ```
 
-### 4-я часть трансфера - удалить метаданные трансфера в канале TO
+### Subscription to ledger blocks
+
+Receiving data from ledger through all channels specified in the service configuration parameters and found specified in the “TO” transfers parameter, updating data in Redis. 
+Ledger channel scanning starts from the zero block or from the last block analyzed by the service, information about which is automatically saved in Redis. 
 
 ```mermaid
 sequenceDiagram
-    ChannelTransferService ->> hlf: выполняется invoke cancelTransferTo
+    ChannelTransferService ->> hlf: getting the next block in order
+    ChannelTransferService ->> hlf: parsing block
+    ChannelTransferService ->> hlf: checking block transaction statuses for validity
+    ChannelTransferService ->> hlf: enumeration of valid transactions, filtering of active transfer transactions
+    ChannelTransferService ->> redis: updating or adding data on active transfers for transactions found in the ledger
+    ChannelTransferService ->> hlf: awaiting for the next block
+
+```
+
+###  Syncing transfer statuses in redis with ledger for each channel
+
+Checking the completion of transfer transactions and updating statuses in Redis
+
+```mermaid
+sequenceDiagram
+    ChannelTransferService ->> redis: getting a list of inactive channel transfers
+    ChannelTransferService ->> ChannelTransferService: determining the status for each transfer for ledger transactions
+    ChannelTransferService ->> ChannelTransferService: updating status value in Redis
+
+```
+
+### Determining transfer status
+
+Calculating current transfer status basing on ledger data
+
+```mermaid
+sequenceDiagram
+    ChannelTransferService ->> hlf: requesting сhannelTransfersFrom in ledger
+    ChannelTransferService ->> ChannelTransferService: checking validity of "TO"-channel
+    ChannelTransferService ->> hlf: requesting сhannelTransferTo in ledger
+    ChannelTransferService ->> hlf: checking for the presence of a batchExecute transaction if a request to transfer metadata in the "TO"-channel returns valid data
+    ChannelTransferService ->> ChannelTransferService: calculating the current transfer status based on the received data
+
+```
+
+### Processing transfer's 1st stage - requesting to the API for transfer creation
+
+```mermaid
+sequenceDiagram
+    external ->> ChannelTransferService: checking request fields
+    ChannelTransferService ->> redis: saving request
+    ChannelTransferService ->> hlf: executing channelTransferByCustomer/channelTransferByAdmin
+
+```
+
+### Completion of transfer's 1st stage - checking batchExecute in the "FROM"-channel
+
+```mermaid
+sequenceDiagram
+    ChannelTransferService ->> redis: checking batchExecute and the result of create transfer transaction execution
+    ChannelTransferService ->> hlf: in case of timeout or error executing invoke cancelCCTransferFrom
+    ChannelTransferService ->> redis: in case of timeout or error changing transfer status and processing finishes 
+
+```
+
+### Processing transfer's 2nd stage - transferring to "TO"-channel
+
+```mermaid
+sequenceDiagram
+    ChannelTransferService ->> hlf: executing invoke createCCTransferTo
+
+```
+
+### Completion of transfer's 2nd stage - checking batchExecute in the "TO"-channel
+
+```mermaid
+sequenceDiagram
+    ChannelTransferService ->> redis: checking batchExecute calculating the current transfer status based on the received data
+    ChannelTransferService ->> hlf: in case of timeout or error executing invoke cancelCCTransferFrom
+    ChannelTransferService ->> redis: in case of timeout or error changing transfer status and processing finishes
+
+```
+
+### Processing transfer's 3rd stage - setting the 2nd phase sign
+
+```mermaid
+sequenceDiagram
+    ChannelTransferService ->> hlf: executing invoke commitCCTransferFrom
     
 ```
 
-### 5-я часть трансфера - удалить метаданные трансфера в канале FROM
+### Processing transfer's 4th stage - deleting transfer metadata in "TO"-channel
 
 ```mermaid
 sequenceDiagram
-    ChannelTransferService ->> hlf: выполняется invoke cancelTransferFROM
+    ChannelTransferService ->> hlf: executing invoke cancelTransferTo
+    
+```
+
+### Processing transfer's 5th stage - deleting transfer metadata in "FROM"-channel
+
+```mermaid
+sequenceDiagram
+    ChannelTransferService ->> hlf: executing invoke cancelTransferFROM
 
 ```

@@ -4,44 +4,46 @@
 - [grpc](#grpc)
 
 ### GRPC 
-(см. [proto](../proto/service.proto))
+(see [proto](../proto/service.proto))
 
 #### TransferByCustomer
 - /proto.API/TransferByCustomer
 
 ```
-Трансфер от пользователя.
-Метод принимает структуру TransferBeginCustomerRequest и возвращает структуру TransferStatusResponse
+Transfer by customer.
+Method takes sturcture TransferBeginCustomerRequest as input and returns structure TransferStatusResponse
 ```
 
 #### TransferByAdmin
 - /proto.API/TransferByAdmin
 
 ```
-Трансфер от администратора. Метод принимает структуру TransferBeginAdminRequest и возвращает структуру TransferStatusResponse 
+Transfer by administartor. 
+Method takes structure TransferBeginAdminRequest as input and returns structure TransferStatusResponse 
 ```
 
 #### TransferStatus
 - /proto.API/TransferStatus
 
 ```
-Получение статуса трансфера. Метод принимает структуру TransferStatusRequest и возвращает структуру TransferStatusResponse
+Transfer status. 
+Method takes structure TransferStatusRequest as input and returns structure TransferStatusResponse
 ```
 
 #### TransferStatus with filter option
 - /proto.API/TransferStatus
 
 ```
-Получение итогового статуса трансфера, исключая промежуточное состояние, заданное в параметрах.
-Метод принимает структуру TransferStatusRequest, где 
-  id_transfer - инициализирован идентификатором трансфера
-  options - инициализирован значением google.protobuf.Option, где:
-   name - содержит строку excludeStatus
-   value - содержит строку с названием исключаемого статуса: STATUS_IN_PROCESS  
-Метод возвращает структуру TransferStatusResponse
+Receiving the final transfer status, excluding the intermediate state specified in the parameters.
+Method takes TransferStatusRequest structure as input, where 
+  id_transfer - initialized by transfer ID
+  options - initialized by google.protobuf.Option value, where:
+   name - contains excludeStatus string
+   value - contains string with name of the excluding status (STATUS_IN_PROCESS - for example)  
+Method returns TransferStatusResponse structure
 ```
 
-Пример:
+Example:
 ```go
     conn, err := grpc.Dial(targetGrpc, grpc.WithTransportCredentials(transportCredentials))
     sCtx.Require().NoError(err)
