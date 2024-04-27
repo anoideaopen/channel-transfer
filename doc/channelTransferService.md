@@ -47,9 +47,9 @@ Calculating current transfer status basing on ledger data
 
 ```mermaid
 sequenceDiagram
-    ChannelTransferService ->> hlf: requesting сhannelTransfersFrom in ledger
+    ChannelTransferService ->> hlf: requesting channelTransfersFrom in ledger
     ChannelTransferService ->> ChannelTransferService: checking validity of "TO"-channel
-    ChannelTransferService ->> hlf: requesting сhannelTransferTo in ledger
+    ChannelTransferService ->> hlf: requesting channelTransferTo in ledger
     ChannelTransferService ->> hlf: checking for the presence of a batchExecute transaction if a request to transfer metadata in the "TO"-channel returns valid data
     ChannelTransferService ->> ChannelTransferService: calculating the current transfer status based on the received data
 

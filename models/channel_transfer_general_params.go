@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -13,33 +14,33 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// ChannelTransferGeneralParams GeneralParams transaction general data
+// ChannelTransferGeneralParams GeneralParams - every transaction general parameters
 //
 // swagger:model channel_transferGeneralParams
 type ChannelTransferGeneralParams struct {
 
-	// Chaincode - chaincode name
+	// Chaincode name
 	Chaincode string `json:"chaincode,omitempty"`
 
-	// Channel - channel name
+	// Channel name
 	Channel string `json:"channel,omitempty"`
 
-	// MethodName - method name
+	// Method name
 	MethodName string `json:"methodName,omitempty"`
 
-	// Nonce - request nonce
+	// Request nonce
 	Nonce string `json:"nonce,omitempty"`
 
 	// options
 	Options []*ProtobufOption `json:"options"`
 
-	// Публичный ключ, подписавшего запрос
+	// Public key of user signed the request
 	PublicKey string `json:"publicKey,omitempty"`
 
-	// ID для служеьных нужд (может быть пустым)
+	// Request ID (may be empty)
 	RequestID string `json:"requestId,omitempty"`
 
-	// Подпись сообщения
+	// Message sign
 	Sign string `json:"sign,omitempty"`
 }
 
@@ -58,7 +59,6 @@ func (m *ChannelTransferGeneralParams) Validate(formats strfmt.Registry) error {
 }
 
 func (m *ChannelTransferGeneralParams) validateOptions(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Options) { // not required
 		return nil
 	}
@@ -72,6 +72,47 @@ func (m *ChannelTransferGeneralParams) validateOptions(formats strfmt.Registry) 
 			if err := m.Options[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("options" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("options" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this channel transfer general params based on the context it is used
+func (m *ChannelTransferGeneralParams) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateOptions(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ChannelTransferGeneralParams) contextValidateOptions(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Options); i++ {
+
+		if m.Options[i] != nil {
+
+			if swag.IsZero(m.Options[i]) { // not required
+				return nil
+			}
+
+			if err := m.Options[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("options" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("options" + "." + strconv.Itoa(i))
 				}
 				return err
 			}

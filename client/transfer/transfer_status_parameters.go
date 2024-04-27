@@ -16,40 +16,37 @@ import (
 	"github.com/go-openapi/strfmt"
 )
 
-// NewTransferStatusParams creates a new TransferStatusParams object
-// with the default values initialized.
+// NewTransferStatusParams creates a new TransferStatusParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewTransferStatusParams() *TransferStatusParams {
-	var ()
 	return &TransferStatusParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewTransferStatusParamsWithTimeout creates a new TransferStatusParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewTransferStatusParamsWithTimeout(timeout time.Duration) *TransferStatusParams {
-	var ()
 	return &TransferStatusParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewTransferStatusParamsWithContext creates a new TransferStatusParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewTransferStatusParamsWithContext(ctx context.Context) *TransferStatusParams {
-	var ()
 	return &TransferStatusParams{
-
 		Context: ctx,
 	}
 }
 
 // NewTransferStatusParamsWithHTTPClient creates a new TransferStatusParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewTransferStatusParamsWithHTTPClient(client *http.Client) *TransferStatusParams {
-	var ()
 	return &TransferStatusParams{
 		HTTPClient: client,
 	}
@@ -57,16 +54,37 @@ func NewTransferStatusParamsWithHTTPClient(client *http.Client) *TransferStatusP
 
 /*
 TransferStatusParams contains all the parameters to send to the API endpoint
-for the transfer status operation typically these are written to a http.Request
+
+	for the transfer status operation.
+
+	Typically these are written to a http.Request.
 */
 type TransferStatusParams struct {
 
-	// IDTransfer - tokens transfer ID
+	/* IDTransfer.
+
+	   Token transfer ID
+	*/
 	IDTransfer string
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the transfer status params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *TransferStatusParams) WithDefaults() *TransferStatusParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the transfer status params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *TransferStatusParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the transfer status params
