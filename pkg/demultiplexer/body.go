@@ -65,7 +65,7 @@ func (dm *Demultiplexer) output(data model.TransferRequest) {
 
 	channel := dm.specifyChannel(key)
 	if len(channel) >= dm.chanBuffer {
-		// Походу подписчик завис или тормоз
+		// seems like subscriber is very slow or stuck
 		dm.unSubscribe(key)
 		dm.log.Error(errorshlp.WrapWithDetails(errors.New("channel buffer overflow. flush it"), nerrors.ErrTypeAPI, nerrors.ComponentDemultiplexer))
 		return

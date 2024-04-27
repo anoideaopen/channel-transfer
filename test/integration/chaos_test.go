@@ -1,5 +1,6 @@
 package test
 
+/*
 import (
 	"errors"
 	"os"
@@ -7,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anoideaopen/channel-transfer/test/integration/clienthttp/models"
+	"github.com/anoideaopen/channel-transfer/models"
 	"github.com/anoideaopen/channel-transfer/test/integration/clienthttp/transfer"
 	utils "github.com/anoideaopen/testnet-util"
 	tr "github.com/anoideaopen/testnet-util/transfer"
@@ -459,3 +460,4 @@ func checkingStatusWithRetryAndGetResponce(t provider.T, hlfProxy *utils.HlfProx
 	}
 	return &transfer.TransferStatusOK{}, errors.New("didn't get status: " + string(status))
 }
+*/

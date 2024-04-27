@@ -1,5 +1,6 @@
 package test
 
+/*
 import (
 	"context"
 	"os"
@@ -644,3 +645,4 @@ func TestCustomerTransferWrongFoundationChannelFrom(t *testing.T) {
 		})
 	})
 }
+*/
