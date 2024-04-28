@@ -6,8 +6,8 @@ package mock
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
 	model "github.com/anoideaopen/channel-transfer/pkg/model"
+	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )
 
