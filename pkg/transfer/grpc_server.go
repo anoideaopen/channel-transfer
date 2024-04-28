@@ -10,10 +10,10 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/logger/grpclog"
 	"github.com/anoideaopen/channel-transfer/pkg/middleware"
 	"github.com/anoideaopen/channel-transfer/proto"
+	"github.com/anoideaopen/glog"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	grpcrecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	"github.com/anoideaopen/glog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )

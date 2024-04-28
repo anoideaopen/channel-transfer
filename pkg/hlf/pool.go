@@ -19,9 +19,9 @@ import (
 	proto2 "github.com/anoideaopen/channel-transfer/proto"
 	"github.com/anoideaopen/common-component/errorshlp"
 	"github.com/anoideaopen/foundation/proto"
+	"github.com/anoideaopen/glog"
 	hlfcontext "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
-	"github.com/anoideaopen/glog"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )

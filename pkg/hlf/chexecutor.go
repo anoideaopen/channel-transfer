@@ -7,11 +7,11 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/helpers/nerrors"
 	"github.com/anoideaopen/channel-transfer/pkg/metrics"
 	"github.com/anoideaopen/common-component/errorshlp"
+	"github.com/anoideaopen/glog"
 	"github.com/avast/retry-go/v4"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/ledger"
 	hlfcontext "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
-	"github.com/anoideaopen/glog"
 	"github.com/pkg/errors"
 )
 

@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/anoideaopen/channel-transfer/pkg/model"
-	hlfcontext "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/anoideaopen/glog"
+	hlfcontext "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 )
 
 const (
@@ -19,7 +19,7 @@ const (
 var (
 	ErrExecutorAlreadyExists = errors.New("executor already exists")
 	ErrExecutorUndefined     = errors.New("executor undefined")
-	ErrChannelUsed           = errors.New("channel already  used")
+	// ErrChannelUsed           = errors.New("channel already  used")
 )
 
 type channelKey string
