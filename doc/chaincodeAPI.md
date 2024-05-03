@@ -1,38 +1,38 @@
-### Методы в смарт контракте для выполнения перевода в другой канал
+### Smart contract methods for transfer execution
 
 **LINK:** [token methods](https://github.com/anoideaopen/foundation/-/blob/master/core/chtransfer.go#L26)
 
 #### INVOKE
 
-- channelTransferByCustomer (batch) - создание перевода для клиента
-- channelTransferByAdmin (batch) - создание перевода для администратора
+- channelTransferByCustomer (batch) - transfer creation for client
+- channelTransferByAdmin (batch) - transfer creation for admin
  
-- createCCTransferTo - перевод в канал куда происходит перевод
+- createCCTransferTo - create transfer to destination channel
 
-- deleteCCTransferFrom - удалить исходный трансфер
-- deleteCCTransferTo - удалить трансфер из канала получения перевода
+- deleteCCTransferFrom - delete transfer from source channel
+- deleteCCTransferTo - delete transfer from destination channel
 
-- commitCCTransferFrom (no batch) - отметить трансфер в канале из которого выполняется перевод
+- commitCCTransferFrom (no batch) - commit transfer in source channel
 
-- cancelCCTransferFrom - удалить исходный трансфер и делает возврат токенов
-- cancelTransferTo - удалить трансфер из канала получения перевода и делает возврат токенов
+- cancelCCTransferFrom - delete transfer in source channel and return tokens 
+- cancelTransferTo - delete transfer in destination channel and return tokens
 
 #### QUERY
 
-- channelTransferFrom - возвращает данные о трансфере из канала From
-- channelTransferTo - возвращает данные о трансфере из канала To
-- channelTransfersFrom - возвращает данные о всех активных трансферах канала From, данные отдает с пагинацией 
+- channelTransferFrom - returns transfer data from source channel
+- channelTransferTo - returns transfer data from destination channel
+- channelTransfersFrom - returns paginated data of all processing transfers in source channel  
 
 
-### Изменения производимые транзакциями трансфера в World State ledger
+### Changes to World State ledger made by transactions
 **LINK:** [CCTransfer](https://github.com/anoideaopen/foundation/-/blob/master/proto/batch.proto#L231)
 
-| метод                     | batch <br/> транзакция | метаданные трансфера                                         | изменяемый баланс                              |
-|---------------------------|:----------------------:|--------------------------------------------------------------|------------------------------------------------|
-| channelTransferByCustomer |           да           | сохраняем структуру CCTransfer в канале FROM                 | TokenBalance и GivenBalance или AllowedBalance |
-| channelTransferByAdmin    |           да           | сохраняем структуру CCTransfer канале FROM                   | TokenBalance и GivenBalance или AllowedBalance |
-| createCCTransferTo        |           да           | сохраняем структуру  канале TO                               | AllowedBalance или TokenBalance и GivenBalance |
-| commitCCTransferFrom      |                        | изменяем атрибут IsCommit структуры CCTransfer в канале FROM |                                                |
-| deleteCCTransferTo        |                        | удаляем структуру CCTransfer канала TO                       |                                                |
-| deleteCCTransferFrom      |                        | удаляем структуру CCTransfer канала FROM                     |                                                |
-| cancelCCTransferFrom      |           да           | удаляем структуру CCTransfer канала FROM                     | TokenBalance и GivenBalance или AllowedBalance |
+| method                     | batch <br/> transaction  | transfer metadata                                     | balance to be changed                         |
+|----------------------------|:------------------------:|-------------------------------------------------------|-----------------------------------------------|
+| channelTransferByCustomer  |           yes            | saving CCTransfer structure in channel FROM           | TokenBalance & GivenBalance or AllowedBalance |
+| channelTransferByAdmin     |           yes            | saving CCTransfer structure in channel FROM           | TokenBalance & GivenBalance or AllowedBalance |
+| createCCTransferTo         |           yes            | saving CCTransfer structure in channel TO             | AllowedBalance & TokenBalance or GivenBalance |
+| commitCCTransferFrom       |                          | setting IsCommit in CCTransfer in channel FROM        |                                               |
+| deleteCCTransferTo         |                          | deleting CCTransfer structure in channel TO           |                                               |
+| deleteCCTransferFrom       |                          | deleting CCTransfer structure in channel FROM         |                                               |
+| cancelCCTransferFrom       |           yes            | deleting CCTransfer structure in channel FROM         | TokenBalance & GivenBalance or AllowedBalance |

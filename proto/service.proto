@@ -7,9 +7,9 @@ import "google/api/annotations.proto";
 import "google/protobuf/type.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
-// ErrorResponse ответ с ошибкой
+// ErrorResponse response with an error
 message ErrorResponse {
-  string error = 1; // строка ошибки
+  string error = 1; // error message
 }
 
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
@@ -74,40 +74,40 @@ service API {
   }
 }
 
-// GeneralParams основные параметры любого запроса
+// GeneralParams general parameters for every request
 message GeneralParams {
-  string method_name = 1; // Имя метода
-  string request_id = 2; // ID для служеьных нужд (может быть пустым)
-  string chaincode = 3; // Имя чейнкода
-  string channel = 4; // Имя канала
-  string nonce = 5; // Нонс запроса
-  string public_key = 6; // Публичный ключ, подписавшего запрос
-  string sign = 7; // Подпись сообщения
+  string method_name = 1; // method name
+  string request_id = 2; // request ID (may be empty)
+  string chaincode = 3; // chaincode name
+  string channel = 4; // channel name
+  string nonce = 5; // request nonce
+  string public_key = 6; // public key of user, signed the request
+  string sign = 7; // request sign
   repeated google.protobuf.Option options = 8;
 }
 
-// TransferBeginAdminRequest запрос о переводе токенов от Владельца токенов
+// TransferBeginAdminRequest request for tokens transfer by tokens owner
 message TransferBeginCustomerRequest{
-  GeneralParams generals = 1; // Информация о транзакции
-  string id_transfer = 2; // ID трансфера (должно быть уникально)
-  string channel_to = 3; // Канал, в который переводят токены
-  string token = 4; // Токены которые хотят перевести
-  string amount = 5; // Сколько переводят токенов
+  GeneralParams generals = 1; // general parameters
+  string id_transfer = 2; // transfer ID (should be unique)
+  string channel_to = 3; // destination channel
+  string token = 4; // Tokens to transfer
+  string amount = 5; // Amount of tokens to transfer
   repeated google.protobuf.Option options = 6;
 }
 
-// TransferBeginAdminRequest запрос о переводе токенов от Администратора платформы
+// TransferBeginAdminRequest request for tokens transfer by platform administrator
 message TransferBeginAdminRequest{
-  GeneralParams generals = 1; // Информация о транзакции
-  string id_transfer = 2; // ID трансфера (должно быть уникально)
-  string channel_to = 3; // Канал, в который переводят токены
-  string address = 4; // Чьи токены переводят
-  string token = 5; // Токены которые хотят перевести
-  string amount = 6; // Сколько переводят токенов
+  GeneralParams generals = 1; // general parameters
+  string id_transfer = 2; // transfer ID (should be unique)
+  string channel_to = 3; // destination channel
+  string address = 4; // token's owner address
+  string token = 5; // tokens to transfer
+  string amount = 6; // amount of tokens to transfer
   repeated google.protobuf.Option options = 7;
 }
 
-// TransferStatusResponse содержит статус перевода
+// TransferStatusResponse response for TransferStatus transaction
 message TransferStatusResponse {
   enum Status {
     STATUS_IN_PROCESS = 0;
@@ -117,13 +117,13 @@ message TransferStatusResponse {
     STATUS_ERROR = 4;
   }
 
-  string id_transfer = 1; // Идентификатор трансфера на перевод токенов
-  Status status = 2; // Статус перевода токенов
-  string message = 3; // Сообщение об ошибке (может быть пустой)
+  string id_transfer = 1; // transfer ID
+  Status status = 2; // transfer status
+  string message = 3; // error message (may be empty)
 }
 
-// TransferStatusRequest запрос на статус перевода
+// TransferStatusRequest request for transfer status
 message TransferStatusRequest {
-  string id_transfer = 1; // Идентификатор трансфера на перевод токенов
+  string id_transfer = 1; // transfer ID
   repeated google.protobuf.Option options = 2;
 }

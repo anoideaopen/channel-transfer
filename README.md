@@ -5,7 +5,7 @@
   - [TOC](#toc)
   - [Description](#description)
   - [Architecture](#architecture)
-  - [Граф переходов из состояния в состояние](#граф-переходов-из-состояния-в-состояние)
+  - [State transitions graph](#state-transitions-graph)
   - [Open API](#open-api)
   - [Scaling](#scaling)
   - [Dependencies](#dependencies)
@@ -25,47 +25,46 @@
   - [License](#license)
 
 ## Description
-Сервис для трансферов между каналами #channel#hlf#offchain#go#golang#transfer#asset#applicatoin#off#swap#
+Channel transfer service #channel#hlf#offchain#go#golang#transfer#asset#application#off#swap#
 
 ## Architecture
 
-- [Дизайн док](https://gitlab.scientificideas.org/core/application/doc/-/blob/master/design/cross_channel_transfer/index.md)
+- [Design document](https://gitlab.scientificideas.org/core/application/doc/-/blob/master/design/cross_channel_transfer/index.md)
 - [channel transfer chaincode API](doc/chaincodeAPI.md)
 - [domain model](doc/domainModel.md)
 - [channel transfer API service](doc/channelTransferApiService.md)
 - [channel transfer service](doc/channelTransferService.md)
 - [doc/main](doc/main.md)
 
-## Граф переходов из состояния в состояние 
+## State transitions graph 
 
 ```mermaid
 flowchart TD
-    A[Создать TransferFrom - Перевод From] --> B{TimeOut?}
-    A --> I[Ошибка создания, нехватка средств]
-    I --> K[/ОШИБКА/]
-    B -->|Да| E[Отмена TransferFrom]
-    E --> M[/ОТМЕНА/]
-    B -->|Нет| D[Создать TransferTo - Перевод To - Коммит TransferTo]
-    D --> L[/УСПЕХ/]
-    D --> J[Коммит TransferFrom]
-    J --> F[Удалить TransferTo]
-    F --> C[Удалить TransferFrom]
+    A[Create TransferFrom - Transfer From] --> B{TimeOut?}
+    A --> I[Creation error, insufficient funds]
+    I --> K[/ERROR/]
+    B -->|Yes| E[Cancel TransferFrom]
+    E --> M[/CANCEL/]
+    B -->|No| D[Create TransferTo - Transfer To - Commit TransferTo]
+    D --> L[/SUCCESS/]
+    D --> J[Commit TransferFrom]
+    J --> F[Delete TransferTo]
+    F --> C[Delete TransferFrom]
 ```
 
-Создать TransferFrom - создается запись трансфера в стейте фабрики, холдируются токены. Потом эта запись будет обязательно удалена. Если этой записи нет, то либо: никогда не было, выполнено успешно или отменено (подробности должны быть в леджере фабрики).
+Create TransferFrom - Transfer record creating in HLF state, tokens are holding. This record will be deleted. If transfer record is missing, then either it was never created, or the transfer was successfully completed or cancelled - details should be available th the Fabric ledger.
 
-TransferTo - должна отличаться от TransferFrom, чтобы нельзя было перепутать. 
+TransferTo - must be different from TransferFrom to avoid confusion. 
 
-Стадия "Перевод" производится последовательно. Токены у пользователя на канаде FROM уже захолдированы, значит главное провести перевод в канале TO. Перевод в канале FROM можем делать не торопливо. При "Переводе" в записях TransferFrom и TransferTo производятся соответствующие пометки. После TransferTo можно результат вернуть клиенту. После стадии перевод надо будет удалить записи: сначала TransferTo, и только потом TransferFrom.
+"Transfer" is performed sequentially. Tokens are already held on channel FROM, which means now it's necessary to make a transfer in channel TO. When "Transfer" operation is completed, the records of TransferFrom and TransferTo will be marked accordingly. After TransferTo is completed, the result may be returned to client. Now the records should be deleted: first TransferTo, and only after that TransferFrom.
 
 ## Open API
 
-Сервис предоставляет функционал OpenAPI(Swagger). Список методов и форматов запросов доступен
-по [ссылке](proto/service.swagger.json)
+Service provides OpenAPI(Swagger) functionality. Methods and request formats is available [here](proto/service.swagger.json)
 
 ## Scaling
 
-Пока масштабирование не проработано
+Scaling not developed yet.
 
 ## Dependencies
 

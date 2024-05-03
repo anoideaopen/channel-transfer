@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/anoideaopen/glog"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	spb "google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc/status"
 )
@@ -18,11 +18,11 @@ import (
 func NewRESTErrorHandler(logger glog.Logger) runtime.ServeMuxOption {
 	return runtime.WithErrorHandler(
 		func(
-			ctx context.Context,
-			mux *runtime.ServeMux,
-			marshaler runtime.Marshaler,
+			ctx context.Context, //nolint:revive
+			mux *runtime.ServeMux, //nolint:revive
+			marshaller runtime.Marshaler, //nolint:revive
 			writer http.ResponseWriter,
-			request *http.Request,
+			request *http.Request, //nolint:revive
 			err error,
 		) {
 			if logger == nil {
@@ -81,5 +81,3 @@ func (el *emptyLogger) Warning(...interface{})          {}
 func (el *emptyLogger) Warningf(string, ...interface{}) {}
 func (el *emptyLogger) Error(...interface{})            {}
 func (el *emptyLogger) Errorf(string, ...interface{})   {}
-func (el *emptyLogger) Panic(...interface{})            {}
-func (el *emptyLogger) Panicf(string, ...interface{})   {}

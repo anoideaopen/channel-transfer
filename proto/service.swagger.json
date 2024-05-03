@@ -49,7 +49,7 @@
         "parameters": [
           {
             "name": "idTransfer",
-            "description": "Идентификатор трансфера на перевод токенов",
+            "description": "transfer ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -145,136 +145,139 @@
       "properties": {
         "error": {
           "type": "string",
-          "title": "строка ошибки"
+          "title": "error message"
         }
       },
-      "title": "ErrorResponse ответ с ошибкой"
+      "title": "ErrorResponse response with an error"
     },
     "channel_transferGeneralParams": {
       "type": "object",
       "properties": {
         "methodName": {
           "type": "string",
-          "title": "Имя метода"
+          "title": "method name"
         },
         "requestId": {
           "type": "string",
-          "title": "ID для служеьных нужд (может быть пустым)"
+          "title": "request ID (may be empty)"
         },
         "chaincode": {
           "type": "string",
-          "title": "Имя чейнкода"
+          "title": "chaincode name"
         },
         "channel": {
           "type": "string",
-          "title": "Имя канала"
+          "title": "channel name"
         },
         "nonce": {
           "type": "string",
-          "title": "Нонс запроса"
+          "title": "request nonce"
         },
         "publicKey": {
           "type": "string",
-          "title": "Публичный ключ, подписавшего запрос"
+          "title": "public key of user, signed the request"
         },
         "sign": {
           "type": "string",
-          "title": "Подпись сообщения"
+          "title": "request sign"
         },
         "options": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/protobufOption"
           }
         }
       },
-      "title": "GeneralParams основные параметры любого запроса"
+      "title": "GeneralParams general parameters for every request"
     },
     "channel_transferTransferBeginAdminRequest": {
       "type": "object",
       "properties": {
         "generals": {
           "$ref": "#/definitions/channel_transferGeneralParams",
-          "title": "Информация о транзакции"
+          "title": "general parameters"
         },
         "idTransfer": {
           "type": "string",
-          "title": "ID трансфера (должно быть уникально)"
+          "title": "transfer ID (should be unique)"
         },
         "channelTo": {
           "type": "string",
-          "title": "Канал, в который переводят токены"
+          "title": "destination channel"
         },
         "address": {
           "type": "string",
-          "title": "Чьи токены переводят"
+          "title": "token's owner address"
         },
         "token": {
           "type": "string",
-          "title": "Токены которые хотят перевести"
+          "title": "tokens to transfer"
         },
         "amount": {
           "type": "string",
-          "title": "Сколько переводят токенов"
+          "title": "amount of tokens to transfer"
         },
         "options": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/protobufOption"
           }
         }
       },
-      "title": "TransferBeginAdminRequest запрос о переводе токенов от Администратора платформы"
+      "title": "TransferBeginAdminRequest request for tokens transfer by platform administrator"
     },
     "channel_transferTransferBeginCustomerRequest": {
       "type": "object",
       "properties": {
         "generals": {
           "$ref": "#/definitions/channel_transferGeneralParams",
-          "title": "Информация о транзакции"
+          "title": "general parameters"
         },
         "idTransfer": {
           "type": "string",
-          "title": "ID трансфера (должно быть уникально)"
+          "title": "transfer ID (should be unique)"
         },
         "channelTo": {
           "type": "string",
-          "title": "Канал, в который переводят токены"
+          "title": "destination channel"
         },
         "token": {
           "type": "string",
-          "title": "Токены которые хотят перевести"
+          "title": "Tokens to transfer"
         },
         "amount": {
           "type": "string",
-          "title": "Сколько переводят токенов"
+          "title": "Amount of tokens to transfer"
         },
         "options": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/protobufOption"
           }
         }
       },
-      "title": "TransferBeginAdminRequest запрос о переводе токенов от Владельца токенов"
+      "title": "TransferBeginAdminRequest request for tokens transfer by tokens owner"
     },
     "channel_transferTransferStatusResponse": {
       "type": "object",
       "properties": {
         "idTransfer": {
           "type": "string",
-          "title": "Идентификатор трансфера на перевод токенов"
+          "title": "transfer ID"
         },
         "status": {
           "$ref": "#/definitions/channel_transferTransferStatusResponseStatus",
-          "title": "Статус перевода токенов"
+          "title": "transfer status"
         },
         "message": {
           "type": "string",
-          "title": "Сообщение об ошибке (может быть пустой)"
+          "title": "error message (may be empty)"
         }
       },
-      "title": "TransferStatusResponse содержит статус перевода"
+      "title": "TransferStatusResponse response for TransferStatus transaction"
     },
     "channel_transferTransferStatusResponseStatus": {
       "type": "string",
@@ -300,6 +303,7 @@
         "details": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
         }

@@ -22,7 +22,7 @@ func NewGRPCAuthenticationInterceptor(
 	return func(
 		ctx context.Context,
 		req interface{},
-		info *grpc.UnaryServerInfo,
+		info *grpc.UnaryServerInfo, //nolint:revive
 		handler grpc.UnaryHandler,
 	) (resp interface{}, err error) {
 		md, ok := metadata.FromIncomingContext(ctx)

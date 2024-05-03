@@ -9,9 +9,9 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/logger"
 	"github.com/anoideaopen/channel-transfer/pkg/metrics"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
+	"github.com/anoideaopen/glog"
 	hlfcontext "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
-	"github.com/anoideaopen/glog"
 )
 
 type chCollector struct {

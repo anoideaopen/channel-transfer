@@ -27,8 +27,8 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/service/healthcheck"
 	"github.com/anoideaopen/channel-transfer/pkg/transfer"
 	"github.com/anoideaopen/common-component/basemetrics/baseprometheus"
-	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/anoideaopen/glog"
+	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/pkg/errors"
 	prometheus2 "github.com/prometheus/client_golang/prometheus"
 	redis3 "github.com/redis/go-redis/v9"
@@ -77,7 +77,7 @@ func main() {
 
 	hlfProfile, err := hlfprofile.ParseProfile(cfg.ProfilePath)
 	if err != nil {
-		log.Panicf("hlf config: %+v", err)
+		panic(fmt.Sprintf("hlf config: %+v", err))
 	}
 
 	hc := healthcheck.New()
@@ -97,7 +97,7 @@ func main() {
 		log,
 	)
 	if err != nil {
-		log.Panicf("metrics: %+v", err)
+		panic(fmt.Sprintf("metrics: %+v", err))
 	}
 
 	httpSrv := service.New(
@@ -109,7 +109,7 @@ func main() {
 
 	cryptoManager, err := crypto.CreateCryptoManager(ctx, cfg, hlfProfile)
 	if err != nil {
-		log.Panicf("crypto manager: %+v", err)
+		panic(fmt.Sprintf("crypto manager: %+v", err))
 	}
 
 	storage, err := redis2.NewStorage(
@@ -125,7 +125,7 @@ func main() {
 		cfg.RedisStorage.DBPrefix,
 	)
 	if err != nil {
-		log.Panicf("redis: %+v", err)
+		panic(fmt.Sprintf("redis: %+v", err))
 	}
 
 	requests := make(chan model.TransferRequest, cfg.Options.NewestRequestStreamBufferSize)
@@ -133,12 +133,12 @@ func main() {
 
 	dm, err := demultiplexer.NewDemultiplexer(ctx, requests, activeTransferCount)
 	if err != nil {
-		log.Panicf("demultiplexer: %+v", err)
+		panic(fmt.Sprintf("demultiplexer: %+v", err))
 	}
 
 	pool, err := hlf.NewPool(ctx, cfg.Channels, cfg.UserName, cfg.Options, cfg.ProfilePath, *hlfProfile, cryptoManager, storage)
 	if err != nil {
-		log.Panicf("pool: %+v", err)
+		panic(fmt.Sprintf("pool: %+v", err))
 	}
 
 	eGroup, eGroupCtx := errgroup.WithContext(ctx)
@@ -149,7 +149,7 @@ func main() {
 
 	err = transfer.Execute(eGroupCtx, eGroup, cfg.ListenAPI, cfg.Channels, requests, storage, grpcMetrics)
 	if err != nil {
-		log.Panicf("%+v", err)
+		panic(fmt.Sprintf("%+v", err))
 	}
 
 	eGroup.Go(func() error {

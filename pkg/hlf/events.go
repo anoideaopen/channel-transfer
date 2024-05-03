@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/anoideaopen/channel-transfer/pkg/logger"
+	"github.com/anoideaopen/glog"
 	"github.com/google/uuid"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/options"
 	contextApi "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
@@ -16,11 +17,10 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/fab/events/deliverclient/seek"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fab/events/service"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fab/events/service/dispatcher"
-	"github.com/anoideaopen/glog"
 	"github.com/pkg/errors"
 )
 
-// Events хранение информации о подписке на блок без пропусков
+// Events stores data about block subscription without gaps
 type Events struct {
 	registration    fab.Registration
 	service         fab.EventService
@@ -89,7 +89,7 @@ func SubscribeEventBlock(ctx context.Context, channelProvider contextApi.Channel
 	}
 
 	if len(targetPeers) > 0 {
-		opts = append(opts, clientdispatcher.WithPeerResolver(func(ed service.Dispatcher, context contextApi.Client, channelID string, opts ...options.Opt) peerresolver.Resolver {
+		opts = append(opts, clientdispatcher.WithPeerResolver(func(service.Dispatcher, contextApi.Client, string, ...options.Opt) peerresolver.Resolver {
 			return NewTargetPeersResolver(targetPeers)
 		}))
 	}

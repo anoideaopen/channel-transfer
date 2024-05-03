@@ -28,19 +28,18 @@ Context: API Transfer token between channels
 {
   "request_id": "6c0bfd08-bf56-440f-8ead-46c996c10953",
   "customer_id": "customer_id",
-  "tokenTo": "в какой токен перевести",
-  "contractFrom": "от кого перевести",
-  "contractTo": "кому перевести",
-  "amount": "сколько",
-  "nonce": "нонс",
-  "publicKey": "публичный ключ",
-  "signMessage": "подпись запроса",
-  "methodName": " - название метода",
-  "requestID": " - id запроса (может быть пустым)",
-  "chaincode": " - имя чейнкода",
-  "channel": " - имя канала",
-  "args": "... - все пользовательские аргументы",
-  "перевод": " владельцем"
+  "tokenTo": "destination channel",
+  "contractFrom": "user From",
+  "contractTo": "user To",
+  "amount": "amount",
+  "nonce": "nonce",
+  "publicKey": "public key",
+  "signMessage": "request sign message",
+  "methodName": " - method name",
+  "requestID": " - request id (may be empty)",
+  "chaincode": " - chaincode name",
+  "channel": " - channel name",
+  "args": "... - user's arguments"
 }
 ```
 
@@ -50,19 +49,18 @@ Context: API Transfer token between channels
 {
   "request_id": "6c0bfd08-bf56-440f-8ead-46c996c10953",
   "customer_id": "customer_id",
-  "tokenTo": "в какой токен перевести",
-  "contractFrom": "от кого перевести",
-  "contractTo": "кому перевести",
-  "amount": "сколько",
-  "nonce": "нонс",
-  "publicKey": "публичный ключ",
-  "signMessage": "подпись запроса",
-  "methodName": " - название метода",
-  "requestID": " - id запроса (может быть пустым)",
-  "chaincode": " - имя чейнкода",
-  "channel": " - имя канала",
-  "args": "... - все пользовательские аргументы",
-  "перевод": " владельцем"
+  "tokenTo": "destination channel",
+  "contractFrom": "user From",
+  "contractTo": "user To",
+  "amount": "amount",
+  "nonce": "nonce",
+  "publicKey": "public key",
+  "signMessage": "request sign message",
+  "methodName": " - method name",
+  "requestID": " - request id (may be empty)",
+  "chaincode": " - chaincode name",
+  "channel": " - channel name",
+  "args": "... - user's arguments"
 }
 ```
 
@@ -78,20 +76,19 @@ Context: API Transfer token between channels
 
 ### Channel Transfer Process Status
 
-Только эти статусы должен видеть клиент в ответах от сервиса ChannelTransferAPI
+Statuses user should see in response from ChannelTransferAPI
 
-- IN_PROGRESS - процесс выполнения перевода идет без ошибок
-- ERROR - возникла ошибка на любой стадии перевода (денежные средства могут зависнуть, разбирательство по ошибки требует
-  время)
-- COMPLETED - весь трансфер прошел и удален стейт (TransferFrom, TransferTo)
-- CANCELED - выполнилась отмена по таймауту или ошибки и удален стейт (TransferFrom, TransferTo)
+- IN_PROGRESS - operation processing without errors
+- ERROR - error occurs on any transfer operation stage (funds may get stuck, error proceedings may take time)
+- COMPLETED - transfer operation successfully completed, all records are deleted from state (TransferFrom, TransferTo)
+- CANCELED - transfer operation is cancelled by timeout or error, all records are deleted from state (TransferFrom, TransferTo)
 
 Context: Process Transfer token between channels
 ----
 
 ### Ledger info
 
-Информация о парсинге блоков и транзакций
+Parsing blocks and transactions info
 
 ```json
 {
@@ -114,7 +111,7 @@ Context: Process Transfer token between channels
     "methodName": "TransferTo",
     "type": "batchExecute",
     "status": "ERROR",
-    "error_message": "Описание ошибки"
+    "error_message": "Error message"
   },
   "transfer_info": {
     "from": {
@@ -133,7 +130,7 @@ Context: Process Transfer token between channels
 
 INDEX: channelName + chaincodeName + request_id + tx_id
 
-На 1 preimage может быть несколько батчей, по этой причине смотрим только успешно выполненную транзакцию batchExecute
+There can be several batches for one preimage, so need to analyze only successfully  batchExecute
 
 ```json
 [
@@ -179,7 +176,7 @@ INDEX: channelName + chaincodeName + request_id + tx_id
     "methodName": "TransferTo",
     "type": "batchExecute",
     "status": "ERROR",
-    "error_message": "Описание ошибки",
+    "error_message": "Error message",
     "retry": 0
   }
 ]
@@ -187,7 +184,7 @@ INDEX: channelName + chaincodeName + request_id + tx_id
 
 ### process_status
 
-Объединяем ошибки для preimage и batchExecute, подробное описание ошибки выносим в отдельное поле "error_message"
+Errors for preimage & batchExecute are combined, detailed error description is placed to an "error_message" field:
 
 - IN_PROGRESS_TransferFrom
 - IN_PROGRESS_TransferTo
@@ -201,5 +198,5 @@ INDEX: channelName + chaincodeName + request_id + tx_id
 - ERROR_TransferTo
 - ERROR_TransferFromDelete
 - ERROR_TransferToDelete
-- COMPLETED - весь трансфер прошел и удален стейт (TransferFrom, TransferTo)
-- CANCELED - выполнилась отмена по таймауту или ошибки и удален стейт (TransferFrom, TransferTo)
+- COMPLETED - transfer successfully completed, all state records are deleted (TransferFrom, TransferTo)
+- CANCELED - transfer is cancelled by timeout or error, all state records are deleted (TransferFrom, TransferTo)

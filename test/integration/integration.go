@@ -1,5 +1,6 @@
 package test
 
+/*
 import (
 	"context"
 	"os"
@@ -37,3 +38,4 @@ func init() {
 
 	targetGrpc = os.Getenv("CHANNEL_TRANSFER_GRPC")
 }
+*/

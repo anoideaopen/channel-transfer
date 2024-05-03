@@ -69,97 +69,97 @@ The channel-transfer service provides these metrics:
 ## Detailed description
 
 **1.**   **app_info**\
-Тип: счетчик; информация о приложении channel-transfer\
-Показатели:
-- channel - версия приложения 
-- chaincode - версия sdk fabric
+Type: counter; Information about channel-transfer application\
+Indicators:
+- channel - application version 
+- chaincode - sdk fabric version
 
  **2.** **total_transfer_created**\
-Тип: счетчик; количество сформированных трансферов\
-Показатели:
-- channel - канал назначения channel-transfer
+Type: counter; Quantity of created transfers\
+Indicators:
+- channel - channel-transfer's destination channel
 
-Описание:
-- количество инициированных трансферов с момента запуска приложения в разрезе каналов
+Description:
+- quantity of initiated transfers by channel since app was launched
 
  **3.** **total_reconnects_to_fabric**\
-Тип: счетчик; количество переподключений к HLF\
-Показатели:
-- channel - канал назначения channel-transfer
+Type: counter; Quantity of reconnections to HLF\
+Indicators:
+- channel - channel-transfer's destination channel
 
-Описание:
-- число повторных подключений  приложения к HLF в разрезе каналов
+Description:
+- Quantity of reconnection to HLF by channel
 
  **4.** **total_success_transfer**\
-Тип: счетчик; число успешно завершенных трансферов\
-Показатели:
-- channel - канал назначения channel-transfer
+Type: counter; Quantity of successfully completed transfers\
+Indicators:
+- channel - channel-transfer's destination channel
 
-Описание:
-- количество успешно завершенных трансферов в разрезе каналов
+Description:
+- Quantity of successfully completed transfers by channel
 
 **5.** **total_failure_transfer**\
-Тип: счетчик; число трансферов, завершившихся с ошибкой\
-Показатели:
-- channel - канал назначения channel-transfer
-- fail Transfer Tag - признак ошибки: истек таймаут (expired transfer), канал-источник (transfer from), канал-получатель (transfer to)
+Type: counter; Quantity of transfers that completed with error\
+Indicators:
+- channel - channel-transfer's destination channel
+- fail Transfer Tag - error tag: timeout (expired transfer), source channel (transfer from), destination channel (transfer to)
 
-Описание:
-- Количество (с момента запуска сервиса) неуспешных трансферов с тегами - причинами незавершения трансфера. 
+Description:
+- Quantity of failed transfers with tags - reasons of unsuccessful completion since app was launched. 
 
  **6.** **total_in_work_transfer**\
-Тип: датчик; число трансферов, находящихся в обработке\
-Показатели:
-- channel - канал назначения channel-transfer
-- transferStatus - статус трансфера
+Type: probe; Quantity of processing transfers\
+Indicators:
+- channel - channel-transfer's destination channel
+- transferStatus - transfer status
 
-Описание:
-- число трансферов, находящихся в обработке,  в разрезе по каналам и статусам трансфера (пяти этапам обработки)
+Description:
+- Quantity of processing transfers by channels and transfer statuses (five stages of processing)
 
  **7.** **application_init_duration**\
-Тип: датчик; общий статус сервиса: продолжительность инициализации приложения\
+Type: probe; service's status: application intialization duration\
 
-Описание:
-- продолжительность инициализации приложения, время в секундах, потребовавшееся для старта приложения
+Description:
+- application intialization duration, time to start an application in seconds
 
 **8.** **fabric_connection_status**\
-Тип: датчик; статус подключения к HLF\
-Показатели:
+Type: probe; HLF connection status\
+Indicators:
 
-- channel - канал назначения channel-transfer
+- channel - channel-transfer's destination channel
 
-Описание:
-- статусы - канал подключен/не подключен к HLF
+Description:
+- Statuses - if channel is connected to HLF or not
 
 **9.** **collector_process_block_num**\
-Тип: датчик; номер блока, обрабатываемый коллектором\
-Показатели:
-- channel - канал назначения channel-transfer
+Type: probe; Block number, processed by collector\
+Indicators:
+- channel - channel-transfer's destination channel
 
-Описание:
-- текущий номер блока, обрабатываемый коллектором в ходе формирования трансферов (в разрезе каналов)
+Description:
+- Current number of the block, being processed by collector during transfers formation by channels
 
 **10.** **time_duration_complete_transfer_before_responding**\
-Тип: гистограмма; время в секундах от начала выполнения трансфера до отправки извещения пользователю\
-Показатели:
-- channel - канал назначения channel-transfer
+Type: bar chart; time in seconds from the start of the transfer until the notification is sent to user\
+Indicators:
+- channel - channel-transfer's destination channel
 
-Описание:
-- время, затраченное на выполнение первых двух этапов трансфера (двух первых транзакций), после которых пользователю направляется извещение о исполнении трансфера 
+Description:
+- time spent completing the first two stages of the transfer operation (the first two transactions), after which  the user is notified of the transfer execution
 
 **11.** **transfer_execution_time_duration**\
-Тип: гистограмма; время от начала выполнения трансфера до завершения выполнения\
-Показатели:
-- channel - канал назначения channel-transfer
+Type: bar chart; time from the start of transfer operation execution until the operation completion\
+Indicators:
+- channel - channel-transfer's destination channel
 
-Описание:
-- время, затраченное на полное выполнение трансфера (от момента появления записи в state до момента ее удаления)
+Description:
+- time spent to complete the transfer from the moment of record is created in state until it's deletion
 
 **12.** **time_duration_transfer_stage_execution**\
-Тип: гистограмма; время выполнения этапов трансфера\
-Показатели:
-- channel - канал назначения channel-transfer
-- transferStatus - статус трансфера
+Type: bar chart; transfer stages execution duration\
+Indicators:
+- channel - channel-transfer's destination channel
+- transferStatus - transfer status
 
-Описание:
-- время, затраченное на выполнение каждого из этапов трансфера в разрезе каналов
+Description:
+- time spent on each stage of the transfer by channels

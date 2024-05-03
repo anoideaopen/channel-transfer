@@ -1,4 +1,4 @@
-# Описание компонентов системы
+# System components description
 
 ```mermaid
 flowchart TD
@@ -10,7 +10,7 @@ flowchart TD
     channelTransferService --> hlf 
 ```
 
-- [channel transfer chaincode API](channelTransferChaincodeAPI.md)
+- [channel transfer chaincode API](./chaincodeAPI.md)
 - [domain model](./domainModel.md)
 - [channel transfer API service](./channelTransferApiService.md)
 - [channel transfer service](./channelTransferService.md)

@@ -3,16 +3,16 @@ module github.com/anoideaopen/channel-transfer
 go 1.18
 
 require (
-	github.com/anoideaopen/cartridge v0.0.2
-	github.com/anoideaopen/common-component v0.0.2
+	github.com/anoideaopen/cartridge v0.0.3
+	github.com/anoideaopen/common-component v0.0.3
 	github.com/anoideaopen/foundation v0.0.0-20240412063944-9a91dc2600fa
-	github.com/anoideaopen/glog v0.0.1
+	github.com/anoideaopen/glog v0.0.2
 	github.com/avast/retry-go/v4 v4.3.3
 	github.com/felixge/httpsnoop v1.0.3
 	github.com/flowchartsman/swaggerui v0.0.0-20221017034628-909ed4f3701b
 	github.com/go-playground/validator/v10 v10.10.1
 	github.com/golang/protobuf v1.5.3
-	github.com/google/uuid v1.4.0
+	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.1.0
 	github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus v1.0.0-rc.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0
@@ -22,7 +22,7 @@ require (
 	github.com/redis/go-redis/v9 v9.0.4
 	github.com/slok/go-http-metrics v0.10.0
 	github.com/spf13/viper v1.15.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/sync v0.7.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20231106174013-bbf56f31fb17
