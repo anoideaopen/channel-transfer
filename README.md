@@ -1,5 +1,8 @@
 # Channel-transfer
 
+[![Go Verify Build](https://github.com/anoideaopen/channel-transfer/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/anoideaopen/channel-transfer/actions/workflows/go.yml)
+[![Security vulnerability scan](https://github.com/anoideaopen/channel-transfer/actions/workflows/vulnerability-scan.yml/badge.svg?branch=main)](https://github.com/anoideaopen/channel-transfer/actions/workflows/vulnerability-scan.yml)
+
 ## TOC
 - [Channel-transfer](#channel-transfer)
   - [TOC](#toc)
