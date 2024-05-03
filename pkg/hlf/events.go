@@ -89,7 +89,8 @@ func SubscribeEventBlock(ctx context.Context, channelProvider contextApi.Channel
 	}
 
 	if len(targetPeers) > 0 {
-		opts = append(opts, clientdispatcher.WithPeerResolver(func(_ service.Dispatcher, context contextApi.Client, channelID string, opts ...options.Opt) peerresolver.Resolver {
+		//nolint:revive
+		opts = append(opts, clientdispatcher.WithPeerResolver(func(ed service.Dispatcher, context contextApi.Client, channelID string, opts ...options.Opt) peerresolver.Resolver {
 			return NewTargetPeersResolver(targetPeers)
 		}))
 	}

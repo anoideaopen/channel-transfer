@@ -51,7 +51,7 @@ func (p *Parser) ExtractData(block *common.Block) (*model.BlockData, error) {
 	return res, nil
 }
 
-//nolint:gocognit
+//nolint:gocognit,funlen
 func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, error) {
 	tOperations := make([]model.Transaction, 0)
 	for txNum, tx := range txs {

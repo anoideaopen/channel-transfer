@@ -204,6 +204,7 @@ func (pool *Pool) blockchainHeight(key channelKey) (*uint64, error) {
 	return nil, ErrExecutorUndefined
 }
 
+//nolint:funlen
 func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvider) error {
 	blockNumber := uint64(startFromZero)
 	checkPointVersion := int64(0)
@@ -333,7 +334,7 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 	return nil
 }
 
-//nolint:gocognit
+//nolint:gocognit,funlen
 func (pool *Pool) updateBatchResponse(key channelKey, transactions []model.Transaction) error {
 	batchResponses := make(map[string]*proto.TxResponse)
 	transferIDs := make([]model.ID, 0, len(transactions))

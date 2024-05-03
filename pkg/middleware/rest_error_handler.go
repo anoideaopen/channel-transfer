@@ -18,11 +18,11 @@ import (
 func NewRESTErrorHandler(logger glog.Logger) runtime.ServeMuxOption {
 	return runtime.WithErrorHandler(
 		func(
-			_ context.Context,
-			_ *runtime.ServeMux,
-			_ runtime.Marshaler,
+			ctx context.Context, //nolint:revive
+			mux *runtime.ServeMux, //nolint:revive
+			marshaller runtime.Marshaler, //nolint:revive
 			writer http.ResponseWriter,
-			_ *http.Request,
+			request *http.Request, //nolint:revive
 			err error,
 		) {
 			if logger == nil {
@@ -81,6 +81,3 @@ func (el *emptyLogger) Warning(...interface{})          {}
 func (el *emptyLogger) Warningf(string, ...interface{}) {}
 func (el *emptyLogger) Error(...interface{})            {}
 func (el *emptyLogger) Errorf(string, ...interface{})   {}
-
-// func (el *emptyLogger) Panic(...interface{})            {}
-// func (el *emptyLogger) Panicf(string, ...interface{})   {}
