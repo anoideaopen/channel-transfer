@@ -183,7 +183,10 @@ func main() {
 	hc.Ready()
 
 	m := metrics.FromContext(ctx)
-	m.AppInitDuration().Set(time.Since(startTime).Seconds())
+	dur := time.Since(startTime)
+	m.AppInitDuration().Set(dur.Seconds())
+
+	log.Infof("Channel transfer started, time - %s\n", dur.String())
 
 	if err = eGroup.Wait(); err != nil {
 		log.Error(errors.WithStack(err))
