@@ -10,7 +10,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// Run grpc and http server
+// Execute - Run grpc and http server
 func Execute(ctx context.Context, group *errgroup.Group, cfg *config.ListenAPI, channels []string, output chan model.TransferRequest, storage *redis.Storage, grpcMetrics *grpcprom.ServerMetrics) error {
 	tlsConfig := cfg.TLSConfig()
 

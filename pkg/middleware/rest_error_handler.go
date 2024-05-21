@@ -18,11 +18,11 @@ import (
 func NewRESTErrorHandler(logger glog.Logger) runtime.ServeMuxOption {
 	return runtime.WithErrorHandler(
 		func(
-			ctx context.Context, //nolint:revive
-			mux *runtime.ServeMux, //nolint:revive
-			marshaller runtime.Marshaler, //nolint:revive
+			ctx context.Context,
+			mux *runtime.ServeMux,
+			marshaller runtime.Marshaler,
 			writer http.ResponseWriter,
-			request *http.Request, //nolint:revive
+			request *http.Request,
 			err error,
 		) {
 			if logger == nil {
@@ -43,7 +43,7 @@ func NewRESTErrorHandler(logger glog.Logger) runtime.ServeMuxOption {
 				reqErr.Message = s.String()
 			}
 
-			writer.WriteHeader(int(reqErr.Code))
+			writer.WriteHeader(int(reqErr.GetCode()))
 
 			buf, err := json.Marshal(&reqErr)
 			if err != nil {

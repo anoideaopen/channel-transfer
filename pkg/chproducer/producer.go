@@ -142,25 +142,25 @@ func (h *Handler) launcher(ctx context.Context, group *errgroup.Group) {
 
 	counter := 0
 	for _, ccTransfer := range ccTransfers {
-		if _, ok := h.inUsed.Load(ccTransfer.Id); ok {
+		if _, ok := h.inUsed.Load(ccTransfer.GetId()); ok {
 			continue
 		}
 
 		localTransfer := ccTransfer
-		h.inUsed.Store(localTransfer.Id, struct{}{})
+		h.inUsed.Store(localTransfer.GetId(), struct{}{})
 		if group.TryGo(
 			func() error {
-				defer h.inUsed.Delete(localTransfer.Id)
+				defer h.inUsed.Delete(localTransfer.GetId())
 
 				status, err := h.resolveStatus(ctx, localTransfer)
 				if err != nil {
-					h.log.Error(errors.Wrapf(err, "resolve transfer status %s", localTransfer.Id))
+					h.log.Error(errors.Wrapf(err, "resolve transfer status %s", localTransfer.GetId()))
 				}
-				h.restoreCompletedStatus(ctx, status, model.ID(localTransfer.Id))
+				h.restoreCompletedStatus(ctx, status, model.ID(localTransfer.GetId()))
 
 				err = h.transferProcessing(ctx, status, localTransfer, err)
 				if err != nil {
-					h.log.Error(errors.Wrapf(err, "transfer processing %s", localTransfer.Id))
+					h.log.Error(errors.Wrapf(err, "transfer processing %s", localTransfer.GetId()))
 				}
 
 				return nil
@@ -168,7 +168,7 @@ func (h *Handler) launcher(ctx context.Context, group *errgroup.Group) {
 		) {
 			counter++
 		} else {
-			h.inUsed.Delete(localTransfer.Id)
+			h.inUsed.Delete(localTransfer.GetId())
 		}
 	}
 
@@ -246,7 +246,9 @@ func (h *Handler) syncAPIRequests(ctx context.Context) {
 			fallthrough
 		case model.ErrorChannelToNotFound:
 			request.TransferResult.Status = proto.TransferStatusResponse_STATUS_ERROR.String()
-			request.TransferResult.Message = err.Error()
+			if err != nil {
+				request.TransferResult.Message = err.Error()
+			}
 		case model.CompletedTransferTo:
 			request.TransferResult.Status = proto.TransferStatusResponse_STATUS_COMPLETED.String()
 		case model.InternalErrorTransferStatus:
@@ -258,7 +260,7 @@ func (h *Handler) syncAPIRequests(ctx context.Context) {
 			continue
 		}
 
-		if err := h.requestStorage.TransferResultModify(ctx, request.Transfer, request.TransferResult); err != nil {
+		if err = h.requestStorage.TransferResultModify(ctx, request.Transfer, request.TransferResult); err != nil {
 			h.log.Errorf("transfer response status not saved : %s : %s", request.Transfer, err.Error())
 		}
 	}

@@ -47,16 +47,16 @@ func (h *Handler) queryChannelTransfers(ctx context.Context) ([]*fpb.CCTransfer,
 			return nil, err
 		}
 
-		for _, transfer := range data.Ccts {
-			if strings.ToLower(transfer.From) == h.channel {
+		for _, transfer := range data.GetCcts() {
+			if strings.ToLower(transfer.GetFrom()) == h.channel {
 				transfers = append(transfers, transfer)
 			}
 		}
 
-		if data.Bookmark == "" {
+		if data.GetBookmark() == "" {
 			break
 		}
-		bookmark = data.Bookmark
+		bookmark = data.GetBookmark()
 	}
 
 	return transfers, nil
@@ -118,7 +118,7 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 }
 
 func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer) (model.StatusKind, error) {
-	channelName := strings.ToLower(transfer.To)
+	channelName := strings.ToLower(transfer.GetTo())
 	if status, err := h.expandTO(ctx, channelName); err != nil {
 		return status, err
 	}

@@ -69,7 +69,7 @@ func (api *APIServer) TransferByCustomer(
 	if err != nil {
 		err = errors.Wrap(err, "parse transfer request")
 		return &dto.TransferStatusResponse{
-				IdTransfer: req.IdTransfer,
+				IdTransfer: req.GetIdTransfer(),
 				Status:     dto.TransferStatusResponse_STATUS_ERROR,
 				Message:    err.Error(),
 			}, status.Error(
@@ -108,7 +108,7 @@ func (api *APIServer) TransferByAdmin(
 	if err != nil {
 		err = errors.Wrap(err, "parse transfer request")
 		return &dto.TransferStatusResponse{
-				IdTransfer: req.IdTransfer,
+				IdTransfer: req.GetIdTransfer(),
 				Status:     dto.TransferStatusResponse_STATUS_ERROR,
 				Message:    err.Error(),
 			}, status.Error(
@@ -142,11 +142,11 @@ func (api *APIServer) TransferStatus(
 		return nil, ErrBadRequest
 	}
 
-	exclStatus, exclOk, err := extractExcludeStatus(req.Options)
+	exclStatus, exclOk, err := extractExcludeStatus(req.GetOptions())
 	if err != nil {
 		err = errors.Wrap(err, "define exclude option")
 		return &dto.TransferStatusResponse{
-				IdTransfer: req.IdTransfer,
+				IdTransfer: req.GetIdTransfer(),
 				Status:     dto.TransferStatusResponse_STATUS_ERROR,
 				Message:    err.Error(),
 			}, status.Error(
@@ -156,17 +156,17 @@ func (api *APIServer) TransferStatus(
 	}
 
 	for ctx.Err() == nil {
-		response, err := api.transferStatus(ctx, req.IdTransfer)
+		response, err := api.transferStatus(ctx, req.GetIdTransfer())
 		if err != nil {
 			return nil, err
 		}
-		if !exclOk || (exclOk && exclStatus != response.Status) {
+		if !exclOk || exclStatus != response.GetStatus() {
 			return response, nil
 		}
 	}
 
 	return &dto.TransferStatusResponse{
-		IdTransfer: req.IdTransfer,
+		IdTransfer: req.GetIdTransfer(),
 		Status:     dto.TransferStatusResponse_STATUS_UNDEFINED,
 		Message:    ctx.Err().Error(),
 	}, nil

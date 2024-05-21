@@ -65,7 +65,7 @@ func CreateCryptoManager(ctx context.Context, cfg *config.Config, hlfProfile *hl
 
 		return m, nil
 	case config.LocalCryptoSrc:
-		return nil, nil
+		return nil, nil //nolint:nilnil
 	default:
 		return nil, errors.Errorf("unknown crypto src in config %s (must be %s | %s | %s)", cfg.CryptoSrc,
 			config.LocalCryptoSrc,

@@ -34,7 +34,7 @@ func getStatus(pid string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(string(file)), nil
+	return string(file), nil
 }
 
 func restartService() error {
@@ -132,5 +132,5 @@ func getPID() (string, error) {
 		return "", err
 	}
 
-	return string(pid), nil
+	return pid, nil
 }

@@ -374,7 +374,7 @@ func (pool *Pool) updateBatchResponse(key channelKey, transactions []model.Trans
 					continue
 				}
 
-				if response.Error == nil {
+				if response.GetError() == nil {
 					continue
 				}
 
@@ -384,7 +384,7 @@ func (pool *Pool) updateBatchResponse(key channelKey, transactions []model.Trans
 					transferBlock.Transfer,
 					model.TransferResult{
 						Status:  proto2.TransferStatusResponse_STATUS_ERROR.String(),
-						Message: response.Error.GetError(),
+						Message: response.GetError().GetError(),
 					},
 				); err != nil {
 					pool.log.Errorf("transfer response status not saved : %s : %s", transferBlock.Transfer, err.Error())

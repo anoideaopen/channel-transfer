@@ -11,15 +11,15 @@ const BatchExecuteMethod = "batchExecute"
 func (p *Parser) extractBatchPreImageTxIDs(rwSets []prsRwSet) []string {
 	txIDs := make([]string, 0)
 	for _, rw := range rwSets {
-		for _, write := range rw.kvRWSet.Writes {
-			if !write.IsDelete {
+		for _, write := range rw.kvRWSet.GetWrites() {
+			if !write.GetIsDelete() {
 				continue
 			}
-			pos, ok := p.hasPrefix(write.Key, p.batchPrefix)
+			pos, ok := p.hasPrefix(write.GetKey(), p.batchPrefix)
 			if !ok {
 				continue
 			}
-			txIDs = append(txIDs, write.Key[pos:len(write.Key)-1])
+			txIDs = append(txIDs, write.GetKey()[pos:len(write.GetKey())-1])
 		}
 	}
 	return txIDs
@@ -38,7 +38,7 @@ func (p *Parser) hasPrefix(compositeID, prefix string) (int, bool) {
 }
 
 func (p *Parser) extractChaincodeArgs(input *peer.ChaincodeInput) (string, [][]byte) {
-	return string(input.Args[0]), input.Args
+	return string(input.GetArgs()[0]), input.GetArgs()
 }
 
 func (p *Parser) extractBatchResponse(payload []byte) (*fpb.BatchResponse, error) {

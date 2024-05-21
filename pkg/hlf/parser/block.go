@@ -20,35 +20,35 @@ type prsBlock struct {
 func fromFabricBlock(block *common.Block) (*prsBlock, error) {
 	metadata := &common.Metadata{}
 
-	if err := proto.Unmarshal(block.Metadata.Metadata[common.BlockMetadataIndex_SIGNATURES], metadata); err != nil {
+	if err := proto.Unmarshal(block.GetMetadata().GetMetadata()[common.BlockMetadataIndex_SIGNATURES], metadata); err != nil {
 		return nil, errors.Wrapf(err, "error unmarshaling metadata from block at index [%s]", common.BlockMetadataIndex_SIGNATURES)
 	}
 
 	envelope := &common.Envelope{}
-	if err := proto.Unmarshal(block.Data.Data[0], envelope); err != nil {
+	if err := proto.Unmarshal(block.GetData().GetData()[0], envelope); err != nil {
 		return nil, errors.Wrap(err, "unmarshal envelope error")
 	}
 
 	payload := &common.Payload{}
-	if err := proto.Unmarshal(envelope.Payload, payload); err != nil {
+	if err := proto.Unmarshal(envelope.GetPayload(), payload); err != nil {
 		return nil, errors.Wrap(err, "unmarshal payload error")
 	}
 
 	hdr := &common.ChannelHeader{}
-	if err := proto.Unmarshal(payload.Header.ChannelHeader, hdr); err != nil {
+	if err := proto.Unmarshal(payload.GetHeader().GetChannelHeader(), hdr); err != nil {
 		return nil, errors.Wrap(err, "unmarshal channel header error")
 	}
 
-	filter := block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER]
+	filter := block.GetMetadata().GetMetadata()[common.BlockMetadataIndex_TRANSACTIONS_FILTER]
 	if filter == nil {
-		filter = block.Metadata.Metadata[1] // for HLF 1.x compatibility
+		filter = block.GetMetadata().GetMetadata()[1] // for HLF 1.x compatibility
 	}
 
 	return &prsBlock{
-		data:      block.Data.Data,
-		number:    block.Header.Number,
+		data:      block.GetData().GetData(),
+		number:    block.GetHeader().GetNumber(),
 		txsFilter: filter,
-		isConfig:  common.HeaderType(hdr.Type) == common.HeaderType_CONFIG || common.HeaderType(hdr.Type) == common.HeaderType_ORDERER_TRANSACTION,
+		isConfig:  common.HeaderType(hdr.GetType()) == common.HeaderType_CONFIG || common.HeaderType(hdr.GetType()) == common.HeaderType_ORDERER_TRANSACTION,
 	}, nil
 }
 

@@ -36,7 +36,7 @@ func (tx *prsTx) payload() (*common.Payload, error) {
 	}
 
 	payload := &common.Payload{}
-	if err := proto.Unmarshal(envelope.Payload, payload); err != nil {
+	if err = proto.Unmarshal(envelope.GetPayload(), payload); err != nil {
 		return nil, errors.Wrap(err, "unmarshal payload error")
 	}
 	return payload, nil
@@ -49,7 +49,7 @@ func (tx *prsTx) channelHeader() (*common.ChannelHeader, error) {
 		return nil, err
 	}
 	chdr := &common.ChannelHeader{}
-	if err := proto.Unmarshal(payload.Header.ChannelHeader, chdr); err != nil {
+	if err = proto.Unmarshal(payload.GetHeader().GetChannelHeader(), chdr); err != nil {
 		return nil, errors.Wrap(err, "unmarshal channel header error")
 	}
 	return chdr, nil
@@ -69,7 +69,7 @@ func (tx *prsTx) peerTransaction() (*peer.Transaction, error) {
 		return nil, err
 	}
 	transaction := &peer.Transaction{}
-	if err := proto.Unmarshal(payload.Data, transaction); err != nil {
+	if err = proto.Unmarshal(payload.GetData(), transaction); err != nil {
 		return nil, errors.Wrap(err, "unmarshal transaction error")
 	}
 	return transaction, nil
@@ -81,10 +81,10 @@ func (tx *prsTx) getActions() ([]prsAction, error) {
 	if err != nil {
 		return nil, err
 	}
-	actions := make([]prsAction, 0, len(transaction.Actions))
-	for _, act := range transaction.Actions {
+	actions := make([]prsAction, 0, len(transaction.GetActions()))
+	for _, act := range transaction.GetActions() {
 		ccActionPayload := &peer.ChaincodeActionPayload{}
-		if err := proto.Unmarshal(act.Payload, ccActionPayload); err != nil {
+		if err = proto.Unmarshal(act.GetPayload(), ccActionPayload); err != nil {
 			return nil, errors.Wrap(err, "unmarshal chaincode action payload error")
 		}
 		actions = append(actions, prsAction{payload: ccActionPayload})

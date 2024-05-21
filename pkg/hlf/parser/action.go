@@ -22,7 +22,7 @@ type prsAction struct {
 // Concretely, for chaincodes, it contains a hashed representation of the proposal (proposalHash) and a representation of the chaincode state changes and events inside the extension field.
 func (a *prsAction) proposalResponsePayload() (*peer.ProposalResponsePayload, error) {
 	proposalResponsePayload := &peer.ProposalResponsePayload{}
-	if err := proto.Unmarshal(a.payload.Action.ProposalResponsePayload, proposalResponsePayload); err != nil {
+	if err := proto.Unmarshal(a.payload.GetAction().GetProposalResponsePayload(), proposalResponsePayload); err != nil {
 		return nil, errors.Wrap(err, "unmarshal proposal response payload error")
 	}
 	return proposalResponsePayload, nil
@@ -35,7 +35,7 @@ func (a *prsAction) chaincodeAction() (*peer.ChaincodeAction, error) {
 		return nil, err
 	}
 	chaincodeAction := &peer.ChaincodeAction{}
-	if err := proto.Unmarshal(proposalResponsePayload.Extension, chaincodeAction); err != nil {
+	if err = proto.Unmarshal(proposalResponsePayload.GetExtension(), chaincodeAction); err != nil {
 		return nil, errors.Wrap(err, "unmarshal chaincode action error")
 	}
 	return chaincodeAction, nil
@@ -49,13 +49,13 @@ func (a *prsAction) rwSets() ([]prsRwSet, error) {
 	}
 
 	txReadWriteSet := &rwset.TxReadWriteSet{}
-	if err := proto.Unmarshal(chaincodeAction.Results, txReadWriteSet); err != nil {
+	if err = proto.Unmarshal(chaincodeAction.GetResults(), txReadWriteSet); err != nil {
 		return nil, errors.Wrap(err, "unmarshal tx read-write set error")
 	}
 
-	result := make([]prsRwSet, len(txReadWriteSet.NsRwset))
-	for i, rwSet := range txReadWriteSet.NsRwset {
-		if err := proto.Unmarshal(rwSet.Rwset, &result[i].kvRWSet); err != nil {
+	result := make([]prsRwSet, len(txReadWriteSet.GetNsRwset()))
+	for i, rwSet := range txReadWriteSet.GetNsRwset() {
+		if err = proto.Unmarshal(rwSet.GetRwset(), &result[i].kvRWSet); err != nil {
 			return nil, errors.Wrap(err, "unmarshal kv read-write set error")
 		}
 	}
@@ -64,20 +64,20 @@ func (a *prsAction) rwSets() ([]prsRwSet, error) {
 
 func (p *Parser) extractorActionPayload(ccActionPayload *peer.ChaincodeActionPayload) (string, [][]byte, error) {
 	ccProposalPayload := &peer.ChaincodeProposalPayload{}
-	if err := proto.Unmarshal(ccActionPayload.ChaincodeProposalPayload, ccProposalPayload); err != nil {
+	if err := proto.Unmarshal(ccActionPayload.GetChaincodeProposalPayload(), ccProposalPayload); err != nil {
 		return "", nil, errors.Wrap(err, "deserialize ChaincodeProposalPayload")
 	}
 
 	input := &peer.ChaincodeInvocationSpec{}
-	if err := proto.Unmarshal(ccProposalPayload.Input, input); err != nil {
+	if err := proto.Unmarshal(ccProposalPayload.GetInput(), input); err != nil {
 		return "", nil, errors.Wrap(err, "deserialize ChaincodeInvocationSpec")
 	}
 
-	if input.ChaincodeSpec == nil || input.ChaincodeSpec.Input == nil {
+	if input.GetChaincodeSpec().GetInput() == nil {
 		return "", nil, nil
 	}
 
-	method, args := p.extractChaincodeArgs(input.ChaincodeSpec.Input)
+	method, args := p.extractChaincodeArgs(input.GetChaincodeSpec().GetInput())
 
 	return method, args, nil
 }

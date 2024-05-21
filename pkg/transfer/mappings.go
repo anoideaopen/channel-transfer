@@ -23,7 +23,7 @@ func dtoBeginAdminToModelTransferRequest(
 	in *dto.TransferBeginAdminRequest,
 	channels map[string]struct{},
 ) (model.TransferRequest, error) {
-	if in.Generals == nil {
+	if in.GetGenerals() == nil {
 		return model.TransferRequest{}, ErrBadRequest
 	}
 
@@ -32,18 +32,18 @@ func dtoBeginAdminToModelTransferRequest(
 	}
 
 	return model.TransferRequest{
-		Request:   model.ID(in.Generals.RequestId),
-		Method:    in.Generals.MethodName,
-		Chaincode: in.Generals.Chaincode,
-		Channel:   in.Generals.Channel,
-		Nonce:     in.Generals.Nonce,
-		PublicKey: in.Generals.PublicKey,
-		Sign:      in.Generals.Sign,
-		Transfer:  model.ID(in.IdTransfer),
-		To:        in.ChannelTo,
-		Token:     in.Token,
-		Amount:    in.Amount,
-		User:      model.ID(in.Address),
+		Request:   model.ID(in.GetGenerals().GetRequestId()),
+		Method:    in.GetGenerals().GetMethodName(),
+		Chaincode: in.GetGenerals().GetChaincode(),
+		Channel:   in.GetGenerals().GetChannel(),
+		Nonce:     in.GetGenerals().GetNonce(),
+		PublicKey: in.GetGenerals().GetPublicKey(),
+		Sign:      in.GetGenerals().GetSign(),
+		Transfer:  model.ID(in.GetIdTransfer()),
+		To:        in.GetChannelTo(),
+		Token:     in.GetToken(),
+		Amount:    in.GetAmount(),
+		User:      model.ID(in.GetAddress()),
 		TransferResult: model.TransferResult{
 			Status:  dto.TransferStatusResponse_STATUS_IN_PROCESS.String(),
 			Message: "",
@@ -55,7 +55,7 @@ func dtoBeginCustomerToModelTransferRequest(
 	in *dto.TransferBeginCustomerRequest,
 	channels map[string]struct{},
 ) (model.TransferRequest, error) {
-	if in.Generals == nil {
+	if in.GetGenerals() == nil {
 		return model.TransferRequest{}, ErrBadRequest
 	}
 
@@ -64,17 +64,17 @@ func dtoBeginCustomerToModelTransferRequest(
 	}
 
 	return model.TransferRequest{
-		Request:   model.ID(in.Generals.RequestId),
-		Method:    in.Generals.MethodName,
-		Chaincode: in.Generals.Chaincode,
-		Channel:   in.Generals.Channel,
-		Nonce:     in.Generals.Nonce,
-		PublicKey: in.Generals.PublicKey,
-		Sign:      in.Generals.Sign,
-		Transfer:  model.ID(in.IdTransfer),
-		To:        in.ChannelTo,
-		Token:     in.Token,
-		Amount:    in.Amount,
+		Request:   model.ID(in.GetGenerals().GetRequestId()),
+		Method:    in.GetGenerals().GetMethodName(),
+		Chaincode: in.GetGenerals().GetChaincode(),
+		Channel:   in.GetGenerals().GetChannel(),
+		Nonce:     in.GetGenerals().GetNonce(),
+		PublicKey: in.GetGenerals().GetPublicKey(),
+		Sign:      in.GetGenerals().GetSign(),
+		Transfer:  model.ID(in.GetIdTransfer()),
+		To:        in.GetChannelTo(),
+		Token:     in.GetToken(),
+		Amount:    in.GetAmount(),
 		TransferResult: model.TransferResult{
 			Status:  dto.TransferStatusResponse_STATUS_IN_PROCESS.String(),
 			Message: "",
@@ -120,7 +120,7 @@ func transferID(tx model.Transaction) model.ID {
 			if err := json.Unmarshal(tx.Args[1], &ccTransfer); err != nil {
 				return ""
 			}
-			return model.ID(ccTransfer.Id)
+			return model.ID(ccTransfer.GetId())
 		}
 		return ""
 	}
@@ -165,25 +165,26 @@ func BlockToRequest(block model.TransferBlock) (request model.TransferRequest) {
 }
 
 func checkGeneral(gp *dto.GeneralParams, actualChannels map[string]struct{}) error {
-	if gp.MethodName == "" {
+	if gp.GetMethodName() == "" {
 		return ErrMethod
 	}
-	if gp.MethodName != model.TxChannelTransferByAdmin.String() && gp.MethodName != model.TxChannelTransferByCustomer.String() {
+	if gp.GetMethodName() != model.TxChannelTransferByAdmin.String() &&
+		gp.GetMethodName() != model.TxChannelTransferByCustomer.String() {
 		return ErrUnknownMethod
 	}
-	if _, ok := actualChannels[gp.Channel]; !ok {
+	if _, ok := actualChannels[gp.GetChannel()]; !ok {
 		return ErrBadChannel
 	}
-	if gp.Chaincode == "" {
+	if gp.GetChaincode() == "" {
 		return ErrChaincode
 	}
-	if gp.Sign == "" {
+	if gp.GetSign() == "" {
 		return ErrSign
 	}
-	if gp.Nonce == "" {
+	if gp.GetNonce() == "" {
 		return ErrNonce
 	}
-	if gp.PublicKey == "" {
+	if gp.GetPublicKey() == "" {
 		return ErrPubKey
 	}
 
@@ -194,29 +195,29 @@ func checkAdminRequestTransfer(
 	tAdminRequest *dto.TransferBeginAdminRequest,
 	actualChannels map[string]struct{},
 ) error {
-	if err := checkGeneral(tAdminRequest.Generals, actualChannels); err != nil {
+	if err := checkGeneral(tAdminRequest.GetGenerals(), actualChannels); err != nil {
 		return err
 	}
-	if tAdminRequest.Address == "" {
+	if tAdminRequest.GetAddress() == "" {
 		return errors.New("address undefined")
 	}
-	if tAdminRequest.ChannelTo == "" {
+	if tAdminRequest.GetChannelTo() == "" {
 		return errors.New("channel TO undefined")
 	}
-	if tAdminRequest.Token == "" {
+	if tAdminRequest.GetToken() == "" {
 		return errors.New("token undefined")
 	}
-	if tAdminRequest.Amount == "" {
+	if tAdminRequest.GetAmount() == "" {
 		return errors.New("amount undefined")
 	}
-	if _, err := strconv.ParseInt(tAdminRequest.Amount, 10, 64); err != nil {
+	if _, err := strconv.ParseInt(tAdminRequest.GetAmount(), 10, 64); err != nil {
 		return errors.New("amount is not a number")
 	}
 
 	return verifyChannels(
-		tAdminRequest.Generals.Channel,
-		tAdminRequest.ChannelTo,
-		tAdminRequest.Token,
+		tAdminRequest.GetGenerals().GetChannel(),
+		tAdminRequest.GetChannelTo(),
+		tAdminRequest.GetToken(),
 	)
 }
 
@@ -224,26 +225,26 @@ func checkCustomerRequestTransfer(
 	tCustomerRequest *dto.TransferBeginCustomerRequest,
 	actualChannels map[string]struct{},
 ) error {
-	if err := checkGeneral(tCustomerRequest.Generals, actualChannels); err != nil {
+	if err := checkGeneral(tCustomerRequest.GetGenerals(), actualChannels); err != nil {
 		return err
 	}
-	if tCustomerRequest.ChannelTo == "" {
+	if tCustomerRequest.GetChannelTo() == "" {
 		return errors.New("channel TO undefined")
 	}
-	if tCustomerRequest.Token == "" {
+	if tCustomerRequest.GetToken() == "" {
 		return errors.New("token undefined")
 	}
-	if tCustomerRequest.Amount == "" {
+	if tCustomerRequest.GetAmount() == "" {
 		return errors.New("amount undefined")
 	}
-	if _, err := strconv.ParseInt(tCustomerRequest.Amount, 10, 64); err != nil {
+	if _, err := strconv.ParseInt(tCustomerRequest.GetAmount(), 10, 64); err != nil {
 		return errors.New("amount is not a number")
 	}
 
 	return verifyChannels(
-		tCustomerRequest.Generals.Channel,
-		tCustomerRequest.ChannelTo,
-		tCustomerRequest.Token,
+		tCustomerRequest.GetGenerals().GetChannel(),
+		tCustomerRequest.GetChannelTo(),
+		tCustomerRequest.GetToken(),
 	)
 }
 
@@ -281,7 +282,7 @@ func statusOption(option *typepb.Option) (dto.TransferStatusResponse_Status, boo
 	if option.GetName() != StatusOptionFilterName {
 		return dto.TransferStatusResponse_STATUS_UNDEFINED, false, nil
 	}
-	msg, err := option.Value.UnmarshalNew()
+	msg, err := option.GetValue().UnmarshalNew()
 	if err != nil {
 		return dto.TransferStatusResponse_STATUS_UNDEFINED,
 			false,

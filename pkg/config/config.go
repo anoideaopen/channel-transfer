@@ -3,7 +3,6 @@ package config
 import (
 	"crypto/tls"
 	"flag"
-	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -247,7 +246,7 @@ func setConfigFile() {
 		return
 	}
 	// 2. env
-	if p, ok := os.LookupEnv(fmt.Sprintf("%s_CONFIG", EnvPrefix)); ok {
+	if p, ok := os.LookupEnv(EnvPrefix + "_CONFIG"); ok {
 		viper.SetConfigFile(p)
 		return
 	}
