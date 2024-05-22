@@ -85,13 +85,13 @@ func (s *Storage) Search(
 	s.m.RLock()
 	defer s.m.RUnlock()
 
-	for path, data := range s.data {
-		if !strings.HasPrefix(path, s.pref(tmpl.Instance(), pref)) {
+	for p, d := range s.data {
+		if !strings.HasPrefix(p, s.pref(tmpl.Instance(), pref)) {
 			continue
 		}
 
 		clone := tmpl.Clone()
-		if err := clone.UnmarshalBinary(data); err != nil {
+		if err := clone.UnmarshalBinary(d); err != nil {
 			return nil, err
 		}
 

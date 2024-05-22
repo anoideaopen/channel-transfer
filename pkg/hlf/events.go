@@ -122,7 +122,7 @@ func (e *Events) UnsubscribeEventBlock() {
 		and don't block base program
 	*/
 	go func() {
-		for range e.blockEvents { //nolint:revive
+		for range e.blockEvents {
 		}
 	}()
 

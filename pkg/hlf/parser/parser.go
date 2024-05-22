@@ -65,7 +65,7 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 			return nil, errors.Wrap(err, "failed to get tx channel header")
 		}
 
-		if common.HeaderType(channelHeader.Type) != common.HeaderType_ENDORSER_TRANSACTION {
+		if common.HeaderType(channelHeader.GetType()) != common.HeaderType_ENDORSER_TRANSACTION {
 			continue
 		}
 
@@ -96,19 +96,19 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 
 			if method == BatchExecuteMethod {
 				for _, txID := range p.extractBatchPreImageTxIDs(rwSets) {
-					batchResponse, err := p.extractBatchResponse(chaincodeAction.Response.Payload)
+					batchResponse, err := p.extractBatchResponse(chaincodeAction.GetResponse().GetPayload())
 					if err != nil {
 						return nil, errors.Wrap(err, "failed to extract batchResponse from chaincodeAction response payload")
 					}
-					for _, tsResponse := range batchResponse.TxResponses {
-						if hex.EncodeToString(tsResponse.Id) == txID && new(model.TransactionKind).Is(tsResponse.Method) {
+					for _, tsResponse := range batchResponse.GetTxResponses() {
+						if hex.EncodeToString(tsResponse.GetId()) == txID && new(model.TransactionKind).Is(tsResponse.GetMethod()) {
 							tOperations = append(
 								tOperations,
 								model.Transaction{
 									Channel:        p.channel,
 									BlockNum:       blockNum,
 									TxID:           txID,
-									FuncName:       tsResponse.Method,
+									FuncName:       tsResponse.GetMethod(),
 									Args:           nil,
 									TimeNs:         0,
 									ValidationCode: tx.validationCode,
@@ -127,13 +127,13 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 				model.Transaction{
 					Channel:        p.channel,
 					BlockNum:       blockNum,
-					TxID:           channelHeader.TxId,
+					TxID:           channelHeader.GetTxId(),
 					FuncName:       method,
 					Args:           args,
-					TimeNs:         uint64(time.Unix(channelHeader.Timestamp.Seconds, int64(channelHeader.Timestamp.Nanos)).UnixNano()),
+					TimeNs:         uint64(time.Unix(channelHeader.GetTimestamp().GetSeconds(), int64(channelHeader.GetTimestamp().GetNanos())).UnixNano()),
 					ValidationCode: tx.validationCode,
 					BatchResponse:  nil,
-					Response:       chaincodeAction.Response,
+					Response:       chaincodeAction.GetResponse(),
 				},
 			)
 		}
