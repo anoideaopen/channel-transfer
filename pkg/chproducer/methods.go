@@ -296,15 +296,17 @@ func (h *Handler) fromBatchResponse(ctx context.Context, transferID string) (mod
 
 	var batchResponse *fpb.TxResponse
 	for _, transaction := range blocks.Transactions {
-		if transaction.FuncName != model.TxChannelTransferByCustomer.String() && transaction.FuncName != model.TxChannelTransferByAdmin.String() {
-			continue
+		if transaction.FuncName == model.TxChannelTransferByCustomer.String() ||
+			transaction.FuncName == model.TxChannelTransferByAdmin.String() {
+			batchResponse = transaction.BatchResponse
+			break
 		}
-		batchResponse = transaction.BatchResponse
 	}
 	if batchResponse == nil {
 		return model.InternalErrorTransferStatus, errors.New("batch FROM response not found")
 	}
-	if batchResponse.GetError() != nil && batchResponse.GetError().GetCode() != 0 {
+	if batchResponse.GetError().GetCode() != 0 ||
+		len(batchResponse.GetError().GetError()) == 0 {
 		// delete transfer
 		return model.ErrorTransferFrom, errors.New(batchResponse.GetError().GetError())
 	}
@@ -324,15 +326,16 @@ func (h *Handler) toBatchResponse(ctx context.Context, channelName string, trans
 
 	var batchResponse *fpb.TxResponse
 	for _, transaction := range blocks.Transactions {
-		if transaction.FuncName != model.TxCreateCCTransferTo.String() {
-			continue
+		if transaction.FuncName == model.TxCreateCCTransferTo.String() {
+			batchResponse = transaction.BatchResponse
+			break
 		}
-		batchResponse = transaction.BatchResponse
 	}
 	if batchResponse == nil {
 		return model.InternalErrorTransferStatus, errors.New("batch TO response not found")
 	}
-	if batchResponse.GetError() != nil && batchResponse.GetError().GetCode() != 0 {
+	if batchResponse.GetError().GetCode() != 0 ||
+		len(batchResponse.GetError().GetError()) == 0 {
 		// delete transfer
 		return model.ErrorTransferTo, errors.New(batchResponse.GetError().GetError())
 	}
