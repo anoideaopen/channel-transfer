@@ -1,7 +1,13 @@
 # Channel-transfer
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/anoideaopen/channel-transfer)](https://goreportcard.com/report/github.com/anoideaopen/channel-transfer)
+[![Go Reference](https://pkg.go.dev/badge/github.com/anoideaopen/channel-transfer.svg)](https://pkg.go.dev/github.com/anoideaopen/channel-transfer)
+![GitHub License](https://img.shields.io/github/license/anoideaopen/channel-transfer)
+
 [![Go Verify Build](https://github.com/anoideaopen/channel-transfer/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/anoideaopen/channel-transfer/actions/workflows/go.yml)
 [![Security vulnerability scan](https://github.com/anoideaopen/channel-transfer/actions/workflows/vulnerability-scan.yml/badge.svg?branch=main)](https://github.com/anoideaopen/channel-transfer/actions/workflows/vulnerability-scan.yml)
+![GitHub go.mod Go version (branch)](https://img.shields.io/github/go-mod/go-version/anoideaopen/channel-transfer/main)
+![GitHub Tag](https://img.shields.io/github/v/tag/anoideaopen/channel-transfer)
 
 ## TOC
 - [Channel-transfer](#channel-transfer)
