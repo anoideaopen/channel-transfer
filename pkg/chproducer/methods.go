@@ -306,7 +306,7 @@ func (h *Handler) fromBatchResponse(ctx context.Context, transferID string) (mod
 		return model.InternalErrorTransferStatus, errors.New("batch FROM response not found")
 	}
 	if batchResponse.GetError().GetCode() != 0 ||
-		len(batchResponse.GetError().GetError()) == 0 {
+		len(batchResponse.GetError().GetError()) != 0 {
 		// delete transfer
 		return model.ErrorTransferFrom, errors.New(batchResponse.GetError().GetError())
 	}
@@ -335,7 +335,7 @@ func (h *Handler) toBatchResponse(ctx context.Context, channelName string, trans
 		return model.InternalErrorTransferStatus, errors.New("batch TO response not found")
 	}
 	if batchResponse.GetError().GetCode() != 0 ||
-		len(batchResponse.GetError().GetError()) == 0 {
+		len(batchResponse.GetError().GetError()) != 0 {
 		// delete transfer
 		return model.ErrorTransferTo, errors.New(batchResponse.GetError().GetError())
 	}
