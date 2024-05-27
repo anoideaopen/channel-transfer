@@ -17,7 +17,7 @@ permissions:
 jobs:
   build-and-push-docker-images:
     name: Build and Push
-    runs-on: fabric-ubuntu-20.04
+    runs-on: 'ubuntu-20.04'
 
     permissions:
       contents: read
