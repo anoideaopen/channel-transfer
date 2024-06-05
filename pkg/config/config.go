@@ -13,12 +13,9 @@ import (
 )
 
 const (
-	EnvPrefix                       = "CHANNEL_TRANSFER"
-	sensitiveDataMask               = "****"
-	LocalCryptoSrc        CryptoSrc = "local"
-	VaultCryptoSrc        CryptoSrc = "vault"
-	GoogleCryptoSrc       CryptoSrc = "google"
-	defaultConfigFilePath           = "config.yaml"
+	EnvPrefix             = "CHANNEL_TRANSFER"
+	sensitiveDataMask     = "****"
+	defaultConfigFilePath = "config.yaml"
 )
 
 type Config struct {
@@ -31,11 +28,6 @@ type Config struct {
 	RedisStorage *RedisStorage `mapstructure:"redisStorage" validate:"required"`
 	Service      *Service      `mapstructure:"service" validate:"required"`
 	PromMetrics  *PromMetrics  `mapstructure:"promMetrics"`
-
-	// can be local, vault, google
-	CryptoSrc            CryptoSrc             `mapstructure:"cryptoSrc" validate:"required"`
-	VaultCryptoSettings  *VaultCryptoSettings  `mapstructure:"vaultCryptoSettings"`
-	GoogleCryptoSettings *GoogleCryptoSettings `mapstructure:"googleCryptoSettings"`
 
 	Channels []string `mapstructure:"channels" validate:"required"`
 
@@ -56,25 +48,6 @@ func (api *ListenAPI) TLSConfig() *tls.Config {
 
 type PromMetrics struct {
 	PrefixForMetrics string `mapstructure:"prefix"`
-}
-
-type CryptoSrc string
-
-type VaultCryptoSettings struct {
-	VaultToken              string `mapstructure:"vaultToken"`
-	UseRenewableVaultTokens bool   `mapstructure:"useRenewableVaultTokens"`
-	VaultAddress            string `mapstructure:"vaultAddress"`
-	VaultAuthPath           string `mapstructure:"vaultAuthPath"`
-	VaultRole               string `mapstructure:"vaultRole"`
-	VaultServiceTokenPath   string `mapstructure:"vaultServiceTokenPath"`
-	VaultNamespace          string `mapstructure:"vaultNamespace"`
-	UserCert                string `mapstructure:"userCert"`
-}
-
-type GoogleCryptoSettings struct {
-	GcloudProject string `mapstructure:"gcloudProject"`
-	GcloudCreds   string `mapstructure:"gcloudCreds"`
-	UserCert      string `mapstructure:"userCert"`
 }
 
 type Options struct {
@@ -209,20 +182,6 @@ func validateConfig(cfg *Config) error {
 		return errors.WithStack(err)
 	}
 
-	if cfg.CryptoSrc != LocalCryptoSrc &&
-		cfg.CryptoSrc != GoogleCryptoSrc &&
-		cfg.CryptoSrc != VaultCryptoSrc {
-		return errors.Errorf("unknown crypto manager kind: %v", cfg.CryptoSrc)
-	}
-
-	if cfg.CryptoSrc == GoogleCryptoSrc && cfg.GoogleCryptoSettings == nil {
-		return errors.New("googleCryptoSettings are empty")
-	}
-
-	if cfg.CryptoSrc == VaultCryptoSrc && cfg.VaultCryptoSettings == nil {
-		return errors.New("vaultCryptoSettings are empty")
-	}
-
 	if _, err = cfg.RedisStorage.EffAfterTransferTTL(*cfg.RedisStorage); err != nil {
 		return errors.WithStack(err)
 	}
@@ -295,17 +254,14 @@ func getConfigPathFromParams() (string, bool) {
 // WithoutSensitiveData returns copy of config with empty sensitive data. This config might be used for trace logging.
 func (c Config) WithoutSensitiveData() Config {
 	return Config{
-		LogLevel:             c.LogLevel,
-		LogType:              c.LogType,
-		ProfilePath:          c.ProfilePath,
-		UserName:             c.UserName,
-		RedisStorage:         c.RedisStorage.withoutSensitiveData(),
-		CryptoSrc:            c.CryptoSrc,
-		VaultCryptoSettings:  c.VaultCryptoSettings.withoutSensitiveData(),
-		GoogleCryptoSettings: c.GoogleCryptoSettings.withoutSensitiveData(),
-		PromMetrics:          c.PromMetrics,
-		Channels:             c.Channels,
-		Options:              c.Options.withoutSensitiveData(),
+		LogLevel:     c.LogLevel,
+		LogType:      c.LogType,
+		ProfilePath:  c.ProfilePath,
+		UserName:     c.UserName,
+		RedisStorage: c.RedisStorage.withoutSensitiveData(),
+		PromMetrics:  c.PromMetrics,
+		Channels:     c.Channels,
+		Options:      c.Options.withoutSensitiveData(),
 	}
 }
 
@@ -330,33 +286,6 @@ func (rs *RedisStorage) withoutSensitiveData() *RedisStorage {
 		TLSHostnameOverride: sensitiveDataMask,
 		ClientCert:          sensitiveDataMask,
 		ClientKey:           sensitiveDataMask,
-	}
-}
-
-func (s *VaultCryptoSettings) withoutSensitiveData() *VaultCryptoSettings {
-	if s == nil {
-		return nil
-	}
-	return &VaultCryptoSettings{
-		VaultToken:              sensitiveDataMask,
-		UseRenewableVaultTokens: s.UseRenewableVaultTokens,
-		VaultAddress:            s.VaultAddress,
-		VaultAuthPath:           s.VaultAuthPath,
-		VaultRole:               sensitiveDataMask,
-		VaultServiceTokenPath:   sensitiveDataMask,
-		VaultNamespace:          sensitiveDataMask,
-		UserCert:                sensitiveDataMask,
-	}
-}
-
-func (s *GoogleCryptoSettings) withoutSensitiveData() *GoogleCryptoSettings {
-	if s == nil {
-		return nil
-	}
-	return &GoogleCryptoSettings{
-		GcloudProject: sensitiveDataMask,
-		GcloudCreds:   sensitiveDataMask,
-		UserCert:      sensitiveDataMask,
 	}
 }
 

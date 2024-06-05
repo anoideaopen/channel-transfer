@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/anoideaopen/cartridge/manager"
 	"github.com/anoideaopen/channel-transfer/pkg/config"
 	"github.com/anoideaopen/channel-transfer/pkg/data"
 	"github.com/anoideaopen/channel-transfer/pkg/data/redis"
@@ -32,7 +31,6 @@ type Pool struct {
 	hlfProfile     hlfprofile.HlfProfile
 	opts           config.Options
 	additiveToTTL  time.Duration
-	cryptoManager  manager.Manager
 	blocKStorage   *transfer.LedgerBlock
 	checkPoint     *transfer.BlockCheckpoint
 	requestStorage *transfer.Request
@@ -53,7 +51,6 @@ func NewPool(
 	opts config.Options,
 	profilePath string,
 	profile hlfprofile.HlfProfile,
-	cryptoManager manager.Manager,
 	storage *redis.Storage,
 ) (*Pool, error) {
 	log := glog.FromContext(ctx).With(logger.Labels{Component: logger.ComponentHLFStreamsPool}.Fields()...)
@@ -65,7 +62,6 @@ func NewPool(
 		userName:       userName,
 		opts:           opts,
 		hlfProfile:     profile,
-		cryptoManager:  cryptoManager,
 		blocKStorage:   transfer.NewLedgerBlock(storage),
 		checkPoint:     transfer.NewBlockCheckpoint(storage),
 		requestStorage: transfer.NewRequest(storage),
@@ -75,7 +71,7 @@ func NewPool(
 	}
 
 	var err error
-	pool.fabricSDK, err = createFabricSDK(profilePath, cryptoManager)
+	pool.fabricSDK, err = createFabricSDK(profilePath)
 	if err != nil {
 		return nil, errorshlp.WrapWithDetails(errors.Wrap(err, "create connection to fabric"), nerrors.ErrTypeHlf, nerrors.ComponentHLFStreamsPool)
 	}
@@ -86,7 +82,7 @@ func NewPool(
 	}
 
 	for _, channel := range channels {
-		channelProvider := createChannelProvider(channel, userName, profile.OrgName, cryptoManager, pool.fabricSDK)
+		channelProvider := createChannelProvider(channel, userName, profile.OrgName, pool.fabricSDK)
 		err = pool.createExecutor(ctx, channel, channelProvider)
 		if err != nil {
 			return nil, errorshlp.WrapWithDetails(errors.Wrap(err, "create executor"), nerrors.ErrTypeHlf, nerrors.ComponentHLFStreamsPool)
@@ -175,7 +171,7 @@ func (pool *Pool) Expand(ctx context.Context, channel string) error {
 		return nil
 	}
 
-	channelProvider := createChannelProvider(channel, pool.userName, pool.hlfProfile.OrgName, pool.cryptoManager, pool.fabricSDK)
+	channelProvider := createChannelProvider(channel, pool.userName, pool.hlfProfile.OrgName, pool.fabricSDK)
 
 	err := pool.createExecutor(ctx, channel, channelProvider)
 	if err != nil {
