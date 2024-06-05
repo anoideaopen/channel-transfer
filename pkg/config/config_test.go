@@ -20,8 +20,6 @@ func TestGetConfigSimple(t *testing.T) {
 	require.Equal(t, "info", c.LogLevel)
 
 	require.Len(t, c.Channels, 3)
-
-	require.EqualValues(t, c.CryptoSrc, LocalCryptoSrc)
 }
 
 func TestGetConfigOverrideEnv(t *testing.T) {

@@ -17,7 +17,6 @@ import (
 	redis2 "github.com/anoideaopen/channel-transfer/pkg/data/redis"
 	"github.com/anoideaopen/channel-transfer/pkg/demultiplexer"
 	"github.com/anoideaopen/channel-transfer/pkg/hlf"
-	"github.com/anoideaopen/channel-transfer/pkg/hlf/crypto"
 	"github.com/anoideaopen/channel-transfer/pkg/hlf/hlfprofile"
 	"github.com/anoideaopen/channel-transfer/pkg/logger"
 	"github.com/anoideaopen/channel-transfer/pkg/metrics"
@@ -107,11 +106,6 @@ func main() {
 		serviceHandlers...,
 	)
 
-	cryptoManager, err := crypto.CreateCryptoManager(ctx, cfg, hlfProfile)
-	if err != nil {
-		panic(fmt.Sprintf("crypto manager: %+v", err))
-	}
-
 	storage, err := redis2.NewStorage(
 		redis3.NewUniversalClient(
 			&redis3.UniversalOptions{
@@ -136,7 +130,7 @@ func main() {
 		panic(fmt.Sprintf("demultiplexer: %+v", err))
 	}
 
-	pool, err := hlf.NewPool(ctx, cfg.Channels, cfg.UserName, cfg.Options, cfg.ProfilePath, *hlfProfile, cryptoManager, storage)
+	pool, err := hlf.NewPool(ctx, cfg.Channels, cfg.UserName, cfg.Options, cfg.ProfilePath, *hlfProfile, storage)
 	if err != nil {
 		panic(fmt.Sprintf("pool: %+v", err))
 	}

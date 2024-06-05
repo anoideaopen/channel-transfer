@@ -14,15 +14,14 @@ service:
 
 options:
   batchTxPreimagePrefix: batchTransactions
-  collectorsBufSize: 1
-  executeTimeout: 2s
-  retryExecuteAttempts: 5
-  retryExecuteMaxDelay: 2s
-  waitCommitAttempts: 3
-  waitCommitAttemptTimeout: 15s
-  ttl: 10800s
-  transfersInHandleOnChannel: 50
-  newestRequestStreamBufferSize: 50
+  collectorsBufSize: 1 # buffer size of blockData
+  executeTimeout: 0s # timeout of invoke HLF SDK method
+  retryExecuteAttempts: 3 # number of attempts querying the HLF
+  retryExecuteMaxDelay: 2s # delay between attempts querying the HLF
+  retryExecuteDelay: 500ms # delay between attempts querying the HLF
+  ttl: 10800s # time to live of transfer
+  transfersInHandleOnChannel: 50 # the number of transfers currently being processed in the channel
+  newestRequestStreamBufferSize: 50 # size of the request buffer of creating transfers
 
 channels:
   - fiat
