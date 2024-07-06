@@ -143,7 +143,7 @@ func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer
 		[]channel.RequestOption{},
 	)
 	if err != nil {
-		return model.ErrorTransferTo, errors.Wrap(err, model.TxCreateCCTransferTo.String())
+		return model.InternalErrorTransferStatus, errors.Wrap(err, model.TxCreateCCTransferTo.String())
 	}
 
 	return model.InProgressTransferTo, nil

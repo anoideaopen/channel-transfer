@@ -12,10 +12,20 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/channel-transfer/proto"
 	fpb "github.com/anoideaopen/foundation/proto"
+	"github.com/avast/retry-go/v4"
 	"github.com/pkg/errors"
 )
 
-const repeatAttempt = 3
+const (
+	repeatAttempt   = 5
+	sleepAttempt    = 200 * time.Millisecond
+	maxSleepAttempt = 500 * time.Millisecond
+)
+
+var (
+	errBatchToNotFound   = errors.New("batch TO response not found")
+	errBatchFromNotFound = errors.New("batch FROM response not found")
+)
 
 type failureTag string
 
@@ -285,26 +295,46 @@ func (h *Handler) expiredTransfer(transfer *fpb.CCTransfer) bool {
 }
 
 func (h *Handler) fromBatchResponse(ctx context.Context, transferID string) (model.StatusKind, error) {
-	blocks, err := h.responseWithAttempt(ctx, h.channel, transferID)
-	if err != nil {
-		err = errors.Wrap(err, "batch FROM")
-		if strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
-			return model.FromBatchNotFound, err
+	var (
+		batchResponse *fpb.TxResponse
+		m             model.StatusKind
+	)
+
+	err := retry.Do(func() error {
+		blocks, err := h.responseWithAttempt(ctx, h.channel, transferID)
+		if err != nil {
+			err = errors.Wrap(err, "batch FROM")
+			if strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
+				m = model.FromBatchNotFound
+				return err
+			}
+			m = model.InternalErrorTransferStatus
+			return err
 		}
-		return model.InternalErrorTransferStatus, err
+
+		for _, transaction := range blocks.Transactions {
+			if transaction.FuncName == model.TxChannelTransferByCustomer.String() ||
+				transaction.FuncName == model.TxChannelTransferByAdmin.String() {
+				batchResponse = transaction.BatchResponse
+				return nil
+			}
+		}
+
+		return errBatchFromNotFound
+	},
+		retry.LastErrorOnly(true),
+		retry.Attempts(repeatAttempt),
+		retry.Delay(sleepAttempt),
+		retry.MaxDelay(maxSleepAttempt),
+		retry.Context(ctx),
+	)
+	if err != nil {
+		if errors.Is(err, errBatchFromNotFound) && batchResponse == nil {
+			return model.InternalErrorTransferStatus, errBatchFromNotFound
+		}
+		return m, err
 	}
 
-	var batchResponse *fpb.TxResponse
-	for _, transaction := range blocks.Transactions {
-		if transaction.FuncName == model.TxChannelTransferByCustomer.String() ||
-			transaction.FuncName == model.TxChannelTransferByAdmin.String() {
-			batchResponse = transaction.BatchResponse
-			break
-		}
-	}
-	if batchResponse == nil {
-		return model.InternalErrorTransferStatus, errors.New("batch FROM response not found")
-	}
 	if batchResponse.GetError().GetCode() != 0 ||
 		len(batchResponse.GetError().GetError()) != 0 {
 		// delete transfer
@@ -315,50 +345,84 @@ func (h *Handler) fromBatchResponse(ctx context.Context, transferID string) (mod
 }
 
 func (h *Handler) toBatchResponse(ctx context.Context, channelName string, transferID string) (model.StatusKind, error) {
-	blocks, err := h.responseWithAttempt(ctx, channelName, transferID)
+	var (
+		batchResponse *fpb.TxResponse
+		m             model.StatusKind
+	)
+
+	err := retry.Do(func() error {
+		blocks, err := h.responseWithAttempt(ctx, channelName, transferID)
+		h.log.Debugf("find batchResponse in toBatchResponse: %s; error: %v", transferID, err)
+		if err != nil {
+			err = errors.Wrap(err, "batch TO")
+			if strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
+				m = model.ToBatchNotFound
+				return err
+			}
+			m = model.InternalErrorTransferStatus
+			return err
+		}
+
+		for _, transaction := range blocks.Transactions {
+			if transaction.FuncName == model.TxCreateCCTransferTo.String() {
+				batchResponse = transaction.BatchResponse
+				return nil
+			}
+		}
+
+		return errBatchToNotFound
+	},
+		retry.LastErrorOnly(true),
+		retry.Attempts(repeatAttempt),
+		retry.Delay(sleepAttempt),
+		retry.MaxDelay(maxSleepAttempt),
+		retry.Context(ctx),
+	)
 	if err != nil {
-		err = errors.Wrap(err, "batch TO")
-		if strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
-			return model.FromBatchNotFound, err
+		if errors.Is(err, errBatchToNotFound) && batchResponse == nil {
+			return model.InternalErrorTransferStatus, errBatchToNotFound
 		}
-		return model.InternalErrorTransferStatus, err
+		return m, err
 	}
 
-	var batchResponse *fpb.TxResponse
-	for _, transaction := range blocks.Transactions {
-		if transaction.FuncName == model.TxCreateCCTransferTo.String() {
-			batchResponse = transaction.BatchResponse
-			break
-		}
+	if batchResponse.GetError().GetCode() == 0 &&
+		len(batchResponse.GetError().GetError()) == 0 {
+		return model.CompletedTransferTo, nil
 	}
-	if batchResponse == nil {
-		return model.InternalErrorTransferStatus, errors.New("batch TO response not found")
-	}
-	if batchResponse.GetError().GetCode() != 0 ||
-		len(batchResponse.GetError().GetError()) != 0 {
-		// delete transfer
-		return model.ErrorTransferTo, errors.New(batchResponse.GetError().GetError())
+	if batchResponse.GetError().GetError() == "id transfer already exists" {
+		return model.CompletedTransferTo, nil
 	}
 
-	return model.CompletedTransferTo, nil
+	// delete transfer
+	return model.ErrorTransferTo, errors.New(batchResponse.GetError().GetError())
 }
 
-func (h *Handler) responseWithAttempt(ctx context.Context, channel string, transferID string) (blocks model.TransferBlock, err error) {
-	for attempt := range repeatAttempt {
-		blocks, err = h.blockStorage.BlockLoad(ctx, h.blockStorage.Key(model.ID(channel), model.ID(transferID)))
+func (h *Handler) responseWithAttempt(ctx context.Context, channel string, transferID string) (model.TransferBlock, error) {
+	var resp model.TransferBlock
+	err := retry.Do(func() error {
+		blocks, err := h.blockStorage.BlockLoad(ctx, h.blockStorage.Key(model.ID(channel), model.ID(transferID)))
+		h.log.Debugf("block load in responseWithAttempt: %s; error: %v", transferID, err)
 		if err != nil {
-			if strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
-				if attempt+1 < repeatAttempt {
-					time.Sleep(h.execTimeout)
-					continue
-				}
-				err = data.ErrObjectNotFound
-			}
-			return model.TransferBlock{}, err
+			resp = model.TransferBlock{}
+			return err
 		}
-		return
-	}
-	return
+		resp = blocks
+		return nil
+	},
+		retry.LastErrorOnly(true),
+		retry.Attempts(repeatAttempt),
+		retry.Delay(sleepAttempt),
+		retry.MaxDelay(maxSleepAttempt),
+		retry.RetryIf(func(err error) bool {
+			if err == nil {
+				return false
+			}
+			return strings.Contains(err.Error(), data.ErrObjectNotFound.Error())
+		}),
+		retry.Context(ctx),
+	)
+
+	return resp, err
 }
 
 func (h *Handler) expandTO(ctx context.Context, channelTO string) (model.StatusKind, error) {

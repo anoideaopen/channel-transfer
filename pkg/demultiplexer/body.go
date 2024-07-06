@@ -81,13 +81,16 @@ func (dm *Demultiplexer) specifyChannel(key chKey) chan model.TransferRequest {
 		return channel
 	}
 
+	dm.mutex.Lock()
+	defer dm.mutex.Unlock()
+	channel, ok = dm.channels[key]
+	if ok {
+		return channel
+	}
+
 	// subscribe
 	channel = make(chan model.TransferRequest, dm.chanBuffer)
-
-	dm.mutex.Lock()
 	dm.channels[key] = channel
-	dm.mutex.Unlock()
-
 	dm.log.Infof("subscribe to request channel %s", string(key))
 
 	return channel
@@ -95,17 +98,22 @@ func (dm *Demultiplexer) specifyChannel(key chKey) chan model.TransferRequest {
 
 func (dm *Demultiplexer) unSubscribe(key chKey) {
 	dm.mutex.RLock()
-	channel, ok := dm.channels[key]
+	_, ok := dm.channels[key]
 	dm.mutex.RUnlock()
-	if ok {
-		close(channel)
-
-		dm.mutex.Lock()
-		delete(dm.channels, key)
-		dm.mutex.Unlock()
-
-		dm.log.Infof("unsubscribed of request channel %s", string(key))
+	if !ok {
+		return
 	}
+
+	dm.mutex.Lock()
+	defer dm.mutex.Unlock()
+	channel, ok := dm.channels[key]
+	if !ok {
+		return
+	}
+
+	close(channel)
+	delete(dm.channels, key)
+	dm.log.Infof("unsubscribed of request channel %s", string(key))
 }
 
 func (dm *Demultiplexer) Stream(chName string) <-chan model.TransferRequest {

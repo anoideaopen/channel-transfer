@@ -56,14 +56,12 @@ type Handler struct {
 	newest          <-chan model.TransferRequest // incoming api request
 	inUsed          sync.Map
 	launcherInWork  atomic.Bool
-	execTimeout     time.Duration
 }
 
 func NewHandler(
 	ctx context.Context,
 	chName string,
 	ttl time.Duration,
-	execTimeout time.Duration,
 	activeTransfers uint,
 	storage *redis.Storage,
 	poolController PoolController,
@@ -86,7 +84,6 @@ func NewHandler(
 		log:             log,
 		m:               m,
 		newest:          newest,
-		execTimeout:     execTimeout,
 	}
 
 	h.chaincodeID = h.channel
@@ -109,6 +106,8 @@ func (h *Handler) Exec(ctx context.Context) error {
 
 	h.syncAPIRequests(ctx)
 
+	newReady := make(chan struct{}, 1)
+
 	for ctx.Err() == nil {
 		select {
 		case <-ctx.Done():
@@ -119,8 +118,15 @@ func (h *Handler) Exec(ctx context.Context) error {
 			}
 			go func() {
 				h.createTransfer(gCtx, request)
+				select {
+				case newReady <- struct{}{}:
+				default:
+				}
 			}()
 		case <-ticker.C:
+			go h.launcher(gCtx, group)
+		case <-newReady:
+			time.Sleep(500 * time.Millisecond)
 			go h.launcher(gCtx, group)
 		}
 	}
@@ -188,14 +194,13 @@ func (h *Handler) createTransfer(ctx context.Context, request model.TransferRequ
 	switch status {
 	case model.InProgressTransferFrom:
 		request.Status = proto.TransferStatusResponse_STATUS_IN_PROCESS.String()
-	case model.ErrorTransferFrom:
-		fallthrough
-	case model.InternalErrorTransferStatus:
+	case model.ErrorTransferFrom, model.InternalErrorTransferStatus:
 		request.Status = proto.TransferStatusResponse_STATUS_ERROR.String()
 	default:
 		request.Status = proto.TransferStatusResponse_STATUS_UNDEFINED.String()
 	}
 
+	h.log.Debugf("transfer modify: %s", request.Transfer)
 	if err = h.requestStorage.TransferResultModify(
 		ctx,
 		request.Transfer,
@@ -240,11 +245,7 @@ func (h *Handler) syncAPIRequests(ctx context.Context) {
 		}
 
 		switch status {
-		case model.ToBatchNotFound:
-			fallthrough
-		case model.ErrorTransferTo:
-			fallthrough
-		case model.ErrorChannelToNotFound:
+		case model.ToBatchNotFound, model.ErrorTransferTo, model.ErrorChannelToNotFound:
 			request.TransferResult.Status = proto.TransferStatusResponse_STATUS_ERROR.String()
 			if err != nil {
 				request.TransferResult.Message = err.Error()

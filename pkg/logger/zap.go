@@ -1,6 +1,8 @@
 package logger
 
 import (
+	"maps"
+	"sort"
 	"syscall"
 	"time"
 
@@ -16,19 +18,35 @@ const (
 )
 
 type sugaredLogger struct {
-	sugar *zap.SugaredLogger
+	sugar  *zap.SugaredLogger
+	fields map[string]interface{}
+	cfg    zap.Config
 }
 
-func (sl *sugaredLogger) Set(...glog.Field) {
+func (sl *sugaredLogger) Set(fields ...glog.Field) {
+	for _, field := range fields {
+		sl.fields[field.K] = field.V
+	}
+
+	args := mapToArgs(sl.fields)
+	zLogger, _ := sl.cfg.Build(zap.AddCaller(), zap.AddCallerSkip(1))
+	sl.sugar = zLogger.Sugar().With(args...)
 }
 
 func (sl *sugaredLogger) With(fields ...glog.Field) glog.Logger {
-	args := make([]interface{}, 0, len(fields)*2) //nolint:gomnd
+	fl := maps.Clone(sl.fields)
 	for _, field := range fields {
-		args = append(args, field.K)
-		args = append(args, field.V)
+		fl[field.K] = field.V
 	}
-	return &sugaredLogger{sugar: sl.sugar.With(args...)}
+
+	args := mapToArgs(fl)
+	zLogger, _ := sl.cfg.Build(zap.AddCaller(), zap.AddCallerSkip(1))
+
+	return &sugaredLogger{
+		sugar:  zLogger.Sugar().With(args...),
+		fields: fl,
+		cfg:    sl.cfg,
+	}
 }
 
 func (sl *sugaredLogger) Trace(...interface{}) {
@@ -103,7 +121,11 @@ func newSugarLogger(outputEncoding string, level string) (*sugaredLogger, error)
 		return nil, err
 	}
 
-	return &sugaredLogger{sugar: zLogger.Sugar()}, nil
+	return &sugaredLogger{
+		sugar:  zLogger.Sugar(),
+		fields: make(map[string]interface{}),
+		cfg:    cfg,
+	}, nil
 }
 
 type SyncLoggerMethod = func() error
@@ -132,4 +154,20 @@ func (sl *sugaredLogger) Flush() error {
 		return err
 	}
 	return nil
+}
+
+func mapToArgs(fields map[string]interface{}) []interface{} {
+	sortKeys := make([]string, 0, len(fields))
+	for k := range fields {
+		sortKeys = append(sortKeys, k)
+	}
+	sort.Strings(sortKeys)
+
+	args := make([]interface{}, 0, len(sortKeys)*2) //nolint:gomnd
+	for _, k := range sortKeys {
+		args = append(args, k)
+		args = append(args, fields[k])
+	}
+
+	return args
 }

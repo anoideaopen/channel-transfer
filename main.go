@@ -161,7 +161,6 @@ func main() {
 				ctx,
 				chName,
 				*cfg.Options.TTL,
-				*cfg.Options.ExecuteTimeout,
 				cfg.Options.TransfersInHandleOnChannel,
 				storage,
 				pool,
