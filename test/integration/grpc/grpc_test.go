@@ -330,6 +330,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 			fabricnetwork.CheckResult(fabricnetwork.CheckBalance("250"), nil),
 			"allowedBalanceOf", user.AddressBase58Check, "FIAT")
 	})
+
 	It("transfer by customer test", func() {
 		By("creating grpc connection")
 		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
@@ -668,4 +669,5 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 		_, err = apiClient.TransferStatus(clientCtx, transferStatusRequest)
 		Expect(err).To(MatchError(ContainSubstring("exclude status not found")))
 	})
+
 })
