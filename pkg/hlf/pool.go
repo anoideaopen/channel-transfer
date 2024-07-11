@@ -249,6 +249,7 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 			if !ok {
 				return errors.Wrapf(fmt.Errorf("hasCollector of chan %s closed", string(key)), "get hasCollector data")
 			}
+			pool.log.Debugf("store block: %d", block.BlockNum)
 			if err = pool.storeTransfer(key, *block); err != nil {
 				return errors.Wrap(err, "store block to redis")
 			}
@@ -322,8 +323,8 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 			}
 		}
 
-		err := pool.blocKStorage.BlockSave(pool.gCtx, *transferBlock, ttl)
-		if err != nil {
+		pool.log.Debugf("block save in storeTransfer: %s", transferBlock.Transfer)
+		if err := pool.blocKStorage.BlockSave(pool.gCtx, *transferBlock, ttl); err != nil {
 			return err
 		}
 	}
@@ -388,6 +389,7 @@ func (pool *Pool) updateBatchResponse(key channelKey, transactions []model.Trans
 			}
 		}
 
+		pool.log.Debugf("block save in updateBatchResponse: %s", transferBlock.Transfer)
 		if err = pool.blocKStorage.BlockSave(pool.gCtx, transferBlock, redis.TTLNotTakenInto); err != nil {
 			return err
 		}

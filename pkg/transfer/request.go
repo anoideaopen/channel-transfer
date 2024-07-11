@@ -44,7 +44,7 @@ func (r *Request) TransferModify(ctx context.Context, transferRequest model.Tran
 		if !strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
 			return fmt.Errorf("load request : %w", err)
 		}
-		if err := r.storage.SaveConsideringTTL(ctx, &transferRequest, data.Key(transferRequest.Transfer), ttl); err != nil {
+		if err = r.storage.SaveConsideringTTL(ctx, &transferRequest, data.Key(transferRequest.Transfer), ttl); err != nil {
 			return fmt.Errorf("save request : %w", err)
 		}
 		return nil
@@ -104,7 +104,7 @@ func (r *Request) TransferResultModify(ctx context.Context, transferID model.ID,
 			return fmt.Errorf("load request : %w", err)
 		}
 		request = model.TransferRequest{Transfer: transferID, TransferResult: result}
-		if err := r.storage.Save(ctx, &request, data.Key(transferID)); err != nil {
+		if err = r.storage.Save(ctx, &request, data.Key(transferID)); err != nil {
 			return fmt.Errorf("save request : %w", err)
 		}
 	}

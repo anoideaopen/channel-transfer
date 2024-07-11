@@ -117,7 +117,7 @@ func (cc *chCollector) loopProxyByEvents(ctx context.Context, startedFrom uint64
 			}
 
 			blockNum := ev.Block.GetHeader().GetNumber()
-			cc.log.Debugf("got event block: %v", blockNum)
+			cc.log.Debugf("got event block: %d", blockNum)
 
 			// It is allowed to receive (startedFrom - 1) once when we start receiving blocks
 			if !isFirstBlockGot && blockNum != startedFrom && startedFrom > 0 && blockNum == startedFrom-1 {
