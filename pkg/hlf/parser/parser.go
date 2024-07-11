@@ -9,8 +9,8 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/common-component/errorshlp"
 	"github.com/anoideaopen/glog"
+	"github.com/go-errors/errors"
 	"github.com/hyperledger/fabric-protos-go/common"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -62,7 +62,7 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 
 		channelHeader, err := tx.channelHeader()
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to get tx channel header")
+			return nil, errors.Errorf("failed to get tx channel header: %w", err)
 		}
 
 		if common.HeaderType(channelHeader.GetType()) != common.HeaderType_ENDORSER_TRANSACTION {
@@ -71,13 +71,13 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 
 		actions, err := tx.getActions()
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to get tx action payload")
+			return nil, errors.Errorf("failed to get tx action payload: %w", err)
 		}
 
 		for _, action := range actions {
 			method, args, err := p.extractorActionPayload(action.payload)
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to get action args")
+				return nil, errors.Errorf("failed to get action args: %w", err)
 			}
 
 			if !new(model.TransactionKind).Is(method) && method != BatchExecuteMethod {
@@ -86,19 +86,19 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 
 			rwSets, err := action.rwSets()
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to get action rw_set")
+				return nil, errors.Errorf("failed to get action rw_set: %w", err)
 			}
 
 			chaincodeAction, err := action.chaincodeAction()
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to get  chaincodeAction")
+				return nil, errors.Errorf("failed to get  chaincodeAction: %w", err)
 			}
 
 			if method == BatchExecuteMethod {
 				for _, txID := range p.extractBatchPreImageTxIDs(rwSets) {
 					batchResponse, err := p.extractBatchResponse(chaincodeAction.GetResponse().GetPayload())
 					if err != nil {
-						return nil, errors.Wrap(err, "failed to extract batchResponse from chaincodeAction response payload")
+						return nil, errors.Errorf("failed to extract batchResponse from chaincodeAction response payload: %w", err)
 					}
 					for _, tsResponse := range batchResponse.GetTxResponses() {
 						if hex.EncodeToString(tsResponse.GetId()) == txID && new(model.TransactionKind).Is(tsResponse.GetMethod()) {

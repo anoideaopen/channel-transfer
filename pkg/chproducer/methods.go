@@ -13,7 +13,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/proto"
 	fpb "github.com/anoideaopen/foundation/proto"
 	"github.com/avast/retry-go/v4"
-	"github.com/pkg/errors"
+	"github.com/go-errors/errors"
 )
 
 const (
@@ -103,19 +103,19 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 				}
 				status, lastErr = h.fromBatchResponse(ctx, transfer.GetId())
 				if lastErr != nil {
-					lastErr = errors.Wrap(lastErr, "'FROM' batch response")
+					lastErr = errors.Errorf("'FROM' batch response: %w", lastErr)
 				}
 			case model.FromBatchNotFound:
 				status = model.InternalErrorTransferStatus
 			case model.CompletedTransferFrom:
 				status, lastErr = h.createTransferTo(ctx, transfer)
 				if lastErr != nil {
-					lastErr = errors.Wrap(lastErr, "create transfer")
+					lastErr = errors.Errorf("create transfer: %w", lastErr)
 				}
 			case model.InProgressTransferTo:
 				status, lastErr = h.toBatchResponse(ctx, strings.ToLower(transfer.GetTo()), transfer.GetId())
 				if lastErr != nil {
-					lastErr = errors.Wrap(lastErr, "'TO' batch response")
+					lastErr = errors.Errorf("'TO' batch response: %w", lastErr)
 				}
 			case model.CompletedTransferTo:
 				// the second transaction has passed, the tokens have been transferred, the client can dispose of them
@@ -130,7 +130,7 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 				}
 				status, lastErr = h.commitTransferFrom(ctx, transfer.GetId())
 				if lastErr != nil {
-					lastErr = errors.Wrap(lastErr, "commit transfer")
+					lastErr = errors.Errorf("commit transfer: %w", lastErr)
 				}
 			case model.ErrorChannelToNotFound:
 				if err := h.requestStorage.TransferResultModify(
@@ -150,20 +150,20 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 				failTag = transferToError
 				status, lastErr = h.deleteTransferTo(ctx, strings.ToLower(transfer.GetTo()), transfer.GetId())
 				if lastErr != nil {
-					lastErr = errors.Wrap(lastErr, "delete transfer")
+					lastErr = errors.Errorf("delete transfer: %w", lastErr)
 				}
 			case model.CommitTransferFrom:
 				// we continue technical operations with transfer
 				status, lastErr = h.deleteTransferTo(ctx, strings.ToLower(transfer.GetTo()), transfer.GetId())
 				if lastErr != nil {
-					lastErr = errors.Wrap(lastErr, "delete transfer")
+					lastErr = errors.Errorf("delete transfer: %w", lastErr)
 				}
 			case model.ToBatchNotFound:
 				status = model.InternalErrorTransferStatus
 			case model.CompletedTransferToDelete:
 				status, lastErr = h.deleteTransferFrom(ctx, transfer.GetId())
 				if lastErr != nil {
-					lastErr = errors.Wrap(lastErr, "delete transfer")
+					lastErr = errors.Errorf("delete transfer: %w", lastErr)
 				}
 			case model.CompletedTransferFromDelete:
 				status = model.Completed
@@ -247,7 +247,7 @@ func (h *Handler) cancelTransfer(ctx context.Context, transferID string, lastErr
 	status, err := h.cancelTransferFrom(ctx, transferID)
 	if err != nil {
 		if lastErr != nil {
-			err = errors.Wrap(lastErr, err.Error())
+			err = errors.Errorf("%s: %w", err.Error(), lastErr)
 		}
 	} else {
 		if lastErr != nil {
@@ -266,9 +266,9 @@ func (h *Handler) resolveStatus(ctx context.Context, transfer *fpb.CCTransfer) (
 	hasTransferTo, err := h.queryChannelTransferTo(ctx, channelName, transfer.GetId())
 	if err != nil {
 		if h.expiredTransfer(transfer) {
-			return model.CompletedTransferFrom, errors.Wrap(err, "query transfer")
+			return model.CompletedTransferFrom, errors.Errorf("query transfer: %w", err)
 		}
-		return model.InternalErrorTransferStatus, errors.Wrap(err, "query transfer")
+		return model.InternalErrorTransferStatus, errors.Errorf("query transfer: %w", err)
 	}
 	if hasTransferTo {
 		if status, err := h.toBatchResponse(ctx, strings.ToLower(transfer.GetTo()), transfer.GetId()); err != nil {
@@ -303,7 +303,7 @@ func (h *Handler) fromBatchResponse(ctx context.Context, transferID string) (mod
 	err := retry.Do(func() error {
 		blocks, err := h.responseWithAttempt(ctx, h.channel, transferID)
 		if err != nil {
-			err = errors.Wrap(err, "batch FROM")
+			err = errors.Errorf("batch FROM: %w", err)
 			if strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
 				m = model.FromBatchNotFound
 				return err
@@ -354,7 +354,7 @@ func (h *Handler) toBatchResponse(ctx context.Context, channelName string, trans
 		blocks, err := h.responseWithAttempt(ctx, channelName, transferID)
 		h.log.Debugf("find batchResponse in toBatchResponse: %s; error: %v", transferID, err)
 		if err != nil {
-			err = errors.Wrap(err, "batch TO")
+			err = errors.Errorf("batch TO: %w", err)
 			if strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
 				m = model.ToBatchNotFound
 				return err
@@ -430,9 +430,9 @@ func (h *Handler) expandTO(ctx context.Context, channelTO string) (model.StatusK
 		err := h.poolController.Expand(ctx, channelTO)
 		if err != nil {
 			if errMsg := re.FindString(err.Error()); errMsg != "" {
-				return model.ErrorChannelToNotFound, errors.Wrap(errors.New(errMsg), "expand : channel TO")
+				return model.ErrorChannelToNotFound, errors.Errorf("expand : channel TO: %w", errors.New(errMsg))
 			}
-			return model.InternalErrorTransferStatus, errors.Wrap(err, "expand")
+			return model.InternalErrorTransferStatus, errors.Errorf("expand: %w", err)
 		}
 	}
 

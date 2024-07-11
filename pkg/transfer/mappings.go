@@ -8,7 +8,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	dto "github.com/anoideaopen/channel-transfer/proto"
 	"github.com/anoideaopen/foundation/proto"
-	"github.com/pkg/errors"
+	"github.com/go-errors/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	proto2 "google.golang.org/protobuf/proto"
@@ -286,14 +286,14 @@ func statusOption(option *typepb.Option) (dto.TransferStatusResponse_Status, boo
 	if err != nil {
 		return dto.TransferStatusResponse_STATUS_UNDEFINED,
 			false,
-			errors.Wrap(err, "unmarshal protobuf option value")
+			errors.Errorf("unmarshal protobuf option value: %w", err)
 	}
 
 	mt, err := protoregistry.GlobalTypes.FindMessageByName(proto2.MessageName(msg))
 	if err != nil {
 		return dto.TransferStatusResponse_STATUS_UNDEFINED,
 			false,
-			errors.Wrap(err, "look up protobuf message by its full name")
+			errors.Errorf("look up protobuf message by its full name: %w", err)
 	}
 	if mt.Descriptor().FullName() != validProcessingType {
 		return dto.TransferStatusResponse_STATUS_UNDEFINED,

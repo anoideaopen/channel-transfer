@@ -27,8 +27,8 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/transfer"
 	"github.com/anoideaopen/common-component/basemetrics/baseprometheus"
 	"github.com/anoideaopen/glog"
+	"github.com/go-errors/errors"
 	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
-	"github.com/pkg/errors"
 	prometheus2 "github.com/prometheus/client_golang/prometheus"
 	redis3 "github.com/redis/go-redis/v9"
 	"golang.org/x/sync/errgroup"
@@ -182,7 +182,7 @@ func main() {
 	log.Infof("Channel transfer started, time - %s\n", dur.String())
 
 	if err = eGroup.Wait(); err != nil {
-		log.Error(errors.WithStack(err))
+		log.Error(errors.New(err))
 	}
 }
 

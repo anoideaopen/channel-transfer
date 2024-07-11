@@ -17,7 +17,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/proto"
 	"github.com/anoideaopen/common-component/errorshlp"
 	"github.com/anoideaopen/glog"
-	"github.com/pkg/errors"
+	"github.com/go-errors/errors"
 	"go.uber.org/atomic"
 	"golang.org/x/sync/errgroup"
 )
@@ -100,7 +100,11 @@ func (h *Handler) Exec(ctx context.Context) error {
 
 	ready, err := h.poolController.Readiness(h.channel)
 	if err != nil {
-		return errorshlp.WrapWithDetails(errors.Wrap(err, "pool readiness"), nerrors.ErrTypeProducer, nerrors.ComponentProducer)
+		return errorshlp.WrapWithDetails(
+			errors.Errorf("pool readiness: %w", err),
+			nerrors.ErrTypeProducer,
+			nerrors.ComponentProducer,
+		)
 	}
 	<-ready
 
@@ -114,7 +118,11 @@ func (h *Handler) Exec(ctx context.Context) error {
 			return ctx.Err()
 		case request, ok := <-h.newest:
 			if !ok {
-				return errorshlp.WrapWithDetails(errors.Wrap(ErrChanClosed, "incoming api request"), nerrors.ErrTypeProducer, nerrors.ComponentProducer)
+				return errorshlp.WrapWithDetails(
+					errors.Errorf("incoming api request: %w", ErrChanClosed),
+					nerrors.ErrTypeProducer,
+					nerrors.ComponentProducer,
+				)
 			}
 			go func() {
 				h.createTransfer(gCtx, request)
@@ -142,7 +150,7 @@ func (h *Handler) launcher(ctx context.Context, group *errgroup.Group) {
 
 	ccTransfers, err := h.queryChannelTransfers(ctx)
 	if err != nil {
-		h.log.Error(errors.Wrap(err, "stop launcher: query transfers"))
+		h.log.Error(errors.Errorf("stop launcher: query transfers: %w", err))
 		return
 	}
 
@@ -160,13 +168,13 @@ func (h *Handler) launcher(ctx context.Context, group *errgroup.Group) {
 
 				status, err := h.resolveStatus(ctx, localTransfer)
 				if err != nil {
-					h.log.Error(errors.Wrapf(err, "resolve transfer status %s", localTransfer.GetId()))
+					h.log.Error(errors.Errorf("resolve transfer status %s: %w", localTransfer.GetId(), err))
 				}
 				h.restoreCompletedStatus(ctx, status, model.ID(localTransfer.GetId()))
 
 				err = h.transferProcessing(ctx, status, localTransfer, err)
 				if err != nil {
-					h.log.Error(errors.Wrapf(err, "transfer processing %s", localTransfer.GetId()))
+					h.log.Error(errors.Errorf("transfer processing %s: %w", localTransfer.GetId(), err))
 				}
 
 				return nil
@@ -186,7 +194,7 @@ func (h *Handler) launcher(ctx context.Context, group *errgroup.Group) {
 func (h *Handler) createTransfer(ctx context.Context, request model.TransferRequest) {
 	status, err := h.createTransferFrom(ctx, request)
 	if err != nil {
-		err = errors.Wrap(err, "create transfer")
+		err = errors.Errorf("create transfer: %w", err)
 		request.Message = err.Error()
 		h.log.Error(errorshlp.WrapWithDetails(err, nerrors.ErrTypeProducer, nerrors.ComponentProducer))
 	}
@@ -213,7 +221,7 @@ func (h *Handler) createTransfer(ctx context.Context, request model.TransferRequ
 func (h *Handler) syncAPIRequests(ctx context.Context) {
 	registry, err := h.requestStorage.Registry(ctx)
 	if err != nil {
-		h.log.Error(errorshlp.WrapWithDetails(errors.Wrap(err, "scan requests"), nerrors.ErrTypeProducer, nerrors.ComponentProducer))
+		h.log.Error(errorshlp.WrapWithDetails(errors.Errorf("scan requests: %w", err), nerrors.ErrTypeProducer, nerrors.ComponentProducer))
 		return
 	}
 

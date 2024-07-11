@@ -9,7 +9,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	dto "github.com/anoideaopen/channel-transfer/proto"
 	"github.com/anoideaopen/glog"
-	"github.com/pkg/errors"
+	"github.com/go-errors/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -67,7 +67,7 @@ func (api *APIServer) TransferByCustomer(
 
 	tr, err := dtoBeginCustomerToModelTransferRequest(req, api.actualChannels)
 	if err != nil {
-		err = errors.Wrap(err, "parse transfer request")
+		err = errors.Errorf("parse transfer request: %w", err)
 		return &dto.TransferStatusResponse{
 				IdTransfer: req.GetIdTransfer(),
 				Status:     dto.TransferStatusResponse_STATUS_ERROR,
@@ -106,7 +106,7 @@ func (api *APIServer) TransferByAdmin(
 
 	tr, err := dtoBeginAdminToModelTransferRequest(req, api.actualChannels)
 	if err != nil {
-		err = errors.Wrap(err, "parse transfer request")
+		err = errors.Errorf("parse transfer request: %w", err)
 		return &dto.TransferStatusResponse{
 				IdTransfer: req.GetIdTransfer(),
 				Status:     dto.TransferStatusResponse_STATUS_ERROR,
@@ -144,7 +144,7 @@ func (api *APIServer) TransferStatus(
 
 	exclStatus, exclOk, err := extractExcludeStatus(req.GetOptions())
 	if err != nil {
-		err = errors.Wrap(err, "define exclude option")
+		err = errors.Errorf("define exclude option: %w", err)
 		return &dto.TransferStatusResponse{
 				IdTransfer: req.GetIdTransfer(),
 				Status:     dto.TransferStatusResponse_STATUS_ERROR,
@@ -182,12 +182,12 @@ func (api *APIServer) transferStatus(ctx context.Context, transferID string) (*d
 					err.Error(),
 				)
 		}
-		return nil, errors.Wrap(ErrInvalidStatusCode, "fetch transfer request")
+		return nil, errors.Errorf("fetch transfer request: %w", ErrInvalidStatusCode)
 	}
 
 	code, ok := dto.TransferStatusResponse_Status_value[tr.Status]
 	if !ok {
-		return nil, errors.Wrap(ErrInvalidStatusCode, "fetch transfer status")
+		return nil, errors.Errorf("fetch transfer status: %w", ErrInvalidStatusCode)
 	}
 
 	return &dto.TransferStatusResponse{

@@ -1,12 +1,12 @@
 package hlf
 
 import (
+	"github.com/go-errors/errors"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/status"
 	hlfcontext "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/core"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
-	"github.com/pkg/errors"
 )
 
 func configBackendsToProvider(cb []core.ConfigBackend) func() ([]core.ConfigBackend, error) {
@@ -38,12 +38,12 @@ func createFabricSDK(
 ) (*fabsdk.FabricSDK, error) {
 	configBackends, err := config.FromFile(connectionProfile)()
 	if err != nil {
-		return nil, errors.Wrap(err, "reads sdk config")
+		return nil, errors.Errorf("reads sdk config: %w", err)
 	}
 
 	fabricSDK, err := fabsdk.New(configBackendsToProvider(configBackends))
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.New(err)
 	}
 
 	return fabricSDK, nil

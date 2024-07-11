@@ -10,8 +10,8 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/foundation/core/cctransfer"
 	fpb "github.com/anoideaopen/foundation/proto"
+	"github.com/go-errors/errors"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
-	"github.com/pkg/errors"
 )
 
 const paginationPageSize = "10"
@@ -21,7 +21,7 @@ var errTransferNotFound = ": " + cctransfer.ErrNotFound.Error()
 func (h *Handler) queryChannelTransfers(ctx context.Context) ([]*fpb.CCTransfer, error) {
 	executor, err := h.poolController.Executor(h.channel)
 	if err != nil {
-		return nil, errors.Wrap(err, "executor")
+		return nil, errors.Errorf("executor: %w", err)
 	}
 
 	transfers := make([]*fpb.CCTransfer, 0)
@@ -38,7 +38,7 @@ func (h *Handler) queryChannelTransfers(ctx context.Context) ([]*fpb.CCTransfer,
 			[]channel.RequestOption{},
 		)
 		if err != nil {
-			return nil, errors.Wrap(err, "query transfers")
+			return nil, errors.Errorf("query transfers: %w", err)
 		}
 
 		data := &fpb.CCTransfers{}
@@ -67,7 +67,7 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 
 	doer, err := h.poolController.Executor(h.channel)
 	if err != nil {
-		return model.InternalErrorTransferStatus, errors.Wrap(err, "executor")
+		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
 	}
 
 	args := [][]byte{
@@ -104,7 +104,7 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 		[]channel.RequestOption{},
 	)
 	if err != nil {
-		return model.ErrorTransferFrom, errors.Wrap(err, request.Method)
+		return model.ErrorTransferFrom, errors.Errorf("%s: %w", request.Method, err)
 	}
 
 	h.m.TotalTransferCreated().Inc(metrics.Labels().Channel.Create(h.channel))
@@ -125,12 +125,12 @@ func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer
 
 	doer, err := h.poolController.Executor(channelName)
 	if err != nil {
-		return model.InternalErrorTransferStatus, errors.Wrap(err, "executor")
+		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
 	}
 
 	body, err := json.Marshal(transfer)
 	if err != nil {
-		return model.InternalErrorTransferStatus, errors.Wrap(err, "json marshal transfer")
+		return model.InternalErrorTransferStatus, errors.Errorf("json marshal transfer: %w", err)
 	}
 
 	_, err = doer.Invoke(
@@ -143,7 +143,7 @@ func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer
 		[]channel.RequestOption{},
 	)
 	if err != nil {
-		return model.InternalErrorTransferStatus, errors.Wrap(err, model.TxCreateCCTransferTo.String())
+		return model.InternalErrorTransferStatus, errors.Errorf("%s: %w", model.TxCreateCCTransferTo.String(), err)
 	}
 
 	return model.InProgressTransferTo, nil
@@ -152,7 +152,7 @@ func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer
 func (h *Handler) cancelTransferFrom(ctx context.Context, transferID string) (model.StatusKind, error) {
 	if err := h.invoke(ctx, h.channel, h.chaincodeID, model.TxCancelCCTransferFrom, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
-			h.log.Error(errors.Wrap(err, "cancel transfer"))
+			h.log.Error(errors.Errorf("cancel transfer: %w", err))
 			return model.Canceled, nil
 		}
 
@@ -165,7 +165,7 @@ func (h *Handler) cancelTransferFrom(ctx context.Context, transferID string) (mo
 func (h *Handler) commitTransferFrom(ctx context.Context, transferID string) (model.StatusKind, error) {
 	if err := h.invoke(ctx, h.channel, h.chaincodeID, model.NbTxCommitCCTransferFrom, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
-			h.log.Error(errors.Wrap(err, "commit transfer"))
+			h.log.Error(errors.Errorf("commit transfer: %w", err))
 			return model.Canceled, nil
 		}
 		return model.InternalErrorTransferStatus, err
@@ -177,7 +177,7 @@ func (h *Handler) commitTransferFrom(ctx context.Context, transferID string) (mo
 func (h *Handler) deleteTransferFrom(ctx context.Context, transferID string) (model.StatusKind, error) {
 	if err := h.invoke(ctx, h.channel, h.chaincodeID, model.NbTxDeleteCCTransferFrom, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
-			h.log.Error(errors.Wrap(err, "delete transfer"))
+			h.log.Error(errors.Errorf("delete transfer: %w", err))
 			return model.CompletedTransferFromDelete, nil
 		}
 		return model.InternalErrorTransferStatus, err
@@ -189,7 +189,7 @@ func (h *Handler) deleteTransferFrom(ctx context.Context, transferID string) (mo
 func (h *Handler) deleteTransferTo(ctx context.Context, channelName string, transferID string) (model.StatusKind, error) {
 	if err := h.invoke(ctx, channelName, channelName, model.NbTxDeleteCCTransferTo, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
-			h.log.Error(errors.Wrap(err, "delete transfer"))
+			h.log.Error(errors.Errorf("delete transfer: %w", err))
 			return model.CompletedTransferToDelete, nil
 		}
 		return model.InternalErrorTransferStatus, err
@@ -201,7 +201,7 @@ func (h *Handler) deleteTransferTo(ctx context.Context, channelName string, tran
 func (h *Handler) invoke(ctx context.Context, channelName string, chaincodeID string, method model.TransactionKind, transferID string) error {
 	doer, err := h.poolController.Executor(channelName)
 	if err != nil {
-		return errors.Wrap(err, "executor")
+		return errors.Errorf("executor: %w", err)
 	}
 
 	_, err = doer.Invoke(
@@ -214,7 +214,7 @@ func (h *Handler) invoke(ctx context.Context, channelName string, chaincodeID st
 		[]channel.RequestOption{},
 	)
 	if err != nil {
-		return errors.Wrap(err, method.String())
+		return errors.Errorf("%s: %w", method.String(), err)
 	}
 
 	return nil
@@ -223,7 +223,7 @@ func (h *Handler) invoke(ctx context.Context, channelName string, chaincodeID st
 func (h *Handler) queryChannelTransferTo(ctx context.Context, channelName string, transferID string) (bool, error) {
 	executor, err := h.poolController.Executor(channelName)
 	if err != nil {
-		return false, errors.Wrap(err, "expand")
+		return false, errors.Errorf("expand: %w", err)
 	}
 
 	_, err = executor.Query(
@@ -249,7 +249,7 @@ func (h *Handler) queryChannelTransferTo(ctx context.Context, channelName string
 func (h *Handler) queryChannelTransferFrom(ctx context.Context, channelName string, transferID string) (bool, error) {
 	executor, err := h.poolController.Executor(channelName)
 	if err != nil {
-		return false, errors.Wrap(err, "expand")
+		return false, errors.Errorf("expand: %w", err)
 	}
 
 	_, err = executor.Query(

@@ -6,6 +6,7 @@ import (
 
 	"github.com/anoideaopen/channel-transfer/pkg/logger"
 	"github.com/anoideaopen/glog"
+	"github.com/go-errors/errors"
 	"github.com/google/uuid"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/options"
 	contextApi "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
@@ -17,7 +18,6 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/fab/events/deliverclient/seek"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fab/events/service"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fab/events/service/dispatcher"
-	"github.com/pkg/errors"
 )
 
 // Events stores data about block subscription without gaps
@@ -68,7 +68,7 @@ func SubscribeEventBlock(ctx context.Context, channelProvider contextApi.Channel
 
 	channelContext, err := channelProvider()
 	if err != nil {
-		return nil, errors.WithMessage(err, "failed to create channel context")
+		return nil, errors.Errorf("failed to create channel context: %w", err)
 	}
 
 	if channelContext.ChannelService() == nil {
@@ -96,12 +96,12 @@ func SubscribeEventBlock(ctx context.Context, channelProvider contextApi.Channel
 
 	eventService, err := channelContext.ChannelService().EventService(opts...)
 	if err != nil {
-		return nil, errors.WithMessage(err, "event service creation failed")
+		return nil, errors.Errorf("event service creation failed: %w", err)
 	}
 
 	registration, bEvent, err := eventService.RegisterBlockEvent()
 	if err != nil {
-		return nil, errors.WithMessage(err, "register block event failed")
+		return nil, errors.Errorf("register block event failed: %w", err)
 	}
 
 	return &Events{
