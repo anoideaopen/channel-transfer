@@ -1,4 +1,4 @@
-package grpc
+package http
 
 import (
 	"encoding/json"
@@ -11,9 +11,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestGRPC(t *testing.T) {
+func TestHTTP(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Channel Transfer GRPC suite")
+	RunSpecs(t, "Channel Transfer HTTP suite")
 }
 
 var (
@@ -43,5 +43,5 @@ var _ = SynchronizedAfterSuite(func() {
 })
 
 func StartPort() int {
-	return integration.GatewayBasePort.StartPortForNode()
+	return integration.GossipBasePort.StartPortForNode()
 }

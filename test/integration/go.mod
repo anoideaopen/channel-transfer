@@ -11,6 +11,11 @@ require (
 	github.com/anoideaopen/robot v0.0.2-0.20240605153321-0e09032227bf
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
 	github.com/fsouza/go-dockerclient v1.10.0
+	github.com/go-openapi/errors v0.22.0
+	github.com/go-openapi/runtime v0.26.0
+	github.com/go-openapi/strfmt v0.23.0
+	github.com/go-openapi/swag v0.23.0
+	github.com/go-openapi/validate v0.24.0
 	github.com/google/uuid v1.6.0
 	github.com/hyperledger/fabric v1.4.0-rc1.0.20240406053308-22aaf3468497
 	github.com/onsi/ginkgo/v2 v2.17.2
@@ -35,6 +40,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20210912230133-d1bdfacee922 // indirect
 	github.com/anoideaopen/common-component v0.0.5 // indirect
 	github.com/anoideaopen/glog v0.0.3 // indirect
+	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/avast/retry-go/v4 v4.6.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bits-and-blooms/bitset v1.13.0 // indirect
@@ -65,6 +71,11 @@ require (
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/go-openapi/analysis v0.23.0 // indirect
+	github.com/go-openapi/jsonpointer v0.21.0 // indirect
+	github.com/go-openapi/jsonreference v0.21.0 // indirect
+	github.com/go-openapi/loads v0.22.0 // indirect
+	github.com/go-openapi/spec v0.21.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.10.1 // indirect
@@ -90,10 +101,12 @@ require (
 	github.com/hyperledger/fabric-protos-go v0.3.2 // indirect
 	github.com/hyperledger/fabric-sdk-go v1.0.1-0.20210927191040-3e3a3c6aeec9 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/josharian/intern v1.0.0 // indirect
 	github.com/kilic/bls12-381 v0.1.0 // indirect
 	github.com/klauspost/compress v1.17.6 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
+	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/miekg/pkcs11 v1.1.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
@@ -102,10 +115,12 @@ require (
 	github.com/moby/sys/sequential v0.5.0 // indirect
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
+	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc6 // indirect
 	github.com/opencontainers/runc v1.1.12 // indirect
+	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
@@ -134,6 +149,7 @@ require (
 	go.etcd.io/etcd/pkg/v3 v3.5.9 // indirect
 	go.etcd.io/etcd/raft/v3 v3.5.9 // indirect
 	go.etcd.io/etcd/server/v3 v3.5.9 // indirect
+	go.mongodb.org/mongo-driver v1.14.0 // indirect
 	go.opentelemetry.io/otel v1.15.0-rc.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.15.0-rc.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.15.0-rc.1 // indirect
