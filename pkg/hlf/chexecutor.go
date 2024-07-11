@@ -9,10 +9,10 @@ import (
 	"github.com/anoideaopen/common-component/errorshlp"
 	"github.com/anoideaopen/glog"
 	"github.com/avast/retry-go/v4"
+	"github.com/go-errors/errors"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/ledger"
 	hlfcontext "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
-	"github.com/pkg/errors"
 )
 
 type executor interface {
@@ -64,17 +64,17 @@ func (che *ChExecutor) initExecutor(chProvider hlfcontext.ChannelProvider, execO
 
 	chClient, err := channel.New(chProvider, opts...)
 	if err != nil {
-		return errors.Wrap(err, "create channel client instance")
+		return errors.Errorf("create channel client instance: %w", err)
 	}
 
 	chCtx, err := chProvider()
 	if err != nil {
-		return errors.Wrap(err, "create channel client context")
+		return errors.Errorf("create channel client context: %w", err)
 	}
 
 	ldgCli, err := ledger.New(chProvider)
 	if err != nil {
-		return errors.Wrap(err, "create channel ledger instance")
+		return errors.Errorf("create channel ledger instance: %w", err)
 	}
 
 	che.executor = &hlfExecutor{
@@ -121,7 +121,7 @@ func (che *ChExecutor) executeWithRetry(ctx context.Context, f func() (channel.R
 		retry.Context(ctx),
 	)
 	if err != nil {
-		return resp, errorshlp.WrapWithDetails(errors.WithStack(err),
+		return resp, errorshlp.WrapWithDetails(errors.New(err),
 			nerrors.ErrTypeHlf, nerrors.ComponentExecutor)
 	}
 

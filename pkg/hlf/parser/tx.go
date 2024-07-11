@@ -1,10 +1,10 @@
 package parser
 
 import (
+	"github.com/go-errors/errors"
 	"github.com/golang/protobuf/proto" //nolint:staticcheck
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/peer"
-	"github.com/pkg/errors"
 )
 
 type prsTx struct {
@@ -22,7 +22,7 @@ func (tx *prsTx) isValid() bool {
 func (tx *prsTx) envelope() (*common.Envelope, error) {
 	envelope := &common.Envelope{}
 	if err := proto.Unmarshal(tx.data, envelope); err != nil {
-		return nil, errors.Wrap(err, "unmarshal envelope error")
+		return nil, errors.Errorf("unmarshal envelope error: %w", err)
 	}
 	return envelope, nil
 }
@@ -37,7 +37,7 @@ func (tx *prsTx) payload() (*common.Payload, error) {
 
 	payload := &common.Payload{}
 	if err = proto.Unmarshal(envelope.GetPayload(), payload); err != nil {
-		return nil, errors.Wrap(err, "unmarshal payload error")
+		return nil, errors.Errorf("unmarshal payload error: %w", err)
 	}
 	return payload, nil
 }
@@ -50,7 +50,7 @@ func (tx *prsTx) channelHeader() (*common.ChannelHeader, error) {
 	}
 	chdr := &common.ChannelHeader{}
 	if err = proto.Unmarshal(payload.GetHeader().GetChannelHeader(), chdr); err != nil {
-		return nil, errors.Wrap(err, "unmarshal channel header error")
+		return nil, errors.Errorf("unmarshal channel header error: %w", err)
 	}
 	return chdr, nil
 }
@@ -70,7 +70,7 @@ func (tx *prsTx) peerTransaction() (*peer.Transaction, error) {
 	}
 	transaction := &peer.Transaction{}
 	if err = proto.Unmarshal(payload.GetData(), transaction); err != nil {
-		return nil, errors.Wrap(err, "unmarshal transaction error")
+		return nil, errors.Errorf("unmarshal transaction error: %w", err)
 	}
 	return transaction, nil
 }
@@ -85,7 +85,7 @@ func (tx *prsTx) getActions() ([]prsAction, error) {
 	for _, act := range transaction.GetActions() {
 		ccActionPayload := &peer.ChaincodeActionPayload{}
 		if err = proto.Unmarshal(act.GetPayload(), ccActionPayload); err != nil {
-			return nil, errors.Wrap(err, "unmarshal chaincode action payload error")
+			return nil, errors.Errorf("unmarshal chaincode action payload error: %w", err)
 		}
 		actions = append(actions, prsAction{payload: ccActionPayload})
 	}

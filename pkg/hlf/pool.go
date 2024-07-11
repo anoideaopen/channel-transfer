@@ -19,9 +19,9 @@ import (
 	"github.com/anoideaopen/common-component/errorshlp"
 	"github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/glog"
+	"github.com/go-errors/errors"
 	hlfcontext "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
-	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -73,7 +73,11 @@ func NewPool(
 	var err error
 	pool.fabricSDK, err = createFabricSDK(profilePath)
 	if err != nil {
-		return nil, errorshlp.WrapWithDetails(errors.Wrap(err, "create connection to fabric"), nerrors.ErrTypeHlf, nerrors.ComponentHLFStreamsPool)
+		return nil, errorshlp.WrapWithDetails(
+			errors.Errorf("create connection to fabric: %w", err),
+			nerrors.ErrTypeHlf,
+			nerrors.ComponentHLFStreamsPool,
+		)
 	}
 
 	pool.additiveToTTL = storage.TTL() - *opts.TTL
@@ -85,7 +89,11 @@ func NewPool(
 		channelProvider := createChannelProvider(channel, userName, profile.OrgName, pool.fabricSDK)
 		err = pool.createExecutor(ctx, channel, channelProvider)
 		if err != nil {
-			return nil, errorshlp.WrapWithDetails(errors.Wrap(err, "create executor"), nerrors.ErrTypeHlf, nerrors.ComponentHLFStreamsPool)
+			return nil, errorshlp.WrapWithDetails(
+				errors.Errorf("create executor: %w", err),
+				nerrors.ErrTypeHlf,
+				nerrors.ComponentHLFStreamsPool,
+			)
 		}
 	}
 
@@ -109,7 +117,7 @@ func (pool *Pool) RunCollectors(ctx context.Context) error {
 		})
 
 		if err := pool.group.Wait(); err != nil {
-			pool.log.Error(errors.WithStack(err))
+			pool.log.Error(errors.New(err))
 		}
 
 		pool.log.Info("stop channels collectors")
@@ -141,7 +149,7 @@ func (pool *Pool) createExecutor(ctx context.Context, channel string, channelPro
 	)
 	if err != nil {
 		pool.m.TotalReconnectsToFabric().Inc(metrics.Labels().Channel.Create(channel))
-		return errors.Wrap(err, "start executor")
+		return errors.Errorf("start executor: %w", err)
 	}
 
 	pool.streams.store(channelKey(channel), executor, channelProvider)
@@ -184,7 +192,11 @@ func (pool *Pool) Expand(ctx context.Context, channel string) error {
 		})
 		ready, err := pool.Readiness(channel)
 		if err != nil {
-			return errorshlp.WrapWithDetails(errors.Wrap(err, "pool readiness"), nerrors.ErrTypeHlf, nerrors.ComponentHLFStreamsPool)
+			return errorshlp.WrapWithDetails(
+				errors.Errorf("pool readiness: %w", err),
+				nerrors.ErrTypeHlf,
+				nerrors.ComponentHLFStreamsPool,
+			)
 		}
 		<-ready
 	}
@@ -208,7 +220,7 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 	checkPoint, err := pool.checkPoint.CheckpointLoad(pool.gCtx, model.ID(key))
 	if err != nil {
 		if !errors.Is(err, data.ErrObjectNotFound) {
-			pool.log.Error(errors.Wrapf(err, "load checkpoint of %s", string(key)))
+			pool.log.Error(errors.Errorf("load checkpoint of %s: %w", string(key), err))
 		}
 	} else {
 		blockNumber = checkPoint.SrcCollectFromBlockNums
@@ -227,7 +239,7 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 
 	bcHeight, err := pool.blockchainHeight(key)
 	if err != nil {
-		return errors.Wrapf(err, "create channel %s hasCollector : get blockchain height", string(key))
+		return errors.Errorf("create channel %s hasCollector, get blockchain height: %w", string(key), err)
 	}
 	readiness := func() {
 		if *bcHeight-blockNumber <= 1 {
@@ -244,14 +256,14 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 	for pool.gCtx.Err() == nil {
 		select {
 		case <-pool.gCtx.Done():
-			return errors.WithStack(pool.gCtx.Err())
+			return errors.New(pool.gCtx.Err())
 		case block, ok := <-collector.GetData():
 			if !ok {
-				return errors.Wrapf(fmt.Errorf("hasCollector of chan %s closed", string(key)), "get hasCollector data")
+				return errors.Errorf("hasCollector of chan %s closed: %s", string(key), "get hasCollector data")
 			}
 			pool.log.Debugf("store block: %d", block.BlockNum)
 			if err = pool.storeTransfer(key, *block); err != nil {
-				return errors.Wrap(err, "store block to redis")
+				return errors.Errorf("store block to redis: %w", err)
 			}
 			blockNumber = block.BlockNum
 			readiness()
@@ -274,7 +286,7 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 		}
 	}
 
-	return errors.WithStack(pool.gCtx.Err())
+	return errors.New(pool.gCtx.Err())
 }
 
 func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
@@ -319,7 +331,7 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 
 		if canBeStored {
 			if err := pool.syncTransferRequest(*transferBlock, ttl); err != nil {
-				return errors.Wrap(err, "sync transfer request")
+				return errors.Errorf("sync transfer request: %w", err)
 			}
 		}
 

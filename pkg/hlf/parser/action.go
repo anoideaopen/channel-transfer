@@ -1,11 +1,11 @@
 package parser
 
 import (
+	"github.com/go-errors/errors"
 	"github.com/golang/protobuf/proto" //nolint:staticcheck
 	"github.com/hyperledger/fabric-protos-go/ledger/rwset"
 	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
 	"github.com/hyperledger/fabric-protos-go/peer"
-	"github.com/pkg/errors"
 )
 
 type prsRwSet struct {
@@ -23,7 +23,7 @@ type prsAction struct {
 func (a *prsAction) proposalResponsePayload() (*peer.ProposalResponsePayload, error) {
 	proposalResponsePayload := &peer.ProposalResponsePayload{}
 	if err := proto.Unmarshal(a.payload.GetAction().GetProposalResponsePayload(), proposalResponsePayload); err != nil {
-		return nil, errors.Wrap(err, "unmarshal proposal response payload error")
+		return nil, errors.Errorf("unmarshal proposal response payload error: %w", err)
 	}
 	return proposalResponsePayload, nil
 }
@@ -36,7 +36,7 @@ func (a *prsAction) chaincodeAction() (*peer.ChaincodeAction, error) {
 	}
 	chaincodeAction := &peer.ChaincodeAction{}
 	if err = proto.Unmarshal(proposalResponsePayload.GetExtension(), chaincodeAction); err != nil {
-		return nil, errors.Wrap(err, "unmarshal chaincode action error")
+		return nil, errors.Errorf("unmarshal chaincode action error: %w", err)
 	}
 	return chaincodeAction, nil
 }
@@ -50,13 +50,13 @@ func (a *prsAction) rwSets() ([]prsRwSet, error) {
 
 	txReadWriteSet := &rwset.TxReadWriteSet{}
 	if err = proto.Unmarshal(chaincodeAction.GetResults(), txReadWriteSet); err != nil {
-		return nil, errors.Wrap(err, "unmarshal tx read-write set error")
+		return nil, errors.Errorf("unmarshal tx read-write set error: %w", err)
 	}
 
 	result := make([]prsRwSet, len(txReadWriteSet.GetNsRwset()))
 	for i, rwSet := range txReadWriteSet.GetNsRwset() {
 		if err = proto.Unmarshal(rwSet.GetRwset(), &result[i].kvRWSet); err != nil {
-			return nil, errors.Wrap(err, "unmarshal kv read-write set error")
+			return nil, errors.Errorf("unmarshal kv read-write set error: %w", err)
 		}
 	}
 	return result, err
@@ -65,12 +65,12 @@ func (a *prsAction) rwSets() ([]prsRwSet, error) {
 func (p *Parser) extractorActionPayload(ccActionPayload *peer.ChaincodeActionPayload) (string, [][]byte, error) {
 	ccProposalPayload := &peer.ChaincodeProposalPayload{}
 	if err := proto.Unmarshal(ccActionPayload.GetChaincodeProposalPayload(), ccProposalPayload); err != nil {
-		return "", nil, errors.Wrap(err, "deserialize ChaincodeProposalPayload")
+		return "", nil, errors.Errorf("deserialize ChaincodeProposalPayload: %w", err)
 	}
 
 	input := &peer.ChaincodeInvocationSpec{}
 	if err := proto.Unmarshal(ccProposalPayload.GetInput(), input); err != nil {
-		return "", nil, errors.Wrap(err, "deserialize ChaincodeInvocationSpec")
+		return "", nil, errors.Errorf("deserialize ChaincodeInvocationSpec: %w", err)
 	}
 
 	if input.GetChaincodeSpec().GetInput() == nil {

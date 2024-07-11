@@ -9,7 +9,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/common-component/errorshlp"
 	"github.com/anoideaopen/glog"
-	"github.com/pkg/errors"
+	"github.com/go-errors/errors"
 )
 
 type chKey string
@@ -48,16 +48,16 @@ func (dm *Demultiplexer) Run(ctx context.Context) error {
 	for ctx.Err() == nil {
 		select {
 		case <-ctx.Done():
-			return errors.WithStack(ctx.Err())
+			return errors.New(ctx.Err())
 		case item, ok := <-dm.incoming:
 			if !ok {
-				return errors.WithStack(errors.New("incoming channel closed"))
+				return errors.New("incoming channel closed")
 			}
 			dm.output(item)
 		}
 	}
 
-	return errors.WithStack(ctx.Err())
+	return errors.New(ctx.Err())
 }
 
 func (dm *Demultiplexer) output(data model.TransferRequest) {

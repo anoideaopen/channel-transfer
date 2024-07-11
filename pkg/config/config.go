@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-errors/errors"
 	"github.com/go-playground/validator/v10"
-	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
@@ -170,20 +170,20 @@ func validateConfig(cfg *Config) error {
 		return errors.New("collectorsBufSize must be positive")
 	}
 	if _, err = cfg.Options.EffExecuteTimeout(cfg.Options); err != nil {
-		return errors.WithStack(err)
+		return errors.New(err)
 	}
 	if _, err = cfg.Options.EffTTL(cfg.Options); err != nil {
-		return errors.WithStack(err)
+		return errors.New(err)
 	}
 	if _, err = cfg.Options.EffRetryExecuteMaxDelay(cfg.Options); err != nil {
-		return errors.WithStack(err)
+		return errors.New(err)
 	}
 	if _, err = cfg.Options.EffRetryExecuteDelay(cfg.Options); err != nil {
-		return errors.WithStack(err)
+		return errors.New(err)
 	}
 
 	if _, err = cfg.RedisStorage.EffAfterTransferTTL(*cfg.RedisStorage); err != nil {
-		return errors.WithStack(err)
+		return errors.New(err)
 	}
 
 	return nil
@@ -224,12 +224,12 @@ func getConfig() (*Config, error) {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
-		return nil, errors.Wrap(err, "failed viper.ReadInConfig")
+		return nil, errors.Errorf("failed viper.ReadInConfig: %w", err)
 	}
 
 	cfg := Config{}
 	if err := viper.UnmarshalExact(&cfg); err != nil {
-		return nil, errors.Wrap(err, "failed viper.Unmarshal")
+		return nil, errors.Errorf("failed viper.Unmarshal: %w", err)
 	}
 
 	return &cfg, nil

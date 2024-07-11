@@ -1,10 +1,10 @@
 package parser
 
 import (
+	"github.com/go-errors/errors"
 	"github.com/golang/protobuf/proto" //nolint:staticcheck
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/peer"
-	"github.com/pkg/errors"
 )
 
 // prsBlock contains all the necessary information about the blockchain block
@@ -21,22 +21,22 @@ func fromFabricBlock(block *common.Block) (*prsBlock, error) {
 	metadata := &common.Metadata{}
 
 	if err := proto.Unmarshal(block.GetMetadata().GetMetadata()[common.BlockMetadataIndex_SIGNATURES], metadata); err != nil {
-		return nil, errors.Wrapf(err, "error unmarshaling metadata from block at index [%s]", common.BlockMetadataIndex_SIGNATURES)
+		return nil, errors.Errorf("error unmarshaling metadata from block at index [%s]: %w", common.BlockMetadataIndex_SIGNATURES, err)
 	}
 
 	envelope := &common.Envelope{}
 	if err := proto.Unmarshal(block.GetData().GetData()[0], envelope); err != nil {
-		return nil, errors.Wrap(err, "unmarshal envelope error")
+		return nil, errors.Errorf("unmarshal envelope error: %w", err)
 	}
 
 	payload := &common.Payload{}
 	if err := proto.Unmarshal(envelope.GetPayload(), payload); err != nil {
-		return nil, errors.Wrap(err, "unmarshal payload error")
+		return nil, errors.Errorf("unmarshal payload error: %w", err)
 	}
 
 	hdr := &common.ChannelHeader{}
 	if err := proto.Unmarshal(payload.GetHeader().GetChannelHeader(), hdr); err != nil {
-		return nil, errors.Wrap(err, "unmarshal channel header error")
+		return nil, errors.Errorf("unmarshal channel header error: %w", err)
 	}
 
 	filter := block.GetMetadata().GetMetadata()[common.BlockMetadataIndex_TRANSACTIONS_FILTER]

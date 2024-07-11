@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/anoideaopen/glog"
-	"github.com/pkg/errors"
+	"github.com/go-errors/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -132,11 +132,11 @@ type SyncLoggerMethod = func() error
 
 func CreateLogger(loggerType, logLevel string) (glog.Logger, SyncLoggerMethod, error) {
 	if err := verifyLoggerType(loggerType); err != nil {
-		return nil, nil, errors.WithStack(errors.Wrap(err, "failed to create logger"))
+		return nil, nil, errors.Errorf("failed to create logger: %w", err)
 	}
 	sugar, err := newSugarLogger(loggerType, logLevel)
 	if err != nil {
-		return nil, nil, errors.WithStack(errors.Wrap(err, "failed to create logger"))
+		return nil, nil, errors.Errorf("failed to create logger: %w", err)
 	}
 	return sugar, sugar.Flush, nil
 }
