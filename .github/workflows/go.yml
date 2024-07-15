@@ -117,6 +117,6 @@ jobs:
       - name: install ginkgo
         run: go install github.com/onsi/ginkgo/v2/ginkgo@v${{ env.GINKGO_VER }}
       - name: integration test
-        working-directory: ./tests/integration
+        working-directory: ./test/integration
         run: |
           ginkgo --keep-going --poll-progress-after 60s --timeout 24h ${{matrix.INTEGRATION_TEST_SUITE}}
