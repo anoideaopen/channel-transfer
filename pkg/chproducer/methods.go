@@ -430,7 +430,7 @@ func (h *Handler) expandTO(ctx context.Context, channelTO string) (model.StatusK
 		err := h.poolController.Expand(ctx, channelTO)
 		if err != nil {
 			if errMsg := re.FindString(err.Error()); errMsg != "" {
-				return model.ErrorChannelToNotFound, errors.Errorf("expand : channel TO: %w", err)
+				return model.ErrorChannelToNotFound, errors.Errorf("expand : channel TO: %w", errors.New(errMsg))
 			}
 			return model.InternalErrorTransferStatus, errors.Errorf("expand: %w", err)
 		}
