@@ -2,15 +2,17 @@ package http
 
 import (
 	"context"
-	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/models"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
 	clihttp "github.com/anoideaopen/channel-transfer/test/integration/clihttp/client"
 	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/client/transfer"
+	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/models"
 	pbfound "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
@@ -35,6 +37,21 @@ import (
 
 const (
 	transferExecutionTimeout = 100
+
+	ccCCUpper         = "CC"
+	ccFiatUpper       = "FIAT"
+	ccACLUpper        = "ACL"
+	ccIndustrialUpper = "INDUSTRIAL"
+
+	emitAmount = "1000"
+
+	errWrongChannel      = "no channel peers configured for channel"
+	errNotValidChannel   = "channel not in configuration list"
+	errInsufficientFunds = "failed to subtract token balance: insufficient balance"
+	errIncorrectToken    = "token set incorrectly"
+
+	fnChannelTransferByAdmin    = "channelTransferByAdmin"
+	fnChannelTransferByCustomer = "channelTransferByCustomer"
 )
 
 var _ = Describe("Channel transfer HTTP tests", func() {
@@ -95,7 +112,9 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		feeSetter           *client.UserFoundation
 		feeAddressSetter    *client.UserFoundation
 
-		clientCtx context.Context
+		clientCtx   context.Context
+		transferCli *clihttp.CrossChanelTransfer
+		auth        runtime.ClientAuthInfoWriter
 	)
 	BeforeEach(func() {
 		By("start redis")
@@ -238,7 +257,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		client.AddUser(network, peer, network.Orderers[0], user)
 
 		By("emit tokens")
-		emitAmount := "1000"
 		client.TxInvokeWithSign(network, peer, network.Orderers[0],
 			cmn.ChannelFiat, cmn.ChannelFiat, admin,
 			"emit", "", client.NewNonceByTime().Get(), nil, user.AddressBase58Check, emitAmount)
@@ -247,34 +265,38 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		client.Query(network, peer, cmn.ChannelFiat, cmn.ChannelFiat,
 			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(emitAmount), nil),
 			"balanceOf", user.AddressBase58Check)
-	})
 
-	It("transfer by admin test", func() {
 		By("creating http connection")
 		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
 		httpAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.HttpPort]), 10)
 		transport := httptransport.New(httpAddress, "", nil)
-		transferCli := clihttp.New(transport, strfmt.Default)
+		transferCli = clihttp.New(transport, strfmt.Default)
 
-		auth := httptransport.APIKeyAuth("authorization", "header", networkFound.ChannelTransfer.AccessToken)
+		auth = httptransport.APIKeyAuth("authorization", "header", networkFound.ChannelTransfer.AccessToken)
+	})
+
+	It("transfer by admin test", func() {
+		amount := "250"
+		restAmount := "750"
+
 		authOpts := func(c *runtime.ClientOperation) {
 			c.AuthInfo = auth
 		}
 
 		By("creating channel transfer request")
 		transferID := uuid.NewString()
-		channelTransferArgs := []string{transferID, "CC", user.AddressBase58Check, "FIAT", "250"}
+		channelTransferArgs := []string{transferID, ccCCUpper, user.AddressBase58Check, ccFiatUpper, amount}
 
 		requestID := uuid.NewString()
 		nonce := client.NewNonceByTime().Get()
-		signArgs := append(append([]string{"channelTransferByAdmin", requestID, cmn.ChannelFiat, cmn.ChannelFiat}, channelTransferArgs...), nonce)
+		signArgs := append(append([]string{fnChannelTransferByAdmin, requestID, cmn.ChannelFiat, cmn.ChannelFiat}, channelTransferArgs...), nonce)
 		publicKey, sign, err := admin.Sign(signArgs...)
 		Expect(err).NotTo(HaveOccurred())
 
 		transferRequest := &models.ChannelTransferTransferBeginAdminRequest{
 			Generals: &models.ChannelTransferGeneralParams{
-				MethodName: "channelTransferByAdmin",
+				MethodName: fnChannelTransferByAdmin,
 				RequestID:  requestID,
 				Chaincode:  cmn.ChannelFiat,
 				Channel:    cmn.ChannelFiat,
@@ -292,375 +314,678 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		By("sending transfer request")
 		res, err := transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx}, authOpts)
 		Expect(err).NotTo(HaveOccurred())
-		status := res.Payload.Status
-		Expect(*status).To(Equal(models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS))
+
+		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
+		Expect(err).NotTo(HaveOccurred())
 
 		By("awaiting for channel transfer to respond")
-		var transferStatusResponse *transfer.TransferStatusOK
-		i := 0
-		for i < transferExecutionTimeout {
-			transferStatusResponse, err = transferCli.Transfer.TransferStatus(&transfer.TransferStatusParams{IDTransfer: transferID, Context: clientCtx}, authOpts)
-			Expect(err).NotTo(HaveOccurred())
-			if *transferStatusResponse.Payload.Status == models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED {
-				break
-			} else {
-				i++
-				time.Sleep(time.Second * 1)
-			}
-		}
-
-		status = transferStatusResponse.Payload.Status
-
-		Expect(*status).To(Equal(models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED))
+		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED, "")
+		Expect(err).NotTo(HaveOccurred())
 
 		By("checking result balances")
 		client.Query(network, peer, cmn.ChannelFiat, cmn.ChannelFiat,
-			fabricnetwork.CheckResult(fabricnetwork.CheckBalance("750"), nil),
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(restAmount), nil),
 			"balanceOf", user.AddressBase58Check)
 
 		client.Query(network, peer, cmn.ChannelCC, cmn.ChannelCC,
-			fabricnetwork.CheckResult(fabricnetwork.CheckBalance("250"), nil),
-			"allowedBalanceOf", user.AddressBase58Check, "FIAT")
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(amount), nil),
+			"allowedBalanceOf", user.AddressBase58Check, ccFiatUpper)
 	})
 
-	/*
-		It("transfer by customer test", func() {
-			By("creating grpc connection")
-			clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
-
-			transportCredentials := insecure.NewCredentials()
-			grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
-
-			var err error
-
-			conn, err = grpc.Dial(grpcAddress, grpc.WithTransportCredentials(transportCredentials))
-			Expect(err).NotTo(HaveOccurred())
-			defer func() {
-				err := conn.Close()
-				Expect(err).NotTo(HaveOccurred())
-			}()
-
-			By("creating channel transfer API client")
-			apiClient = cligrpc.NewAPIClient(conn)
-
-			By("creating channel transfer request")
-			transferID := uuid.NewString()
-			channelTransferArgs := []string{transferID, "CC", "FIAT", "250"}
-
-			requestID := uuid.NewString()
-			nonce := client.NewNonceByTime().Get()
-			signArgs := append(append([]string{"channelTransferByCustomer", requestID, cmn.ChannelFiat, cmn.ChannelFiat}, channelTransferArgs...), nonce)
-			publicKey, sign, err := user.Sign(signArgs...)
-			Expect(err).NotTo(HaveOccurred())
-
-			transfer := &cligrpc.TransferBeginCustomerRequest{
-				Generals: &cligrpc.GeneralParams{
-					MethodName: "channelTransferByCustomer",
-					RequestId:  requestID,
-					Chaincode:  cmn.ChannelFiat,
-					Channel:    cmn.ChannelFiat,
-					Nonce:      nonce,
-					PublicKey:  publicKey,
-					Sign:       base58.Encode(sign),
-				},
-				IdTransfer: channelTransferArgs[0],
-				ChannelTo:  channelTransferArgs[1],
-				Token:      channelTransferArgs[2],
-				Amount:     channelTransferArgs[3],
-			}
-
-			By("sending transfer request")
-			r, err := apiClient.TransferByCustomer(clientCtx, transfer)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(r.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_IN_PROCESS))
-
-			By("checking transfer status")
-			transferStatusRequest := &cligrpc.TransferStatusRequest{
-				IdTransfer: transferID,
-			}
-
-			excludeStatus := cligrpc.TransferStatusResponse_STATUS_IN_PROCESS.String()
-			value, err := anypb.New(wrapperspb.String(excludeStatus))
-			Expect(err).NotTo(HaveOccurred())
-
-			transferStatusRequest.Options = append(transferStatusRequest.Options, &typepb.Option{
-				Name:  "excludeStatus",
-				Value: value,
-			})
-
-			ctx, cancel := context.WithTimeout(clientCtx, network.EventuallyTimeout*2)
-			defer cancel()
-
-			By("awaiting for channel transfer to respond")
-			statusResponse, err := apiClient.TransferStatus(ctx, transferStatusRequest)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(statusResponse.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_COMPLETED))
-
-			By("checking result balances")
-			client.Query(network, peer, cmn.ChannelFiat, cmn.ChannelFiat,
-				fabricnetwork.CheckResult(fabricnetwork.CheckBalance("750"), nil),
-				"balanceOf", user.AddressBase58Check)
-
-			client.Query(network, peer, cmn.ChannelCC, cmn.ChannelCC,
-				fabricnetwork.CheckResult(fabricnetwork.CheckBalance("250"), nil),
-				"allowedBalanceOf", user.AddressBase58Check, "FIAT")
-		})
-
-		It("transfer status with wrong transfer id test", func() {
-			By("creating grpc connection")
-			clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
-
-			transportCredentials := insecure.NewCredentials()
-			grpcAddress := networkFound.ChannelTransferGRPCAddress()
-
-			var err error
-
-			conn, err = grpc.Dial(grpcAddress, grpc.WithTransportCredentials(transportCredentials))
-			Expect(err).NotTo(HaveOccurred())
-			defer func() {
-				err := conn.Close()
-				Expect(err).NotTo(HaveOccurred())
-			}()
-
-			By("creating channel transfer API client")
-			apiClient = cligrpc.NewAPIClient(conn)
-
-			By("requesting status of transfer with id = 1")
-			transferStatusRequest := &cligrpc.TransferStatusRequest{
-				IdTransfer: "1",
-			}
-			_, err = apiClient.TransferStatus(clientCtx, transferStatusRequest)
-			Expect(err).To(MatchError(ContainSubstring("object not found")))
-		})
-
-		It("transfer status filter test", func() {
-			By("creating grpc connection")
-			clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
-
-			transportCredentials := insecure.NewCredentials()
-			grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
-
-			var err error
-
-			conn, err = grpc.Dial(grpcAddress, grpc.WithTransportCredentials(transportCredentials))
-			Expect(err).NotTo(HaveOccurred())
-			defer func() {
-				err := conn.Close()
-				Expect(err).NotTo(HaveOccurred())
-			}()
-
-			By("creating channel transfer API client")
-			apiClient = cligrpc.NewAPIClient(conn)
-
-			By("creating channel transfer request")
-			transferID := uuid.NewString()
-			channelTransferArgs := []string{transferID, "CC", "FIAT", "250"}
-
-			requestID := uuid.NewString()
-			nonce := client.NewNonceByTime().Get()
-			signArgs := append(append([]string{"channelTransferByCustomer", requestID, cmn.ChannelFiat, cmn.ChannelFiat}, channelTransferArgs...), nonce)
-			publicKey, sign, err := user.Sign(signArgs...)
-			Expect(err).NotTo(HaveOccurred())
-
-			transfer := &cligrpc.TransferBeginCustomerRequest{
-				Generals: &cligrpc.GeneralParams{
-					MethodName: "channelTransferByCustomer",
-					RequestId:  requestID,
-					Chaincode:  cmn.ChannelFiat,
-					Channel:    cmn.ChannelFiat,
-					Nonce:      nonce,
-					PublicKey:  publicKey,
-					Sign:       base58.Encode(sign),
-				},
-				IdTransfer: channelTransferArgs[0],
-				ChannelTo:  channelTransferArgs[1],
-				Token:      channelTransferArgs[2],
-				Amount:     channelTransferArgs[3],
-			}
-
-			By("sending transfer request")
-			r, err := apiClient.TransferByCustomer(clientCtx, transfer)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(r.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_IN_PROCESS))
-
-			By("checking transfer status")
-			transferStatusRequest := &cligrpc.TransferStatusRequest{
-				IdTransfer: transferID,
-			}
-
-			excludeStatus := cligrpc.TransferStatusResponse_STATUS_IN_PROCESS.String()
-			value, err := anypb.New(wrapperspb.String(excludeStatus))
-			Expect(err).NotTo(HaveOccurred())
-
-			transferStatusRequest.Options = append(transferStatusRequest.Options, &typepb.Option{
-				Name:  "excludeStatus",
-				Value: value,
-			})
-
-			ctx, cancel := context.WithTimeout(clientCtx, network.EventuallyTimeout*2)
-			defer cancel()
-
-			By("awaiting for channel transfer to respond")
-			statusResponse, err := apiClient.TransferStatus(ctx, transferStatusRequest)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(statusResponse.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_COMPLETED))
-
-		})
-
-		It("transfer wrong STATUS_CANCELLED filter test", func() {
-			By("creating grpc connection")
-			clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
-
-			transportCredentials := insecure.NewCredentials()
-			grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
-
-			var err error
-
-			conn, err = grpc.Dial(grpcAddress, grpc.WithTransportCredentials(transportCredentials))
-			Expect(err).NotTo(HaveOccurred())
-			defer func() {
-				err := conn.Close()
-				Expect(err).NotTo(HaveOccurred())
-			}()
-
-			By("creating channel transfer API client")
-			apiClient = cligrpc.NewAPIClient(conn)
-
-			By("requesting status of transfer with id = 1")
-			transferStatusRequest := &cligrpc.TransferStatusRequest{
-				IdTransfer: "1",
-			}
-
-			By("setting STATUS_CANCELLED filter")
-			excludeStatus := cligrpc.TransferStatusResponse_STATUS_CANCELED.String()
-			value, err := anypb.New(wrapperspb.String(excludeStatus))
-			Expect(err).NotTo(HaveOccurred())
-
-			transferStatusRequest.Options = append(transferStatusRequest.Options, &typepb.Option{
-				Name:  "excludeStatus",
-				Value: value,
-			})
-
-			By("checking status")
-			_, err = apiClient.TransferStatus(clientCtx, transferStatusRequest)
-			Expect(err).To(MatchError(ContainSubstring("exclude status not valid")))
-		})
-
-		It("transfer wrong STATUS_COMPLETED filter test", func() {
-			By("creating grpc connection")
-			clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
-
-			transportCredentials := insecure.NewCredentials()
-			grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
-
-			var err error
-
-			conn, err = grpc.Dial(grpcAddress, grpc.WithTransportCredentials(transportCredentials))
-			Expect(err).NotTo(HaveOccurred())
-			defer func() {
-				err := conn.Close()
-				Expect(err).NotTo(HaveOccurred())
-			}()
-
-			By("creating channel transfer API client")
-			apiClient = cligrpc.NewAPIClient(conn)
-
-			By("requesting status of transfer with id = 1")
-			transferStatusRequest := &cligrpc.TransferStatusRequest{
-				IdTransfer: "1",
-			}
-
-			By("setting STATUS_COMPLETED filter")
-			excludeStatus := cligrpc.TransferStatusResponse_STATUS_COMPLETED.String()
-			value, err := anypb.New(wrapperspb.String(excludeStatus))
-			Expect(err).NotTo(HaveOccurred())
-
-			transferStatusRequest.Options = append(transferStatusRequest.Options, &typepb.Option{
-				Name:  "excludeStatus",
-				Value: value,
-			})
-
-			By("checking status")
-			_, err = apiClient.TransferStatus(clientCtx, transferStatusRequest)
-			Expect(err).To(MatchError(ContainSubstring("exclude status not valid")))
-		})
-
-		It("transfer wrong STATUS_ERROR filter test", func() {
-			By("creating grpc connection")
-			clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
-
-			transportCredentials := insecure.NewCredentials()
-			grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
-
-			var err error
-
-			conn, err = grpc.Dial(grpcAddress, grpc.WithTransportCredentials(transportCredentials))
-			Expect(err).NotTo(HaveOccurred())
-			defer func() {
-				err := conn.Close()
-				Expect(err).NotTo(HaveOccurred())
-			}()
-
-			By("creating channel transfer API client")
-			apiClient = cligrpc.NewAPIClient(conn)
-
-			By("requesting status of transfer with id = 1")
-			transferStatusRequest := &cligrpc.TransferStatusRequest{
-				IdTransfer: "1",
-			}
-
-			By("setting STATUS_ERROR filter")
-			excludeStatus := cligrpc.TransferStatusResponse_STATUS_ERROR.String()
-			value, err := anypb.New(wrapperspb.String(excludeStatus))
-			Expect(err).NotTo(HaveOccurred())
-
-			transferStatusRequest.Options = append(transferStatusRequest.Options, &typepb.Option{
-				Name:  "excludeStatus",
-				Value: value,
-			})
-
-			By("checking status")
-			_, err = apiClient.TransferStatus(clientCtx, transferStatusRequest)
-			Expect(err).To(MatchError(ContainSubstring("exclude status not valid")))
-		})
-
-		It("transfer undefined status filter test", func() {
-			By("creating grpc connection")
-			clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
-
-			transportCredentials := insecure.NewCredentials()
-			grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
-
-			var err error
-
-			conn, err = grpc.Dial(grpcAddress, grpc.WithTransportCredentials(transportCredentials))
-			Expect(err).NotTo(HaveOccurred())
-			defer func() {
-				err := conn.Close()
-				Expect(err).NotTo(HaveOccurred())
-			}()
-
-			By("creating channel transfer API client")
-			apiClient = cligrpc.NewAPIClient(conn)
-
-			By("requesting status of transfer with id = 1")
-			transferStatusRequest := &cligrpc.TransferStatusRequest{
-				IdTransfer: "1",
-			}
-
-			By("setting not defined status filter")
-			excludeStatus := "9999999"
-			value, err := anypb.New(wrapperspb.String(excludeStatus))
-			Expect(err).NotTo(HaveOccurred())
-
-			transferStatusRequest.Options = append(transferStatusRequest.Options, &typepb.Option{
-				Name:  "excludeStatus",
-				Value: value,
-			})
-
-			By("checking status")
-			_, err = apiClient.TransferStatus(clientCtx, transferStatusRequest)
-			Expect(err).To(MatchError(ContainSubstring("exclude status not found")))
-		})
-	*/
+	It("transfer by customer test", func() {
+		amount := "250"
+		restAmount := "750"
+
+		authOpts := func(c *runtime.ClientOperation) {
+			c.AuthInfo = auth
+		}
+
+		By("creating channel transfer request")
+		transferID := uuid.NewString()
+		channelTransferArgs := []string{transferID, ccCCUpper, ccFiatUpper, amount}
+
+		requestID := uuid.NewString()
+		nonce := client.NewNonceByTime().Get()
+		signArgs := append(append([]string{fnChannelTransferByCustomer, requestID, cmn.ChannelFiat, cmn.ChannelFiat}, channelTransferArgs...), nonce)
+		publicKey, sign, err := user.Sign(signArgs...)
+		Expect(err).NotTo(HaveOccurred())
+
+		transferRequest := &models.ChannelTransferTransferBeginCustomerRequest{
+			Generals: &models.ChannelTransferGeneralParams{
+				MethodName: fnChannelTransferByCustomer,
+				RequestID:  requestID,
+				Chaincode:  cmn.ChannelFiat,
+				Channel:    cmn.ChannelFiat,
+				Nonce:      nonce,
+				PublicKey:  publicKey,
+				Sign:       base58.Encode(sign),
+			},
+			IDTransfer: channelTransferArgs[0],
+			ChannelTo:  channelTransferArgs[1],
+			Token:      channelTransferArgs[2],
+			Amount:     channelTransferArgs[3],
+		}
+
+		By("sending transfer request")
+		res, err := transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		Expect(err).NotTo(HaveOccurred())
+
+		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
+		Expect(err).NotTo(HaveOccurred())
+
+		By("awaiting for channel transfer to respond")
+		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED, "")
+		Expect(err).NotTo(HaveOccurred())
+
+		By("checking result balances")
+		client.Query(network, peer, cmn.ChannelFiat, cmn.ChannelFiat,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(restAmount), nil),
+			"balanceOf", user.AddressBase58Check)
+
+		client.Query(network, peer, cmn.ChannelCC, cmn.ChannelCC,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(amount), nil),
+			"allowedBalanceOf", user.AddressBase58Check, ccFiatUpper)
+	})
+
+	It("transfer status with wrong transfer id test", func() {
+		authOpts := func(c *runtime.ClientOperation) {
+			c.AuthInfo = auth
+		}
+
+		By("requesting status of transfer with id = 1")
+		_, err := transferCli.Transfer.TransferStatus(&transfer.TransferStatusParams{IDTransfer: "1", Context: context.Background()}, authOpts)
+		Expect(err).To(MatchError(ContainSubstring("object not found")))
+	})
+
+	It("admin transfer to wrong channel", func() {
+		amount := "250"
+		sendAmount := "0"
+		wrongChannel := "ASD"
+
+		authOpts := func(c *runtime.ClientOperation) {
+			c.AuthInfo = auth
+		}
+
+		By("creating channel transfer request")
+		transferID := uuid.NewString()
+		channelTransferArgs := []string{transferID, wrongChannel, user.AddressBase58Check, ccFiatUpper, amount}
+
+		requestID := uuid.NewString()
+		nonce := client.NewNonceByTime().Get()
+		signArgs := append(append([]string{fnChannelTransferByAdmin, requestID, cmn.ChannelFiat, cmn.ChannelFiat}, channelTransferArgs...), nonce)
+		publicKey, sign, err := admin.Sign(signArgs...)
+		Expect(err).NotTo(HaveOccurred())
+
+		transferRequest := &models.ChannelTransferTransferBeginAdminRequest{
+			Generals: &models.ChannelTransferGeneralParams{
+				MethodName: fnChannelTransferByAdmin,
+				RequestID:  requestID,
+				Chaincode:  cmn.ChannelFiat,
+				Channel:    cmn.ChannelFiat,
+				Nonce:      nonce,
+				PublicKey:  publicKey,
+				Sign:       base58.Encode(sign),
+			},
+			IDTransfer: channelTransferArgs[0],
+			ChannelTo:  channelTransferArgs[1],
+			Address:    channelTransferArgs[2],
+			Token:      channelTransferArgs[3],
+			Amount:     channelTransferArgs[4],
+		}
+
+		By("sending transfer request")
+		res, err := transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		Expect(err).NotTo(HaveOccurred())
+
+		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
+		Expect(err).NotTo(HaveOccurred())
+
+		By("awaiting for channel transfer to respond")
+		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSERROR, errWrongChannel)
+		Expect(err).NotTo(HaveOccurred())
+
+		By("checking result balances")
+		client.Query(network, peer, cmn.ChannelFiat, cmn.ChannelFiat,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(emitAmount), nil),
+			"balanceOf", user.AddressBase58Check)
+
+		client.Query(network, peer, cmn.ChannelCC, cmn.ChannelCC,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(sendAmount), nil),
+			"allowedBalanceOf", user.AddressBase58Check, ccFiatUpper)
+	})
+
+	It("client transfer to wrong channel", func() {
+		amount := "250"
+		sendAmount := "0"
+		wrongChannel := "ASD"
+
+		authOpts := func(c *runtime.ClientOperation) {
+			c.AuthInfo = auth
+		}
+
+		By("creating channel transfer request")
+		transferID := uuid.NewString()
+		channelTransferArgs := []string{transferID, wrongChannel, ccFiatUpper, amount}
+
+		requestID := uuid.NewString()
+		nonce := client.NewNonceByTime().Get()
+		signArgs := append(append([]string{fnChannelTransferByCustomer, requestID, cmn.ChannelFiat, cmn.ChannelFiat}, channelTransferArgs...), nonce)
+		publicKey, sign, err := user.Sign(signArgs...)
+		Expect(err).NotTo(HaveOccurred())
+
+		transferRequest := &models.ChannelTransferTransferBeginCustomerRequest{
+			Generals: &models.ChannelTransferGeneralParams{
+				MethodName: fnChannelTransferByCustomer,
+				RequestID:  requestID,
+				Chaincode:  cmn.ChannelFiat,
+				Channel:    cmn.ChannelFiat,
+				Nonce:      nonce,
+				PublicKey:  publicKey,
+				Sign:       base58.Encode(sign),
+			},
+			IDTransfer: channelTransferArgs[0],
+			ChannelTo:  channelTransferArgs[1],
+			Token:      channelTransferArgs[2],
+			Amount:     channelTransferArgs[3],
+		}
+
+		By("sending transfer request")
+		res, err := transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		Expect(err).NotTo(HaveOccurred())
+
+		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
+		Expect(err).NotTo(HaveOccurred())
+
+		By("awaiting for channel transfer to respond")
+		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSERROR, errWrongChannel)
+		Expect(err).NotTo(HaveOccurred())
+
+		By("checking result balances")
+		client.Query(network, peer, cmn.ChannelFiat, cmn.ChannelFiat,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(emitAmount), nil),
+			"balanceOf", user.AddressBase58Check)
+
+		client.Query(network, peer, cmn.ChannelCC, cmn.ChannelCC,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(sendAmount), nil),
+			"allowedBalanceOf", user.AddressBase58Check, ccFiatUpper)
+	})
+
+	It("admin transfer to not valid channel", func() {
+		amount := "250"
+		sendAmount := "0"
+
+		authOpts := func(c *runtime.ClientOperation) {
+			c.AuthInfo = auth
+		}
+
+		By("creating channel transfer request")
+		transferID := uuid.NewString()
+		channelTransferArgs := []string{transferID, ccACLUpper, user.AddressBase58Check, ccACLUpper, amount}
+
+		requestID := uuid.NewString()
+		nonce := client.NewNonceByTime().Get()
+		signArgs := append(append([]string{fnChannelTransferByAdmin, requestID, cmn.ChannelFiat, cmn.ChannelFiat}, channelTransferArgs...), nonce)
+		publicKey, sign, err := admin.Sign(signArgs...)
+		Expect(err).NotTo(HaveOccurred())
+
+		transferRequest := &models.ChannelTransferTransferBeginAdminRequest{
+			Generals: &models.ChannelTransferGeneralParams{
+				MethodName: fnChannelTransferByAdmin,
+				RequestID:  requestID,
+				Chaincode:  cmn.ChannelAcl,
+				Channel:    cmn.ChannelAcl,
+				Nonce:      nonce,
+				PublicKey:  publicKey,
+				Sign:       base58.Encode(sign),
+			},
+			IDTransfer: channelTransferArgs[0],
+			ChannelTo:  ccFiatUpper,
+			Address:    channelTransferArgs[2],
+			Token:      channelTransferArgs[3],
+			Amount:     channelTransferArgs[4],
+		}
+
+		By("sending transfer request")
+		_, err = transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		Expect(err).Should(ContainSubstring(errNotValidChannel))
+
+		By("checking result balances")
+		client.Query(network, peer, cmn.ChannelFiat, cmn.ChannelFiat,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(emitAmount), nil),
+			"balanceOf", user.AddressBase58Check)
+
+		client.Query(network, peer, cmn.ChannelCC, cmn.ChannelCC,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(sendAmount), nil),
+			"allowedBalanceOf", user.AddressBase58Check, ccFiatUpper)
+	})
+
+	It("client transfer to not valid channel", func() {
+		amount := "250"
+		sendAmount := "0"
+
+		authOpts := func(c *runtime.ClientOperation) {
+			c.AuthInfo = auth
+		}
+
+		By("creating channel transfer request")
+		transferID := uuid.NewString()
+		channelTransferArgs := []string{transferID, ccACLUpper, ccACLUpper, amount}
+
+		requestID := uuid.NewString()
+		nonce := client.NewNonceByTime().Get()
+		signArgs := append(append([]string{fnChannelTransferByCustomer, requestID, cmn.ChannelFiat, cmn.ChannelFiat}, channelTransferArgs...), nonce)
+		publicKey, sign, err := user.Sign(signArgs...)
+		Expect(err).NotTo(HaveOccurred())
+
+		transferRequest := &models.ChannelTransferTransferBeginCustomerRequest{
+			Generals: &models.ChannelTransferGeneralParams{
+				MethodName: fnChannelTransferByCustomer,
+				RequestID:  requestID,
+				Chaincode:  cmn.ChannelAcl,
+				Channel:    cmn.ChannelAcl,
+				Nonce:      nonce,
+				PublicKey:  publicKey,
+				Sign:       base58.Encode(sign),
+			},
+			IDTransfer: channelTransferArgs[0],
+			ChannelTo:  ccFiatUpper,
+			Token:      channelTransferArgs[2],
+			Amount:     channelTransferArgs[3],
+		}
+
+		By("sending transfer request")
+		_, err = transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		Expect(err).Should(ContainSubstring(errNotValidChannel))
+
+		By("checking result balances")
+		client.Query(network, peer, cmn.ChannelFiat, cmn.ChannelFiat,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(emitAmount), nil),
+			"balanceOf", user.AddressBase58Check)
+
+		client.Query(network, peer, cmn.ChannelCC, cmn.ChannelCC,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(sendAmount), nil),
+			"allowedBalanceOf", user.AddressBase58Check, ccFiatUpper)
+	})
+
+	It("admin transfer insufficient funds", func() {
+		amount := "250"
+		sendAmount := "0"
+
+		authOpts := func(c *runtime.ClientOperation) {
+			c.AuthInfo = auth
+		}
+
+		By("creating new user")
+		user1, err := client.NewUserFoundation(pbfound.KeyType_ed25519)
+		Expect(err).NotTo(HaveOccurred())
+
+		client.AddUser(network, peer, network.Orderers[0], user1)
+
+		By("creating channel transfer request")
+		transferID := uuid.NewString()
+		channelTransferArgs := []string{transferID, ccCCUpper, user1.AddressBase58Check, ccFiatUpper, amount}
+
+		requestID := uuid.NewString()
+		nonce := client.NewNonceByTime().Get()
+		signArgs := append(append([]string{fnChannelTransferByAdmin, requestID, cmn.ChannelFiat, cmn.ChannelFiat}, channelTransferArgs...), nonce)
+		publicKey, sign, err := admin.Sign(signArgs...)
+		Expect(err).NotTo(HaveOccurred())
+
+		transferRequest := &models.ChannelTransferTransferBeginAdminRequest{
+			Generals: &models.ChannelTransferGeneralParams{
+				MethodName: fnChannelTransferByAdmin,
+				RequestID:  requestID,
+				Chaincode:  cmn.ChannelFiat,
+				Channel:    cmn.ChannelFiat,
+				Nonce:      nonce,
+				PublicKey:  publicKey,
+				Sign:       base58.Encode(sign),
+			},
+			IDTransfer: channelTransferArgs[0],
+			ChannelTo:  channelTransferArgs[1],
+			Address:    channelTransferArgs[2],
+			Token:      channelTransferArgs[3],
+			Amount:     channelTransferArgs[4],
+		}
+
+		By("sending transfer request")
+		res, err := transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		Expect(err).NotTo(HaveOccurred())
+
+		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
+		Expect(err).NotTo(HaveOccurred())
+
+		By("awaiting for channel transfer to respond")
+		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSERROR, errInsufficientFunds)
+		Expect(err).NotTo(HaveOccurred())
+
+		By("checking result balances")
+		client.Query(network, peer, cmn.ChannelFiat, cmn.ChannelFiat,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(emitAmount), nil),
+			"balanceOf", user.AddressBase58Check)
+
+		client.Query(network, peer, cmn.ChannelCC, cmn.ChannelCC,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(sendAmount), nil),
+			"allowedBalanceOf", user.AddressBase58Check, ccFiatUpper)
+
+	})
+
+	It("customer transfer insufficient funds", func() {
+		amount := "250"
+		sendAmount := "0"
+
+		authOpts := func(c *runtime.ClientOperation) {
+			c.AuthInfo = auth
+		}
+
+		By("creating new user")
+		user1, err := client.NewUserFoundation(pbfound.KeyType_ed25519)
+		Expect(err).NotTo(HaveOccurred())
+
+		client.AddUser(network, peer, network.Orderers[0], user1)
+
+		By("creating channel transfer request")
+		transferID := uuid.NewString()
+		channelTransferArgs := []string{transferID, ccCCUpper, ccFiatUpper, amount}
+
+		requestID := uuid.NewString()
+		nonce := client.NewNonceByTime().Get()
+		signArgs := append(append([]string{fnChannelTransferByCustomer, requestID, cmn.ChannelFiat, cmn.ChannelFiat}, channelTransferArgs...), nonce)
+		publicKey, sign, err := user1.Sign(signArgs...)
+		Expect(err).NotTo(HaveOccurred())
+
+		transferRequest := &models.ChannelTransferTransferBeginCustomerRequest{
+			Generals: &models.ChannelTransferGeneralParams{
+				MethodName: fnChannelTransferByCustomer,
+				RequestID:  requestID,
+				Chaincode:  cmn.ChannelFiat,
+				Channel:    cmn.ChannelFiat,
+				Nonce:      nonce,
+				PublicKey:  publicKey,
+				Sign:       base58.Encode(sign),
+			},
+			IDTransfer: channelTransferArgs[0],
+			ChannelTo:  channelTransferArgs[1],
+			Token:      channelTransferArgs[2],
+			Amount:     channelTransferArgs[3],
+		}
+
+		By("sending transfer request")
+		res, err := transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		Expect(err).NotTo(HaveOccurred())
+
+		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
+		Expect(err).NotTo(HaveOccurred())
+
+		By("awaiting for channel transfer to respond")
+		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSERROR, errInsufficientFunds)
+		Expect(err).NotTo(HaveOccurred())
+
+		By("checking result balances")
+		client.Query(network, peer, cmn.ChannelFiat, cmn.ChannelFiat,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(emitAmount), nil),
+			"balanceOf", user.AddressBase58Check)
+
+		client.Query(network, peer, cmn.ChannelCC, cmn.ChannelCC,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(sendAmount), nil),
+			"allowedBalanceOf", user.AddressBase58Check, ccFiatUpper)
+	})
+
+	It("admin transfer wrong channel from", func() {
+		amount := "250"
+		sendAmount := "0"
+
+		authOpts := func(c *runtime.ClientOperation) {
+			c.AuthInfo = auth
+		}
+
+		By("creating channel transfer request")
+		transferID := uuid.NewString()
+		channelTransferArgs := []string{transferID, ccCCUpper, user.AddressBase58Check, ccIndustrialUpper, amount}
+
+		requestID := uuid.NewString()
+		nonce := client.NewNonceByTime().Get()
+		signArgs := append(append([]string{fnChannelTransferByAdmin, requestID, cmn.ChannelIndustrial, cmn.ChannelIndustrial}, channelTransferArgs...), nonce)
+		publicKey, sign, err := admin.Sign(signArgs...)
+		Expect(err).NotTo(HaveOccurred())
+
+		transferRequest := &models.ChannelTransferTransferBeginAdminRequest{
+			Generals: &models.ChannelTransferGeneralParams{
+				MethodName: fnChannelTransferByAdmin,
+				RequestID:  requestID,
+				Chaincode:  cmn.ChannelIndustrial,
+				Channel:    cmn.ChannelIndustrial,
+				Nonce:      nonce,
+				PublicKey:  publicKey,
+				Sign:       base58.Encode(sign),
+			},
+			IDTransfer: channelTransferArgs[0],
+			ChannelTo:  channelTransferArgs[1],
+			Address:    channelTransferArgs[2],
+			Token:      channelTransferArgs[3],
+			Amount:     channelTransferArgs[4],
+		}
+
+		By("sending transfer request")
+		res, err := transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		Expect(err).NotTo(HaveOccurred())
+
+		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
+		Expect(err).NotTo(HaveOccurred())
+
+		By("awaiting for channel transfer to respond")
+		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSERROR, errInsufficientFunds)
+		Expect(err).NotTo(HaveOccurred())
+
+		By("checking result balances")
+		client.Query(network, peer, cmn.ChannelFiat, cmn.ChannelFiat,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(emitAmount), nil),
+			"balanceOf", user.AddressBase58Check)
+
+		client.Query(network, peer, cmn.ChannelCC, cmn.ChannelCC,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(sendAmount), nil),
+			"allowedBalanceOf", user.AddressBase58Check, ccFiatUpper)
+	})
+
+	It("customer transfer wrong channel from", func() {
+		amount := "250"
+		sendAmount := "0"
+
+		authOpts := func(c *runtime.ClientOperation) {
+			c.AuthInfo = auth
+		}
+
+		By("creating channel transfer request")
+		transferID := uuid.NewString()
+		channelTransferArgs := []string{transferID, ccCCUpper, ccIndustrialUpper, amount}
+
+		requestID := uuid.NewString()
+		nonce := client.NewNonceByTime().Get()
+		signArgs := append(append([]string{fnChannelTransferByCustomer, requestID, cmn.ChannelIndustrial, cmn.ChannelIndustrial}, channelTransferArgs...), nonce)
+		publicKey, sign, err := user.Sign(signArgs...)
+		Expect(err).NotTo(HaveOccurred())
+
+		transferRequest := &models.ChannelTransferTransferBeginCustomerRequest{
+			Generals: &models.ChannelTransferGeneralParams{
+				MethodName: fnChannelTransferByCustomer,
+				RequestID:  requestID,
+				Chaincode:  cmn.ChannelIndustrial,
+				Channel:    cmn.ChannelIndustrial,
+				Nonce:      nonce,
+				PublicKey:  publicKey,
+				Sign:       base58.Encode(sign),
+			},
+			IDTransfer: channelTransferArgs[0],
+			ChannelTo:  channelTransferArgs[1],
+			Token:      channelTransferArgs[2],
+			Amount:     channelTransferArgs[3],
+		}
+
+		By("sending transfer request")
+		res, err := transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		Expect(err).NotTo(HaveOccurred())
+
+		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
+		Expect(err).NotTo(HaveOccurred())
+
+		By("awaiting for channel transfer to respond")
+		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSERROR, errInsufficientFunds)
+		Expect(err).NotTo(HaveOccurred())
+
+		By("checking result balances")
+		client.Query(network, peer, cmn.ChannelFiat, cmn.ChannelFiat,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(emitAmount), nil),
+			"balanceOf", user.AddressBase58Check)
+
+		client.Query(network, peer, cmn.ChannelCC, cmn.ChannelCC,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(sendAmount), nil),
+			"allowedBalanceOf", user.AddressBase58Check, ccFiatUpper)
+	})
+
+	It("admin transfer wrong channel to", func() {
+		amount := "250"
+		sendAmount := "0"
+
+		authOpts := func(c *runtime.ClientOperation) {
+			c.AuthInfo = auth
+		}
+
+		By("creating channel transfer request")
+		transferID := uuid.NewString()
+		channelTransferArgs := []string{transferID, ccCCUpper, user.AddressBase58Check, ccIndustrialUpper, amount}
+
+		requestID := uuid.NewString()
+		nonce := client.NewNonceByTime().Get()
+		signArgs := append(append([]string{fnChannelTransferByAdmin, requestID, cmn.ChannelFiat, cmn.ChannelFiat}, channelTransferArgs...), nonce)
+		publicKey, sign, err := admin.Sign(signArgs...)
+		Expect(err).NotTo(HaveOccurred())
+
+		transferRequest := &models.ChannelTransferTransferBeginAdminRequest{
+			Generals: &models.ChannelTransferGeneralParams{
+				MethodName: fnChannelTransferByAdmin,
+				RequestID:  requestID,
+				Chaincode:  cmn.ChannelFiat,
+				Channel:    cmn.ChannelFiat,
+				Nonce:      nonce,
+				PublicKey:  publicKey,
+				Sign:       base58.Encode(sign),
+			},
+			IDTransfer: channelTransferArgs[0],
+			ChannelTo:  channelTransferArgs[1],
+			Address:    channelTransferArgs[2],
+			Token:      channelTransferArgs[3],
+			Amount:     channelTransferArgs[4],
+		}
+
+		By("sending transfer request")
+		_, err = transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		Expect(err).Should(ContainSubstring(errIncorrectToken))
+
+		By("checking result balances")
+		client.Query(network, peer, cmn.ChannelFiat, cmn.ChannelFiat,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(emitAmount), nil),
+			"balanceOf", user.AddressBase58Check)
+
+		client.Query(network, peer, cmn.ChannelCC, cmn.ChannelCC,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(sendAmount), nil),
+			"allowedBalanceOf", user.AddressBase58Check, ccFiatUpper)
+	})
+
+	It("customer transfer wrong channel to", func() {
+		amount := "250"
+		sendAmount := "0"
+
+		authOpts := func(c *runtime.ClientOperation) {
+			c.AuthInfo = auth
+		}
+
+		By("creating channel transfer request")
+		transferID := uuid.NewString()
+		channelTransferArgs := []string{transferID, ccCCUpper, ccIndustrialUpper, amount}
+
+		requestID := uuid.NewString()
+		nonce := client.NewNonceByTime().Get()
+		signArgs := append(append([]string{fnChannelTransferByCustomer, requestID, cmn.ChannelFiat, cmn.ChannelFiat}, channelTransferArgs...), nonce)
+		publicKey, sign, err := user.Sign(signArgs...)
+		Expect(err).NotTo(HaveOccurred())
+
+		transferRequest := &models.ChannelTransferTransferBeginCustomerRequest{
+			Generals: &models.ChannelTransferGeneralParams{
+				MethodName: fnChannelTransferByCustomer,
+				RequestID:  requestID,
+				Chaincode:  cmn.ChannelFiat,
+				Channel:    cmn.ChannelFiat,
+				Nonce:      nonce,
+				PublicKey:  publicKey,
+				Sign:       base58.Encode(sign),
+			},
+			IDTransfer: channelTransferArgs[0],
+			ChannelTo:  channelTransferArgs[1],
+			Token:      channelTransferArgs[2],
+			Amount:     channelTransferArgs[3],
+		}
+
+		By("sending transfer request")
+		_, err = transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		Expect(err).Should(ContainSubstring(errIncorrectToken))
+
+		By("checking result balances")
+		client.Query(network, peer, cmn.ChannelFiat, cmn.ChannelFiat,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(emitAmount), nil),
+			"balanceOf", user.AddressBase58Check)
+
+		client.Query(network, peer, cmn.ChannelCC, cmn.ChannelCC,
+			fabricnetwork.CheckResult(fabricnetwork.CheckBalance(sendAmount), nil),
+			"allowedBalanceOf", user.AddressBase58Check, ccFiatUpper)
+	})
 })
+
+func checkResponseStatus(
+	payload *models.ChannelTransferTransferStatusResponse,
+	expectedStatus models.ChannelTransferTransferStatusResponseStatus,
+	expectedError string,
+) error {
+	if *payload.Status == models.ChannelTransferTransferStatusResponseStatusSTATUSERROR &&
+		expectedStatus != models.ChannelTransferTransferStatusResponseStatusSTATUSERROR &&
+		expectedError == "" {
+		return fmt.Errorf("error occured: %s", payload.Message)
+	}
+	if expectedError != "" && !strings.Contains(payload.Message, expectedError) {
+		return fmt.Errorf("expected %s, got %s", expectedError, payload.Message)
+	}
+	if *payload.Status != expectedStatus {
+		return fmt.Errorf("status %s was not received", string(expectedStatus))
+	}
+
+	return nil
+}
+
+func waitForAnswerAndCheckStatus(
+	clientCtx context.Context,
+	transferCli *clihttp.CrossChanelTransfer,
+	transferID string,
+	authOpts func(c *runtime.ClientOperation),
+	expectedStatus models.ChannelTransferTransferStatusResponseStatus,
+	expectedError string,
+) error {
+	var (
+		response *transfer.TransferStatusOK
+		err      error
+	)
+	i := 0
+	for i < transferExecutionTimeout {
+		time.Sleep(time.Second * 1)
+		response, err = transferCli.Transfer.TransferStatus(&transfer.TransferStatusParams{IDTransfer: transferID, Context: clientCtx}, authOpts)
+		if err != nil {
+			return err
+		}
+		if expectedStatus != models.ChannelTransferTransferStatusResponseStatusSTATUSERROR && *response.Payload.Status == models.ChannelTransferTransferStatusResponseStatusSTATUSERROR {
+			return fmt.Errorf("error occured: %s", response.Payload.Message)
+		}
+		if err := checkResponseStatus(response.Payload, expectedStatus, expectedError); err == nil {
+			return nil
+		}
+		i++
+	}
+	return fmt.Errorf("status %s was not received", string(expectedStatus))
+}
