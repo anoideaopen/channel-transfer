@@ -67,7 +67,10 @@ func sigstopService() error {
 
 	time.Sleep(time.Millisecond * 1500)
 
-	waitStatusWithRetry(pid, "stopped")
+	err = waitStatusWithRetry(pid, "stopped")
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -105,7 +108,9 @@ func sigcontService() error {
 
 	time.Sleep(time.Millisecond * 1500)
 
-	waitStatusWithRetry(pid, "sleeping")
+	if err = waitStatusWithRetry(pid, "sleeping"); err != nil {
+		return err
+	}
 
 	return nil
 }
