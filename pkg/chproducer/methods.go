@@ -95,6 +95,10 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 				failTag = expiredTransferTag
 			}
 
+			h.log.Debugf("event status %s, id %s, channel from %s, channel to %s",
+				status.String(), transfer.GetId(), transfer.GetFrom(), transfer.GetTo(),
+			)
+
 			switch status {
 			case model.InProgressTransferFrom:
 				if lastErr != nil {
