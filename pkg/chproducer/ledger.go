@@ -26,6 +26,7 @@ func (h *Handler) queryChannelTransfers(ctx context.Context) ([]*fpb.CCTransfer,
 
 	transfers := make([]*fpb.CCTransfer, 0)
 	bookmark := ""
+	h.log.Debugf("query channel transfers from, channel %s", h.chaincodeID)
 
 	for {
 		resp, err := executor.Query(
@@ -65,6 +66,7 @@ func (h *Handler) queryChannelTransfers(ctx context.Context) ([]*fpb.CCTransfer,
 func (h *Handler) createTransferFrom(ctx context.Context, request model.TransferRequest) (model.StatusKind, error) {
 	startTime := time.Now()
 
+	h.log.Debugf("create cc transfer from, channel %s, id %s, method %s", h.chaincodeID, request.Transfer, request.Method)
 	doer, err := h.poolController.Executor(h.channel)
 	if err != nil {
 		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
@@ -92,8 +94,8 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 	for _, arg := range args {
 		tArgs = append(tArgs, string(arg))
 	}
-	h.log.Debugf("transfer request arguments: %+v", tArgs)
 
+	h.log.Debugf("transfer request arguments: %+v", tArgs)
 	_, err = doer.Invoke(
 		ctx,
 		channel.Request{
@@ -119,6 +121,8 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 
 func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer) (model.StatusKind, error) {
 	channelName := strings.ToLower(transfer.GetTo())
+	h.log.Debugf("create cc transfer to, channel %s, id %s", channelName, transfer.GetId())
+
 	if status, err := h.expandTO(ctx, channelName); err != nil {
 		return status, err
 	}
@@ -150,6 +154,8 @@ func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer
 }
 
 func (h *Handler) cancelTransferFrom(ctx context.Context, transferID string) (model.StatusKind, error) {
+	h.log.Debugf("cancel cc transfer from, channel %s, id %s", h.channel, transferID)
+
 	if err := h.invoke(ctx, h.channel, h.chaincodeID, model.TxCancelCCTransferFrom, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
 			h.log.Error(errors.Errorf("cancel transfer: %w", err))
@@ -163,6 +169,8 @@ func (h *Handler) cancelTransferFrom(ctx context.Context, transferID string) (mo
 }
 
 func (h *Handler) commitTransferFrom(ctx context.Context, transferID string) (model.StatusKind, error) {
+	h.log.Debugf("commit cc transfer from, channel %s, id %s", h.channel, transferID)
+
 	if err := h.invoke(ctx, h.channel, h.chaincodeID, model.NbTxCommitCCTransferFrom, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
 			h.log.Error(errors.Errorf("commit transfer: %w", err))
@@ -175,6 +183,8 @@ func (h *Handler) commitTransferFrom(ctx context.Context, transferID string) (mo
 }
 
 func (h *Handler) deleteTransferFrom(ctx context.Context, transferID string) (model.StatusKind, error) {
+	h.log.Debugf("delete cc transfer from, channel %s, id %s", h.channel, transferID)
+
 	if err := h.invoke(ctx, h.channel, h.chaincodeID, model.NbTxDeleteCCTransferFrom, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
 			h.log.Error(errors.Errorf("delete transfer: %w", err))
@@ -187,6 +197,8 @@ func (h *Handler) deleteTransferFrom(ctx context.Context, transferID string) (mo
 }
 
 func (h *Handler) deleteTransferTo(ctx context.Context, channelName string, transferID string) (model.StatusKind, error) {
+	h.log.Debugf("delete cc transfer to, channel %s, id %s", channelName, transferID)
+
 	if err := h.invoke(ctx, channelName, channelName, model.NbTxDeleteCCTransferTo, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
 			h.log.Error(errors.Errorf("delete transfer: %w", err))
@@ -226,6 +238,7 @@ func (h *Handler) queryChannelTransferTo(ctx context.Context, channelName string
 		return false, errors.Errorf("expand: %w", err)
 	}
 
+	h.log.Debugf("query channel transfer to, channel %s, id %s", channelName, transferID)
 	_, err = executor.Query(
 		ctx,
 		channel.Request{
@@ -252,6 +265,7 @@ func (h *Handler) queryChannelTransferFrom(ctx context.Context, channelName stri
 		return false, errors.Errorf("expand: %w", err)
 	}
 
+	h.log.Debugf("query channel transfer from, channel %s, id %s", channelName, transferID)
 	_, err = executor.Query(
 		ctx,
 		channel.Request{
