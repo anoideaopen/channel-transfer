@@ -22,7 +22,7 @@ require (
 	github.com/onsi/gomega v1.33.1
 	github.com/tedsuo/ifrit v0.0.0-20220120221754-dd274de71113
 	google.golang.org/grpc v1.64.1
-	google.golang.org/protobuf v1.33.0
+	google.golang.org/protobuf v1.34.2
 )
 
 require (

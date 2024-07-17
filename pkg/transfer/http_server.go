@@ -28,7 +28,6 @@ func runHTTP(ctx context.Context, tlsConfig *tls.Config, addressHTTP string, add
 	log := glog.FromContext(ctx).With(logger.Labels{Component: logger.ComponentAPI}.Fields()...)
 
 	conn, err := grpc.NewClient(addressGRPC, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	// conn, err := grpc.DialContext(ctx, addressGRPC, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	if err != nil {
 		return fmt.Errorf("grpc dial: %w", err)
 	}
