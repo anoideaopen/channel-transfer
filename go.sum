@@ -28,8 +28,6 @@ github.com/anoideaopen/fabric-sdk-go v0.0.1 h1:SCnrPPqqBLredJ2AbqbpPrQlrmfWVTZiU
 github.com/anoideaopen/fabric-sdk-go v0.0.1/go.mod h1:L8ECPqpdBc/ObG4PDH4wHTsYLoi74UcSPgI0hLR/vHc=
 github.com/anoideaopen/foundation v0.0.3-0.20240705113248-db0d27993619 h1:lXIuTU/Vd1pm73pHgw1EOWbTvawHYoQbh8svFIfWbyA=
 github.com/anoideaopen/foundation v0.0.3-0.20240705113248-db0d27993619/go.mod h1:8lNLU7sbmvnbyb31740ZJuZZ2/HpNQo1pTObVpN1d8s=
-github.com/anoideaopen/foundation v0.0.3 h1:sO3SJ3nKRQ7oz9aYv0OoX5V82heoRzwflpHg7KrRt4U=
-github.com/anoideaopen/foundation v0.0.3/go.mod h1:5dkuaC4WuhkzRz2D/2067dwQ7L7XBeLmo21Ln5CDYFI=
 github.com/anoideaopen/glog v0.0.3 h1:vsWM5QvHzTMbrDy3cydkNPFpfdWrxeC8ne02f//qNaA=
 github.com/anoideaopen/glog v0.0.3/go.mod h1:8J4509ClNmF/kvvPA8XFKZ7OX+860JaFH3+nXVD+R3k=
 github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=

@@ -97,7 +97,7 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 	})
 
 	var (
-		channels            = []string{cmn.ChannelAcl, cmn.ChannelCC, cmn.ChannelFiat, cmn.ChannelIndustrial}
+		channels            = []string{cmn.ChannelAcl, cmn.ChannelCC, cmn.ChannelFiat}
 		ordererRunners      []*ginkgomon.Runner
 		redisProcess        ifrit.Process
 		redisDB             *runner.RedisDB
@@ -217,8 +217,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		cmn.DeployACL(network, components, peer, testDir, skiBackend, admin.PublicKeyBase58, admin.KeyType)
 		cmn.DeployCC(network, components, peer, testDir, skiRobot, admin.AddressBase58Check)
 		cmn.DeployFiat(network, components, peer, testDir, skiRobot,
-			admin.AddressBase58Check, feeSetter.AddressBase58Check, feeAddressSetter.AddressBase58Check)
-		cmn.DeployIndustrial(network, components, peer, testDir, skiRobot,
 			admin.AddressBase58Check, feeSetter.AddressBase58Check, feeAddressSetter.AddressBase58Check)
 	})
 	BeforeEach(func() {
