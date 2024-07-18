@@ -119,6 +119,7 @@ func (s *streams) store(key channelKey, executor *ChExecutor, channelProvider hl
 	}
 
 	s.mtx.Lock()
+	defer s.mtx.Unlock()
 	_, ok := s.data[key]
 	if ok {
 		return
@@ -129,7 +130,6 @@ func (s *streams) store(key channelKey, executor *ChExecutor, channelProvider hl
 		transfers:       make(map[transactionID]model.ID),
 		ready:           make(chan struct{}),
 	}
-	s.mtx.Unlock()
 }
 
 func (s *streams) loop(f func(key channelKey, val *biDirectFlow)) {

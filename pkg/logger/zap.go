@@ -105,7 +105,7 @@ func newSugarLogger(outputEncoding string, level string) (*sugaredLogger, error)
 			LevelKey:     "level",
 			EncodeLevel:  zapcore.CapitalLevelEncoder,
 			TimeKey:      "time",
-			EncodeTime:   zapcore.TimeEncoderOfLayout(time.RFC3339),
+			EncodeTime:   zapcore.TimeEncoderOfLayout(time.RFC3339Nano),
 			CallerKey:    "caller",
 			EncodeCaller: zapcore.ShortCallerEncoder,
 		},
