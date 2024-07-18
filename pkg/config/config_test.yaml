@@ -37,11 +37,6 @@ channels:
   - ch2
   - ch3
 
-googleCryptoSettings: # Google KMS configuration
-  gcloudProject: # GCloud project ID
-  gcloudCreds:   # path to GCloud credentials
-  userCert:      # Fabric user's cert
-
 # Redis configuration
 redisStorage:
   addr: # addresses
