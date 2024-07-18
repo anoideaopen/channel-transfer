@@ -335,7 +335,9 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 			}
 		}
 
-		pool.log.Debugf("block save in storeTransfer: %s", transferBlock.Transfer)
+		pool.log.Debugf("block save in storeTransfer %s, channel %s",
+			transferBlock.Transfer, transferBlock.Channel,
+		)
 		if err := pool.blocKStorage.BlockSave(pool.gCtx, *transferBlock, ttl); err != nil {
 			return err
 		}
@@ -401,7 +403,9 @@ func (pool *Pool) updateBatchResponse(key channelKey, transactions []model.Trans
 			}
 		}
 
-		pool.log.Debugf("block save in updateBatchResponse: %s", transferBlock.Transfer)
+		pool.log.Debugf("block save in updateBatchResponse %s, channel %s",
+			transferBlock.Transfer, transferBlock.Channel,
+		)
 		if err = pool.blocKStorage.BlockSave(pool.gCtx, transferBlock, redis.TTLNotTakenInto); err != nil {
 			return err
 		}

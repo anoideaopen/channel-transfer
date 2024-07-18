@@ -306,6 +306,7 @@ func (h *Handler) fromBatchResponse(ctx context.Context, transferID string) (mod
 
 	err := retry.Do(func() error {
 		blocks, err := h.responseWithAttempt(ctx, h.channel, transferID)
+		h.log.Debugf("find batchResponse in fromBatchResponse: %s; error: %v", transferID, err)
 		if err != nil {
 			err = errors.Errorf("batch FROM: %w", err)
 			if strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
@@ -317,8 +318,9 @@ func (h *Handler) fromBatchResponse(ctx context.Context, transferID string) (mod
 		}
 
 		for _, transaction := range blocks.Transactions {
-			if transaction.FuncName == model.TxChannelTransferByCustomer.String() ||
-				transaction.FuncName == model.TxChannelTransferByAdmin.String() {
+			if (transaction.FuncName == model.TxChannelTransferByCustomer.String() ||
+				transaction.FuncName == model.TxChannelTransferByAdmin.String()) &&
+				transaction.BatchResponse != nil {
 				batchResponse = transaction.BatchResponse
 				return nil
 			}
@@ -368,7 +370,8 @@ func (h *Handler) toBatchResponse(ctx context.Context, channelName string, trans
 		}
 
 		for _, transaction := range blocks.Transactions {
-			if transaction.FuncName == model.TxCreateCCTransferTo.String() {
+			if transaction.FuncName == model.TxCreateCCTransferTo.String() &&
+				transaction.BatchResponse != nil {
 				batchResponse = transaction.BatchResponse
 				return nil
 			}
