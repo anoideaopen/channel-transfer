@@ -123,13 +123,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		Eventually(redisProcess.Ready(), runnerFbk.DefaultStartTimeout).Should(BeClosed())
 		Consistently(redisProcess.Wait()).ShouldNot(Receive())
 	})
-	AfterEach(func() {
-		By("stop redis " + redisDB.Address())
-		if redisProcess != nil {
-			redisProcess.Signal(syscall.SIGTERM)
-			Eventually(redisProcess.Wait(), time.Minute).Should(Receive())
-		}
-	})
 	BeforeEach(func() {
 		networkConfig := nwo.MultiNodeSmartBFT()
 		networkConfig.Channels = nil
@@ -237,6 +230,12 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 
 		By("stop channel transfer")
 		stopChannelTransfer(channelTransferProc, network.EventuallyTimeout)
+
+		By("stop redis " + redisDB.Address())
+		if redisProcess != nil {
+			redisProcess.Signal(syscall.SIGTERM)
+			Eventually(redisProcess.Wait(), time.Minute).Should(Receive())
+		}
 	})
 
 	BeforeEach(func() {

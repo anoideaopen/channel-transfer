@@ -102,13 +102,6 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 		Eventually(redisProcess.Ready(), runnerFbk.DefaultStartTimeout).Should(BeClosed())
 		Consistently(redisProcess.Wait()).ShouldNot(Receive())
 	})
-	AfterEach(func() {
-		By("stop redis " + redisDB.Address())
-		if redisProcess != nil {
-			redisProcess.Signal(syscall.SIGTERM)
-			Eventually(redisProcess.Wait(), time.Minute).Should(Receive())
-		}
-	})
 	BeforeEach(func() {
 		networkConfig := nwo.MultiNodeSmartBFT()
 		networkConfig.Channels = nil
@@ -214,11 +207,15 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 			robotProc.Signal(syscall.SIGTERM)
 			Eventually(robotProc.Wait(), network.EventuallyTimeout).Should(Receive())
 		}
-
 		By("stop channel transfer")
 		if channelTransferProc != nil {
 			channelTransferProc.Signal(syscall.SIGTERM)
 			Eventually(channelTransferProc.Wait(), network.EventuallyTimeout).Should(Receive())
+		}
+		By("stop redis " + redisDB.Address())
+		if redisProcess != nil {
+			redisProcess.Signal(syscall.SIGTERM)
+			Eventually(redisProcess.Wait(), time.Minute).Should(Receive())
 		}
 	})
 
