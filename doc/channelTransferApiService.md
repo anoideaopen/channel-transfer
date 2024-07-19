@@ -45,7 +45,7 @@ Method returns TransferStatusResponse structure
 
 Example:
 ```go
-    conn, err := grpc.Dial(targetGrpc, grpc.WithTransportCredentials(transportCredentials))
+    conn, err := grpc.NewClient(targetGrpc, grpc.WithTransportCredentials(transportCredentials))
     sCtx.Require().NoError(err)
     defer conn.Close()
     

@@ -65,6 +65,14 @@ func (api *APIServer) TransferByCustomer(
 		return nil, ErrBadRequest
 	}
 
+	log := glog.FromContext(ctx)
+	log.Set(
+		glog.Field{K: "transfer.id", V: req.GetIdTransfer()},
+		glog.Field{K: "transfer.from", V: req.GetGenerals().GetChannel()},
+		glog.Field{K: "transfer.to", V: req.GetChannelTo()},
+		glog.Field{K: "transfer.token", V: req.GetToken()},
+	)
+
 	tr, err := dtoBeginCustomerToModelTransferRequest(req, api.actualChannels)
 	if err != nil {
 		err = errors.Errorf("parse transfer request: %w", err)
@@ -104,6 +112,14 @@ func (api *APIServer) TransferByAdmin(
 		return nil, ErrBadRequest
 	}
 
+	log := glog.FromContext(ctx)
+	log.Set(
+		glog.Field{K: "transfer.id", V: req.GetIdTransfer()},
+		glog.Field{K: "transfer.from", V: req.GetGenerals().GetChannel()},
+		glog.Field{K: "transfer.to", V: req.GetChannelTo()},
+		glog.Field{K: "transfer.token", V: req.GetToken()},
+	)
+
 	tr, err := dtoBeginAdminToModelTransferRequest(req, api.actualChannels)
 	if err != nil {
 		err = errors.Errorf("parse transfer request: %w", err)
@@ -141,6 +157,11 @@ func (api *APIServer) TransferStatus(
 	if req == nil {
 		return nil, ErrBadRequest
 	}
+
+	log := glog.FromContext(ctx)
+	log.Set(
+		glog.Field{K: "transfer.id", V: req.GetIdTransfer()},
+	)
 
 	exclStatus, exclOk, err := extractExcludeStatus(req.GetOptions())
 	if err != nil {
