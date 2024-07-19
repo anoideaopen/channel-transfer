@@ -37,6 +37,7 @@ type PoolController interface {
 	Has(channel string) bool
 	Expand(ctx context.Context, channel string) error
 	Readiness(channel string) (<-chan struct{}, error)
+	Events(channel string) (<-chan struct{}, error)
 }
 
 type HealthcheckController interface {
@@ -110,7 +111,7 @@ func (h *Handler) Exec(ctx context.Context) error {
 
 	h.syncAPIRequests(ctx)
 
-	newReady := make(chan struct{}, 1)
+	event, _ := h.poolController.Events(h.channel)
 
 	for ctx.Err() == nil {
 		select {
@@ -126,15 +127,10 @@ func (h *Handler) Exec(ctx context.Context) error {
 			}
 			go func() {
 				h.createTransfer(gCtx, request)
-				select {
-				case newReady <- struct{}{}:
-				default:
-				}
 			}()
 		case <-ticker.C:
 			go h.launcher(gCtx, group)
-		case <-newReady:
-			time.Sleep(500 * time.Millisecond)
+		case <-event:
 			go h.launcher(gCtx, group)
 		}
 	}

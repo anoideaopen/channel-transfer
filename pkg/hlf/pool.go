@@ -42,6 +42,7 @@ type Pool struct {
 	group   *errgroup.Group
 	gCtx    context.Context
 	mutex   sync.RWMutex
+	events  map[string]chan struct{}
 }
 
 func NewPool(
@@ -68,6 +69,7 @@ func NewPool(
 		log:            log,
 		m:              m,
 		streams:        createStreams(ctx),
+		events:         make(map[string]chan struct{}),
 	}
 
 	var err error
@@ -95,6 +97,7 @@ func NewPool(
 				nerrors.ComponentHLFStreamsPool,
 			)
 		}
+		pool.events[channel] = make(chan struct{}, 1)
 	}
 
 	return pool, nil
@@ -289,7 +292,7 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 	return errors.New(pool.gCtx.Err())
 }
 
-func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
+func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error { //nolint:gocognit
 	if len(block.Txs) == 0 {
 		return nil
 	}
@@ -299,8 +302,16 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 	for transferID, transferBlock := range transferBlocks {
 		ttl := redis.TTLNotTakenInto
 		canBeStored := false
+		isSendEvent := false
 
 		for _, transaction := range transferBlock.Transactions {
+			if (transaction.FuncName == model.TxChannelTransferByCustomer.String() ||
+				transaction.FuncName == model.TxChannelTransferByAdmin.String()) &&
+				transaction.BatchResponse != nil && !isSendEvent {
+				isSendEvent = true
+				pool.sendEvent(string(key))
+			}
+
 			if transaction.BatchResponse != nil {
 				continue
 			}
@@ -425,4 +436,25 @@ func (pool *Pool) Readiness(channel string) (<-chan struct{}, error) {
 	}
 
 	return nil, errors.New("processed channel not found")
+}
+
+func (pool *Pool) Events(channel string) (<-chan struct{}, error) {
+	ev, ok := pool.events[channel]
+	if ok {
+		return ev, nil
+	}
+
+	return nil, errors.New("processed channel not found")
+}
+
+func (pool *Pool) sendEvent(channel string) {
+	ev, ok := pool.events[channel]
+	if !ok {
+		return
+	}
+
+	select {
+	case ev <- struct{}{}:
+	default:
+	}
 }
