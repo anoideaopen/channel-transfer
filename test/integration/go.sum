@@ -659,8 +659,8 @@ github.com/allegro/bigcache v1.2.1-0.20190218064605-e24eb225f156/go.mod h1:Cb/ax
 github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/anoideaopen/acl v0.0.4-0.20240709131543-bf642c53380c h1:sEpbALmki6CXUmH+TG/bYLczfZ0eVGLKjivNfvvS+r8=
 github.com/anoideaopen/acl v0.0.4-0.20240709131543-bf642c53380c/go.mod h1:t2MkA2fxlOAcH3XU0twKFIksVuKkDZsEOWmi0J5nxCY=
-github.com/anoideaopen/common-component v0.0.5 h1:X4TLWE0+GBT7lgTw3cu2u8xyA15H09yV87nqzjcKoPU=
-github.com/anoideaopen/common-component v0.0.5/go.mod h1:m1adEQdkVfAy4efFlY3+uqL73dAKXRSOiTsklHOzf3c=
+github.com/anoideaopen/common-component v0.0.6 h1:drRkPGoeIowzyUZn/YUdNa3GmD5j1ppkEkqjnSLuhDc=
+github.com/anoideaopen/common-component v0.0.6/go.mod h1:m1adEQdkVfAy4efFlY3+uqL73dAKXRSOiTsklHOzf3c=
 github.com/anoideaopen/fabric-sdk-go v0.0.1 h1:SCnrPPqqBLredJ2AbqbpPrQlrmfWVTZiUUjBLrRnIuk=
 github.com/anoideaopen/fabric-sdk-go v0.0.1/go.mod h1:L8ECPqpdBc/ObG4PDH4wHTsYLoi74UcSPgI0hLR/vHc=
 github.com/anoideaopen/foundation v0.0.4 h1:QZDO4MNh/e4zGaG6EorhjVodztAeHC/YSE1+BLt8FAU=
