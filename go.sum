@@ -22,12 +22,12 @@ github.com/alicebob/gopher-json v0.0.0-20230218143504-906a9b012302 h1:uvdUDbHQHO
 github.com/alicebob/gopher-json v0.0.0-20230218143504-906a9b012302/go.mod h1:SGnFV6hVsYE877CKEZ6tDNTjaSXYUk6QqoIK6PrAtcc=
 github.com/alicebob/miniredis/v2 v2.30.1 h1:HM1rlQjq1bm9yQcsawJqSZBJ9AYgxvjkMsNtddh90+g=
 github.com/alicebob/miniredis/v2 v2.30.1/go.mod h1:b25qWj4fCEsBeAAR2mlb0ufImGC6uH3VlUfb/HS5zKg=
-github.com/anoideaopen/common-component v0.0.5 h1:X4TLWE0+GBT7lgTw3cu2u8xyA15H09yV87nqzjcKoPU=
-github.com/anoideaopen/common-component v0.0.5/go.mod h1:m1adEQdkVfAy4efFlY3+uqL73dAKXRSOiTsklHOzf3c=
+github.com/anoideaopen/common-component v0.0.6 h1:drRkPGoeIowzyUZn/YUdNa3GmD5j1ppkEkqjnSLuhDc=
+github.com/anoideaopen/common-component v0.0.6/go.mod h1:m1adEQdkVfAy4efFlY3+uqL73dAKXRSOiTsklHOzf3c=
 github.com/anoideaopen/fabric-sdk-go v0.0.1 h1:SCnrPPqqBLredJ2AbqbpPrQlrmfWVTZiUUjBLrRnIuk=
 github.com/anoideaopen/fabric-sdk-go v0.0.1/go.mod h1:L8ECPqpdBc/ObG4PDH4wHTsYLoi74UcSPgI0hLR/vHc=
-github.com/anoideaopen/foundation v0.0.3-0.20240705113248-db0d27993619 h1:lXIuTU/Vd1pm73pHgw1EOWbTvawHYoQbh8svFIfWbyA=
-github.com/anoideaopen/foundation v0.0.3-0.20240705113248-db0d27993619/go.mod h1:8lNLU7sbmvnbyb31740ZJuZZ2/HpNQo1pTObVpN1d8s=
+github.com/anoideaopen/foundation v0.0.4 h1:QZDO4MNh/e4zGaG6EorhjVodztAeHC/YSE1+BLt8FAU=
+github.com/anoideaopen/foundation v0.0.4/go.mod h1:5dkuaC4WuhkzRz2D/2067dwQ7L7XBeLmo21Ln5CDYFI=
 github.com/anoideaopen/glog v0.0.3 h1:vsWM5QvHzTMbrDy3cydkNPFpfdWrxeC8ne02f//qNaA=
 github.com/anoideaopen/glog v0.0.3/go.mod h1:8J4509ClNmF/kvvPA8XFKZ7OX+860JaFH3+nXVD+R3k=
 github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
