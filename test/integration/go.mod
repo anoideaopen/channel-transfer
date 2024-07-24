@@ -182,5 +182,5 @@ require (
 
 replace (
 	github.com/anoideaopen/channel-transfer => ../../
-	github.com/hyperledger/fabric-sdk-go => github.com/anoideaopen/fabric-sdk-go v0.0.1
+	github.com/hyperledger/fabric-sdk-go => github.com/anoideaopen/fabric-sdk-go v0.0.2
 )
