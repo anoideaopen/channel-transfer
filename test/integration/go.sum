@@ -802,8 +802,6 @@ github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f h1:lO4WD4F/r
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f/go.mod h1:cuUVRXasLTGF7a8hSLbxyZXjz+1KgoB3wDUb6vlszIc=
 github.com/docker/docker v27.1.0+incompatible h1:rEHVQc4GZ0MIQKifQPHSFGV/dVgaZafgRf8fCPtDYBs=
 github.com/docker/docker v27.1.0+incompatible/go.mod h1:eEKB0N0r5NX/I1kEveEz05bcu8tLC/8azJZsviup8Sk=
-github.com/docker/docker v27.1.1+incompatible h1:hO/M4MtV36kzKldqnA37IWhebRA+LnqqcqDja6kVaKY=
-github.com/docker/docker v27.1.1+incompatible/go.mod h1:eEKB0N0r5NX/I1kEveEz05bcu8tLC/8azJZsviup8Sk=
 github.com/docker/go-connections v0.4.0 h1:El9xVISelRB7BuFusrZozjnkIM5YnzCViNKohAFqRJQ=
 github.com/docker/go-connections v0.4.0/go.mod h1:Gbd7IOopHjR8Iph03tsViu4nIes5XhDvyHbTtUxmeec=
 github.com/docker/go-units v0.5.0 h1:69rxXcBk27SvSaaxTtLh/8llcHD8vYHT7WSdRZ/jvr4=
@@ -1110,6 +1108,8 @@ github.com/hyperledger-labs/SmartBFT v0.0.0-20240616160543-3f61a410b8c1 h1:0a9x5
 github.com/hyperledger-labs/SmartBFT v0.0.0-20240616160543-3f61a410b8c1/go.mod h1:bY4EAvtsXf132ySoNJncMUOyBcGEQL3MXVtavRNFia4=
 github.com/hyperledger/fabric v1.4.0-rc1.0.20240719202703-5cec5d2649ad h1:7cyetFG3tasgwpwLTjOUJdOMW9Pz1vP68R3FV0jrNrU=
 github.com/hyperledger/fabric v1.4.0-rc1.0.20240719202703-5cec5d2649ad/go.mod h1:eGIUdoE/zqv9bBaGAkD49rIPDBpR/GrGCtGD0CYKzK0=
+github.com/hyperledger/fabric v1.4.0-rc1.0.20240729123800-908b9655d423 h1:sqaonvOEhyw5xNoyDhICSQrrF66A1BRCkjVzOmzgEIg=
+github.com/hyperledger/fabric v1.4.0-rc1.0.20240729123800-908b9655d423/go.mod h1:eGIUdoE/zqv9bBaGAkD49rIPDBpR/GrGCtGD0CYKzK0=
 github.com/hyperledger/fabric-amcl v0.0.0-20230602173724-9e02669dceb2 h1:B1Nt8hKb//KvgGRprk0h1t4lCnwhE9/ryb1WqfZbV+M=
 github.com/hyperledger/fabric-amcl v0.0.0-20230602173724-9e02669dceb2/go.mod h1:X+DIyUsaTmalOpmpQfIvFZjKHQedrURQ5t4YqquX7lE=
 github.com/hyperledger/fabric-chaincode-go v0.0.0-20230228194215-b84622ba6a7a h1:HwSCxEeiBthwcazcAykGATQ36oG9M+HEQvGLvB7aLvA=
