@@ -29,9 +29,9 @@ type Config struct {
 	Service      *Service      `mapstructure:"service" validate:"required"`
 	PromMetrics  *PromMetrics  `mapstructure:"promMetrics"`
 
-	Channels []string `mapstructure:"channels" validate:"required"`
+	Channels []string `mapstructure:"channels" validate:"required,dive,required"`
 
-	Options Options `mapstructure:"options" validate:"dive"`
+	Options Options `mapstructure:"options" validate:"required"`
 }
 
 type ListenAPI struct {
@@ -115,7 +115,7 @@ func (eo Options) EffRetryExecuteDelay(defOpts Options) (time.Duration, error) {
 }
 
 type RedisStorage struct {
-	Addr                []string       `mapstructure:"addr" validate:"required"`
+	Addr                []string       `mapstructure:"addr" validate:"required,dive,required"`
 	Password            string         `mapstructure:"password"`
 	DBPrefix            string         `mapstructure:"dbPrefix" validate:"required"`
 	AfterTransferTTL    *time.Duration `mapstructure:"afterTransferTTL" validate:"required"`
@@ -190,7 +190,7 @@ func validateConfig(cfg *Config) error {
 }
 
 func validateRequiredFields(cfg *Config) error {
-	validate := validator.New()
+	validate := validator.New(validator.WithRequiredStructEnabled())
 	err := validate.Struct(*cfg)
 	if err != nil {
 		return errors.Errorf("err(s):\n%+v", err)
