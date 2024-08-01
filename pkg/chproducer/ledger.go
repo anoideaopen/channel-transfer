@@ -64,6 +64,13 @@ func (h *Handler) queryChannelTransfers(ctx context.Context) ([]*fpb.CCTransfer,
 }
 
 func (h *Handler) createTransferFrom(ctx context.Context, request model.TransferRequest) (model.StatusKind, error) {
+	if request.Token == "" {
+		return model.InternalErrorTransferStatus, errors.New("executor: token is not specified")
+	}
+	if request.Amount == "" {
+		return model.InternalErrorTransferStatus, errors.New("executor: amount is not specified")
+	}
+
 	startTime := time.Now()
 
 	h.log.Debugf("create cc transfer from, channel %s, id %s, method %s", h.chaincodeID, request.Transfer, request.Method)
@@ -86,6 +93,70 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 	}
 
 	if request.Method == model.TxChannelTransferByAdmin.String() {
+		args = append(args[:6], args[5:]...)
+		args[5] = []byte(request.User)
+	}
+
+	tArgs := make([]string, 0, len(args))
+	for _, arg := range args {
+		tArgs = append(tArgs, string(arg))
+	}
+
+	h.log.Debugf("transfer request arguments: %+v", tArgs)
+	_, err = doer.Invoke(
+		ctx,
+		channel.Request{
+			ChaincodeID: h.chaincodeID,
+			Fcn:         request.Method,
+			Args:        args,
+		},
+		[]channel.RequestOption{},
+	)
+	if err != nil {
+		return model.ErrorTransferFrom, errors.Errorf("%s: %w", request.Method, err)
+	}
+
+	h.m.TotalTransferCreated().Inc(metrics.Labels().Channel.Create(h.channel))
+	h.m.TransferStageExecutionTimeDuration().Observe(
+		time.Since(startTime).Seconds(),
+		metrics.Labels().Channel.Create(h.channel),
+		metrics.Labels().TransferStatus.Create(model.InProgressTransferFrom.String()),
+	)
+
+	return model.InProgressTransferFrom, nil
+}
+
+func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.TransferRequest) (model.StatusKind, error) {
+	if len(request.Items) == 0 {
+		return model.InternalErrorTransferStatus, errors.New("executor: items is empty")
+	}
+
+	startTime := time.Now()
+
+	h.log.Debugf("create cc transfer from, channel %s, id %s, method %s", h.chaincodeID, request.Transfer, request.Method)
+	doer, err := h.poolController.Executor(h.channel)
+	if err != nil {
+		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
+	}
+
+	items, err := json.Marshal(request.Items)
+	if err != nil {
+		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
+	}
+
+	args := [][]byte{
+		[]byte(request.Request),
+		[]byte(h.channel),
+		[]byte(h.chaincodeID),
+		[]byte(request.Transfer),
+		[]byte(request.To),
+		items,
+		[]byte(request.Nonce),
+		[]byte(request.PublicKey),
+		[]byte(request.Sign),
+	}
+
+	if request.Method == model.TxChannelMultiTransferByAdmin.String() {
 		args = append(args[:6], args[5:]...)
 		args[5] = []byte(request.User)
 	}

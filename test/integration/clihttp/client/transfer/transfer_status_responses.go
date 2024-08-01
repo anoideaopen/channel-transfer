@@ -6,6 +6,7 @@ package transfer
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -92,11 +93,13 @@ func (o *TransferStatusOK) Code() int {
 }
 
 func (o *TransferStatusOK) Error() string {
-	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatusOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatusOK %s", 200, payload)
 }
 
 func (o *TransferStatusOK) String() string {
-	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatusOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatusOK %s", 200, payload)
 }
 
 func (o *TransferStatusOK) GetPayload() *models.ChannelTransferTransferStatusResponse {
@@ -160,11 +163,13 @@ func (o *TransferStatusInternalServerError) Code() int {
 }
 
 func (o *TransferStatusInternalServerError) Error() string {
-	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatusInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatusInternalServerError %s", 500, payload)
 }
 
 func (o *TransferStatusInternalServerError) String() string {
-	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatusInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatusInternalServerError %s", 500, payload)
 }
 
 func (o *TransferStatusInternalServerError) GetPayload() *models.ChannelTransferErrorResponse {
@@ -232,11 +237,13 @@ func (o *TransferStatusDefault) Code() int {
 }
 
 func (o *TransferStatusDefault) Error() string {
-	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatus default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatus default %s", o._statusCode, payload)
 }
 
 func (o *TransferStatusDefault) String() string {
-	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatus default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatus default %s", o._statusCode, payload)
 }
 
 func (o *TransferStatusDefault) GetPayload() *models.GooglerpcStatus {

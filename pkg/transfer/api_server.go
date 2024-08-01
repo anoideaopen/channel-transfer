@@ -148,6 +148,100 @@ func (api *APIServer) TransferByAdmin(
 	}, nil
 }
 
+// MultiTransferByCustomer registers a new transfer from one channel to another on
+// behalf of the contract administrator, using business logic and maps the
+// result to DTO request objects.
+func (api *APIServer) MultiTransferByCustomer(
+	ctx context.Context,
+	req *dto.MultiTransferBeginCustomerRequest,
+) (*dto.TransferStatusResponse, error) {
+	if req == nil {
+		return nil, ErrBadRequest
+	}
+
+	log := glog.FromContext(ctx)
+	log.Set(
+		glog.Field{K: "transfer.id", V: req.GetIdTransfer()},
+		glog.Field{K: "transfer.from", V: req.GetGenerals().GetChannel()},
+		glog.Field{K: "transfer.to", V: req.GetChannelTo()},
+		glog.Field{K: "transfer.items", V: req.GetItems()},
+	)
+
+	tr, err := dtoBeginCustomerToModelMultiTransferRequest(req, api.actualChannels)
+	if err != nil {
+		err = errors.Errorf("parse transfer request: %w", err)
+		return &dto.TransferStatusResponse{
+				IdTransfer: req.GetIdTransfer(),
+				Status:     dto.TransferStatusResponse_STATUS_ERROR,
+				Message:    err.Error(),
+			}, status.Error(
+				codes.InvalidArgument,
+				err.Error(),
+			)
+	}
+
+	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
+		return nil, fmt.Errorf(
+			"[APIServer] failed to save transfer request: %w",
+			err,
+		)
+	}
+
+	api.output <- tr
+
+	return &dto.TransferStatusResponse{
+		IdTransfer: string(tr.Transfer),
+		Status:     dto.TransferStatusResponse_STATUS_IN_PROCESS,
+	}, nil
+}
+
+// MultiTransferByAdmin registers a new transfer from one channel to another on
+// behalf of the contract administrator, using business logic and maps the
+// result to DTO request objects.
+func (api *APIServer) MultiTransferByAdmin(
+	ctx context.Context,
+	req *dto.MultiTransferBeginAdminRequest,
+) (*dto.TransferStatusResponse, error) {
+	if req == nil {
+		return nil, ErrBadRequest
+	}
+
+	log := glog.FromContext(ctx)
+	log.Set(
+		glog.Field{K: "transfer.id", V: req.GetIdTransfer()},
+		glog.Field{K: "transfer.from", V: req.GetGenerals().GetChannel()},
+		glog.Field{K: "transfer.to", V: req.GetChannelTo()},
+		glog.Field{K: "transfer.items", V: req.GetItems()},
+	)
+
+	tr, err := dtoBeginAdminToModelMultiTransferRequest(req, api.actualChannels)
+	if err != nil {
+		err = errors.Errorf("parse transfer request: %w", err)
+		return &dto.TransferStatusResponse{
+				IdTransfer: req.GetIdTransfer(),
+				Status:     dto.TransferStatusResponse_STATUS_ERROR,
+				Message:    err.Error(),
+			}, status.Error(
+				codes.InvalidArgument,
+				err.Error(),
+			)
+	}
+
+	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
+		return nil, fmt.Errorf(
+			"[APIServer] failed to save transfer request: %w",
+			err,
+		)
+	}
+
+	api.output <- tr
+
+	return &dto.TransferStatusResponse{
+		IdTransfer: string(tr.Transfer),
+		Status:     dto.TransferStatusResponse_STATUS_IN_PROCESS,
+	}, nil
+}
+
 // TransferStatus returns the current status of the transfer. It requests the
 // status from the business logic and maps it to DTO request objects.
 func (api *APIServer) TransferStatus(

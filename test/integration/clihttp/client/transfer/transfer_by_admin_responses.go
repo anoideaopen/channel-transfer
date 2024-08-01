@@ -6,6 +6,7 @@ package transfer
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -92,11 +93,13 @@ func (o *TransferByAdminOK) Code() int {
 }
 
 func (o *TransferByAdminOK) Error() string {
-	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdminOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdminOK %s", 200, payload)
 }
 
 func (o *TransferByAdminOK) String() string {
-	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdminOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdminOK %s", 200, payload)
 }
 
 func (o *TransferByAdminOK) GetPayload() *models.ChannelTransferTransferStatusResponse {
@@ -160,11 +163,13 @@ func (o *TransferByAdminInternalServerError) Code() int {
 }
 
 func (o *TransferByAdminInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdminInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdminInternalServerError %s", 500, payload)
 }
 
 func (o *TransferByAdminInternalServerError) String() string {
-	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdminInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdminInternalServerError %s", 500, payload)
 }
 
 func (o *TransferByAdminInternalServerError) GetPayload() *models.ChannelTransferErrorResponse {
@@ -232,11 +237,13 @@ func (o *TransferByAdminDefault) Code() int {
 }
 
 func (o *TransferByAdminDefault) Error() string {
-	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdmin default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdmin default %s", o._statusCode, payload)
 }
 
 func (o *TransferByAdminDefault) String() string {
-	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdmin default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdmin default %s", o._statusCode, payload)
 }
 
 func (o *TransferByAdminDefault) GetPayload() *models.GooglerpcStatus {
