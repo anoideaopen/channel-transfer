@@ -319,7 +319,9 @@ func (h *Handler) fromBatchResponse(ctx context.Context, transferID string) (mod
 
 		for _, transaction := range blocks.Transactions {
 			if (transaction.FuncName == model.TxChannelTransferByCustomer.String() ||
-				transaction.FuncName == model.TxChannelTransferByAdmin.String()) &&
+				transaction.FuncName == model.TxChannelTransferByAdmin.String() ||
+				transaction.FuncName == model.TxChannelMultiTransferByCustomer.String() ||
+				transaction.FuncName == model.TxChannelMultiTransferByAdmin.String()) &&
 				transaction.BatchResponse != nil {
 				batchResponse = transaction.BatchResponse
 				return nil

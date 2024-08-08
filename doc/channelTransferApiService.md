@@ -22,6 +22,22 @@ Transfer by administartor.
 Method takes structure TransferBeginAdminRequest as input and returns structure TransferStatusResponse 
 ```
 
+#### MultiTransferByCustomer
+- /proto.API/MultiTransferByCustomer
+
+```
+Multi transfer by customer.
+Method takes sturcture MultiTransferBeginCustomerRequest as input and returns structure TransferStatusResponse
+```
+
+#### MultiTransferByAdmin
+- /proto.API/MultiTransferByAdmin
+
+```
+Multi transfer by administartor. 
+Method takes structure MultiTransferBeginAdminRequest as input and returns structure TransferStatusResponse 
+```
+
 #### TransferStatus
 - /proto.API/TransferStatus
 

@@ -13,32 +13,38 @@ const (
 	QueryChannelTransfersFrom
 	QueryChannelTransferTo
 	QueryChannelTransferFrom
+	TxChannelMultiTransferByAdmin
+	TxChannelMultiTransferByCustomer
 )
 
 var (
 	transactionKindValues = map[string]TransactionKind{
-		"cancelCCTransferFrom":      TxCancelCCTransferFrom,
-		"channelTransferByAdmin":    TxChannelTransferByAdmin,
-		"channelTransferByCustomer": TxChannelTransferByCustomer,
-		"createCCTransferTo":        TxCreateCCTransferTo,
-		"commitCCTransferFrom":      NbTxCommitCCTransferFrom,
-		"deleteCCTransferFrom":      NbTxDeleteCCTransferFrom,
-		"deleteCCTransferTo":        NbTxDeleteCCTransferTo,
-		"channelTransfersFrom":      QueryChannelTransfersFrom,
-		"channelTransferFrom":       QueryChannelTransferFrom,
-		"channelTransferTo":         QueryChannelTransferTo,
+		"cancelCCTransferFrom":           TxCancelCCTransferFrom,
+		"channelTransferByAdmin":         TxChannelTransferByAdmin,
+		"channelTransferByCustomer":      TxChannelTransferByCustomer,
+		"createCCTransferTo":             TxCreateCCTransferTo,
+		"commitCCTransferFrom":           NbTxCommitCCTransferFrom,
+		"deleteCCTransferFrom":           NbTxDeleteCCTransferFrom,
+		"deleteCCTransferTo":             NbTxDeleteCCTransferTo,
+		"channelTransfersFrom":           QueryChannelTransfersFrom,
+		"channelTransferFrom":            QueryChannelTransferFrom,
+		"channelTransferTo":              QueryChannelTransferTo,
+		"channelMultiTransferByAdmin":    TxChannelMultiTransferByAdmin,
+		"channelMultiTransferByCustomer": TxChannelMultiTransferByCustomer,
 	}
 	transactionKindKeys = map[TransactionKind]string{
-		TxCancelCCTransferFrom:      "cancelCCTransferFrom",
-		TxChannelTransferByAdmin:    "channelTransferByAdmin",
-		TxChannelTransferByCustomer: "channelTransferByCustomer",
-		TxCreateCCTransferTo:        "createCCTransferTo",
-		NbTxCommitCCTransferFrom:    "commitCCTransferFrom",
-		NbTxDeleteCCTransferFrom:    "deleteCCTransferFrom",
-		NbTxDeleteCCTransferTo:      "deleteCCTransferTo",
-		QueryChannelTransfersFrom:   "channelTransfersFrom",
-		QueryChannelTransferFrom:    "channelTransferFrom",
-		QueryChannelTransferTo:      "channelTransferTo",
+		TxCancelCCTransferFrom:           "cancelCCTransferFrom",
+		TxChannelTransferByAdmin:         "channelTransferByAdmin",
+		TxChannelTransferByCustomer:      "channelTransferByCustomer",
+		TxCreateCCTransferTo:             "createCCTransferTo",
+		NbTxCommitCCTransferFrom:         "commitCCTransferFrom",
+		NbTxDeleteCCTransferFrom:         "deleteCCTransferFrom",
+		NbTxDeleteCCTransferTo:           "deleteCCTransferTo",
+		QueryChannelTransfersFrom:        "channelTransfersFrom",
+		QueryChannelTransferFrom:         "channelTransferFrom",
+		QueryChannelTransferTo:           "channelTransferTo",
+		TxChannelMultiTransferByAdmin:    "channelMultiTransferByAdmin",
+		TxChannelMultiTransferByCustomer: "channelMultiTransferByCustomer",
 	}
 )
 

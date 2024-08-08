@@ -17,6 +17,11 @@ type TransferResult struct {
 	Message string
 }
 
+type TransferItem struct {
+	Amount string `json:"amount"`
+	Token  string `json:"token"`
+}
+
 // TransferRequest contains the internal representation of a request to transfer
 // funds from one channel to another. This structure is filled from the request
 // and enters the queue for processing.
@@ -35,6 +40,7 @@ type TransferRequest struct {
 	To        string
 	Token     string
 	Amount    string
+	Items     []TransferItem
 }
 
 func (tr *TransferRequest) MarshalBinary() (data []byte, err error) {

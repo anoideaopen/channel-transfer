@@ -6,6 +6,9 @@
 
 - channelTransferByCustomer (batch) - transfer creation for client
 - channelTransferByAdmin (batch) - transfer creation for admin
+
+- channelMultiTransferByCustomer (batch) - transfer creation for client
+- channelMultiTransferByAdmin (batch) - transfer creation for admin
  
 - createCCTransferTo - create transfer to destination channel
 
@@ -27,12 +30,14 @@
 ### Changes to World State ledger made by transactions
 **LINK:** [CCTransfer](https://github.com/anoideaopen/foundation/-/blob/master/proto/batch.proto#L231)
 
-| method                     | batch <br/> transaction  | transfer metadata                                     | balance to be changed                         |
-|----------------------------|:------------------------:|-------------------------------------------------------|-----------------------------------------------|
-| channelTransferByCustomer  |           yes            | saving CCTransfer structure in channel FROM           | TokenBalance & GivenBalance or AllowedBalance |
-| channelTransferByAdmin     |           yes            | saving CCTransfer structure in channel FROM           | TokenBalance & GivenBalance or AllowedBalance |
-| createCCTransferTo         |           yes            | saving CCTransfer structure in channel TO             | AllowedBalance & TokenBalance or GivenBalance |
-| commitCCTransferFrom       |                          | setting IsCommit in CCTransfer in channel FROM        |                                               |
-| deleteCCTransferTo         |                          | deleting CCTransfer structure in channel TO           |                                               |
-| deleteCCTransferFrom       |                          | deleting CCTransfer structure in channel FROM         |                                               |
-| cancelCCTransferFrom       |           yes            | deleting CCTransfer structure in channel FROM         | TokenBalance & GivenBalance or AllowedBalance |
+| method                         | batch <br/> transaction  | transfer metadata                                     | balance to be changed                         |
+|--------------------------------|:------------------------:|-------------------------------------------------------|-----------------------------------------------|
+| channelTransferByCustomer      |           yes            | saving CCTransfer structure in channel FROM           | TokenBalance & GivenBalance or AllowedBalance |
+| channelTransferByAdmin         |           yes            | saving CCTransfer structure in channel FROM           | TokenBalance & GivenBalance or AllowedBalance |
+| channelMultiTransferByCustomer |           yes            | saving CCTransfer structure in channel FROM           | TokenBalance & GivenBalance or AllowedBalance |
+| channelMultiTransferByAdmin    |           yes            | saving CCTransfer structure in channel FROM           | TokenBalance & GivenBalance or AllowedBalance |
+| createCCTransferTo             |           yes            | saving CCTransfer structure in channel TO             | AllowedBalance & TokenBalance or GivenBalance |
+| commitCCTransferFrom           |                          | setting IsCommit in CCTransfer in channel FROM        |                                               |
+| deleteCCTransferTo             |                          | deleting CCTransfer structure in channel TO           |                                               |
+| deleteCCTransferFrom           |                          | deleting CCTransfer structure in channel FROM         |                                               |
+| cancelCCTransferFrom           |           yes            | deleting CCTransfer structure in channel FROM         | TokenBalance & GivenBalance or AllowedBalance |

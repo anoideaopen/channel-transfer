@@ -306,7 +306,9 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error { /
 
 		for _, transaction := range transferBlock.Transactions {
 			if (transaction.FuncName == model.TxChannelTransferByCustomer.String() ||
-				transaction.FuncName == model.TxChannelTransferByAdmin.String()) &&
+				transaction.FuncName == model.TxChannelTransferByAdmin.String() ||
+				transaction.FuncName == model.TxChannelMultiTransferByCustomer.String() ||
+				transaction.FuncName == model.TxChannelMultiTransferByAdmin.String()) &&
 				transaction.BatchResponse != nil && !isSendEvent {
 				isSendEvent = true
 				pool.sendEvent(string(key))
@@ -328,7 +330,9 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error { /
 			}
 
 			if transaction.FuncName == model.TxChannelTransferByCustomer.String() ||
-				transaction.FuncName == model.TxChannelTransferByAdmin.String() {
+				transaction.FuncName == model.TxChannelTransferByAdmin.String() ||
+				transaction.FuncName == model.TxChannelMultiTransferByCustomer.String() ||
+				transaction.FuncName == model.TxChannelMultiTransferByAdmin.String() {
 				canBeStored = true
 			}
 		}
@@ -392,7 +396,9 @@ func (pool *Pool) updateBatchResponse(key channelKey, transactions []model.Trans
 				pool.streams.removeTransactionID(key, transactionID(tx.TxID))
 
 				if transferBlock.Transactions[i].FuncName != model.TxChannelTransferByCustomer.String() &&
-					transferBlock.Transactions[i].FuncName != model.TxChannelTransferByAdmin.String() {
+					transferBlock.Transactions[i].FuncName != model.TxChannelTransferByAdmin.String() &&
+					transferBlock.Transactions[i].FuncName != model.TxChannelMultiTransferByCustomer.String() &&
+					transferBlock.Transactions[i].FuncName != model.TxChannelMultiTransferByAdmin.String() {
 					continue
 				}
 
