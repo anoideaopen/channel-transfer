@@ -83,6 +83,9 @@ func (r *Request) TransferModify(ctx context.Context, transferRequest model.Tran
 	if transferRequest.Amount != "" && request.Amount != transferRequest.Amount {
 		request.Amount = transferRequest.Amount
 	}
+	if len(transferRequest.Items) > 0 {
+		request.Items = transferRequest.Items
+	}
 	if r.canBeChangedStatus(request.Status, transferRequest.Status) {
 		request.TransferResult = transferRequest.TransferResult
 	}

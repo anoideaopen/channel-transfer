@@ -432,7 +432,11 @@ func (pool *Pool) updateBatchResponse(key channelKey, transactions []model.Trans
 }
 
 func (pool *Pool) syncTransferRequest(block model.TransferBlock, ttl time.Duration) error {
-	return pool.requestStorage.TransferModify(pool.gCtx, transfer.BlockToRequest(block), ttl)
+	request, err := transfer.BlockToRequest(block)
+	if err != nil {
+		return err
+	}
+	return pool.requestStorage.TransferModify(pool.gCtx, request, ttl)
 }
 
 func (pool *Pool) Readiness(channel string) (<-chan struct{}, error) {

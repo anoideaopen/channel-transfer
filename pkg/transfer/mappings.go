@@ -206,7 +206,7 @@ func transferID(tx model.Transaction) model.ID {
 	return model.ID(tx.Args[4])
 }
 
-func BlockToRequest(block model.TransferBlock) (request model.TransferRequest) {
+func BlockToRequest(block model.TransferBlock) (request model.TransferRequest, err error) {
 	request.Transfer = block.Transfer
 	request.Status = dto.TransferStatusResponse_STATUS_UNDEFINED.String()
 	for _, transaction := range block.Transactions {
@@ -226,20 +226,42 @@ func BlockToRequest(block model.TransferBlock) (request model.TransferRequest) {
 			offset = 1
 		}
 
-		if len(transaction.Args) < 11+offset {
-			continue
+		if transaction.FuncName == model.TxChannelMultiTransferByAdmin.String() ||
+			transaction.FuncName == model.TxChannelMultiTransferByCustomer.String() {
+			if len(transaction.Args) < 10+offset {
+				continue
+			}
+
+			var items []model.TransferItem
+			if err = json.Unmarshal(transaction.Args[6+offset], &items); err != nil {
+				return
+			}
+
+			request.Method = string(transaction.Args[0])
+			request.Request = model.ID(transaction.Args[1])
+			request.Channel = string(transaction.Args[2])
+			request.Chaincode = string(transaction.Args[3])
+			request.To = string(transaction.Args[5])
+			request.Items = items
+			request.Nonce = string(transaction.Args[7+offset])
+			request.PublicKey = string(transaction.Args[8+offset])
+			request.Sign = string(transaction.Args[9+offset])
+		} else {
+			if len(transaction.Args) < 11+offset {
+				continue
+			}
+
+			request.Method = string(transaction.Args[0])
+			request.Request = model.ID(transaction.Args[1])
+			request.Channel = string(transaction.Args[2])
+			request.Chaincode = string(transaction.Args[3])
+			request.To = string(transaction.Args[5])
+			request.Token = string(transaction.Args[6+offset])
+			request.Amount = string(transaction.Args[7+offset])
+			request.Nonce = string(transaction.Args[8+offset])
+			request.PublicKey = string(transaction.Args[9+offset])
+			request.Sign = string(transaction.Args[10+offset])
 		}
-		// TODO: ???
-		request.Method = string(transaction.Args[0])
-		request.Request = model.ID(transaction.Args[1])
-		request.Channel = string(transaction.Args[2])
-		request.Chaincode = string(transaction.Args[3])
-		request.To = string(transaction.Args[5])
-		request.Token = string(transaction.Args[6+offset])
-		request.Amount = string(transaction.Args[7+offset])
-		request.Nonce = string(transaction.Args[8+offset])
-		request.PublicKey = string(transaction.Args[9+offset])
-		request.Sign = string(transaction.Args[10+offset])
 
 		break
 	}
