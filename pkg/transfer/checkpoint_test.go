@@ -30,14 +30,14 @@ func TestBlockCheckpoint(t *testing.T) {
 
 	blockCheckpoint := NewBlockCheckpoint(storage)
 
-	got, err := blockCheckpoint.CheckpointSave(context.TODO(), checkpoint)
+	got, err := blockCheckpoint.CheckpointSave(context.TODO(), checkpoint, nil)
 	assert.NoError(t, err)
 
 	got.SrcCollectFromBlockNums++
 	checkpoint.SrcCollectFromBlockNums++
 	checkpoint.Ver++
 
-	got, err = blockCheckpoint.CheckpointSave(context.TODO(), got)
+	got, err = blockCheckpoint.CheckpointSave(context.TODO(), got, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, checkpoint, got)
 
