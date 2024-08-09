@@ -24,6 +24,16 @@ func TestTransferRequest(t *testing.T) {
 			To:        "string",
 			Token:     "string",
 			Amount:    "string",
+			Items: []TransferItem{
+				{
+					Token:  "string",
+					Amount: "string",
+				},
+				{
+					Token:  "string",
+					Amount: "string",
+				},
+			},
 		}
 
 		db  = inmem.NewStorage()

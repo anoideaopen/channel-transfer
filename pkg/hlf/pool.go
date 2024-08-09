@@ -9,6 +9,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/config"
 	"github.com/anoideaopen/channel-transfer/pkg/data"
 	"github.com/anoideaopen/channel-transfer/pkg/data/redis"
+	"github.com/anoideaopen/channel-transfer/pkg/helpers/methods"
 	"github.com/anoideaopen/channel-transfer/pkg/helpers/nerrors"
 	"github.com/anoideaopen/channel-transfer/pkg/hlf/hlfprofile"
 	"github.com/anoideaopen/channel-transfer/pkg/logger"
@@ -292,7 +293,7 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 	return errors.New(pool.gCtx.Err())
 }
 
-func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error { //nolint:gocognit
+func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 	if len(block.Txs) == 0 {
 		return nil
 	}
@@ -305,9 +306,8 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error { /
 		isSendEvent := false
 
 		for _, transaction := range transferBlock.Transactions {
-			if (transaction.FuncName == model.TxChannelTransferByCustomer.String() ||
-				transaction.FuncName == model.TxChannelTransferByAdmin.String()) &&
-				transaction.BatchResponse != nil && !isSendEvent {
+			isCreateMethod := methods.IsTransferFromMethod(transaction.FuncName)
+			if isCreateMethod && transaction.BatchResponse != nil && !isSendEvent {
 				isSendEvent = true
 				pool.sendEvent(string(key))
 			}
@@ -327,10 +327,7 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error { /
 				return fmt.Errorf("streams buffer : channel %s not found", string(key))
 			}
 
-			if transaction.FuncName == model.TxChannelTransferByCustomer.String() ||
-				transaction.FuncName == model.TxChannelTransferByAdmin.String() {
-				canBeStored = true
-			}
+			canBeStored = isCreateMethod
 		}
 
 		if transferID == "" {
@@ -391,8 +388,7 @@ func (pool *Pool) updateBatchResponse(key channelKey, transactions []model.Trans
 
 				pool.streams.removeTransactionID(key, transactionID(tx.TxID))
 
-				if transferBlock.Transactions[i].FuncName != model.TxChannelTransferByCustomer.String() &&
-					transferBlock.Transactions[i].FuncName != model.TxChannelTransferByAdmin.String() {
+				if !methods.IsTransferFromMethod(transferBlock.Transactions[i].FuncName) {
 					continue
 				}
 
@@ -426,7 +422,11 @@ func (pool *Pool) updateBatchResponse(key channelKey, transactions []model.Trans
 }
 
 func (pool *Pool) syncTransferRequest(block model.TransferBlock, ttl time.Duration) error {
-	return pool.requestStorage.TransferModify(pool.gCtx, transfer.BlockToRequest(block), ttl)
+	request, err := transfer.BlockToRequest(block)
+	if err != nil {
+		return err
+	}
+	return pool.requestStorage.TransferModify(pool.gCtx, request, ttl)
 }
 
 func (pool *Pool) Readiness(channel string) (<-chan struct{}, error) {

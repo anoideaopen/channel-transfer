@@ -236,6 +236,12 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 			channelTransferProc.Signal(syscall.SIGTERM)
 			Eventually(channelTransferProc.Wait(), network.EventuallyTimeout).Should(Receive())
 		}
+
+		By("stop redis " + redisDB.Address())
+		if redisProcess != nil {
+			redisProcess.Signal(syscall.SIGTERM)
+			Eventually(redisProcess.Wait(), time.Minute).Should(Receive())
+		}
 	})
 
 	BeforeEach(func() {

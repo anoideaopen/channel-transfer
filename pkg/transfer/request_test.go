@@ -37,6 +37,16 @@ func TestRequest(t *testing.T) {
 		To:        "string",
 		Token:     "string",
 		Amount:    "string",
+		Items: []model.TransferItem{
+			{
+				Token:  "string",
+				Amount: "string",
+			},
+			{
+				Token:  "string",
+				Amount: "string",
+			},
+		},
 	}
 
 	request := NewRequest(storage)

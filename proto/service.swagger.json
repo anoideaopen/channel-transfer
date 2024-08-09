@@ -137,6 +137,84 @@
           "Transfer"
         ]
       }
+    },
+    "/v1/multi-transfer/admin": {
+      "post": {
+        "summary": "Multi transfer cross chanel be admin",
+        "operationId": "multiTransferByAdmin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/channel_transferTransferStatusResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/channel_transferErrorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/channel_transferMultiTransferBeginAdminRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Transfer"
+        ]
+      }
+    },
+    "/v1/multi-transfer/customer": {
+      "post": {
+        "summary": "Multi transfer cross chanel be customer",
+        "operationId": "multiTransferByCustomer",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/channel_transferTransferStatusResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/channel_transferErrorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/channel_transferMultiTransferBeginCustomerRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Transfer"
+        ]
+      }
     }
   },
   "definitions": {
@@ -261,6 +339,74 @@
       },
       "title": "TransferBeginAdminRequest request for tokens transfer by tokens owner"
     },
+    "channel_transferMultiTransferBeginAdminRequest": {
+      "type": "object",
+      "properties": {
+        "generals": {
+          "$ref": "#/definitions/channel_transferGeneralParams",
+          "title": "general parameters"
+        },
+        "idTransfer": {
+          "type": "string",
+          "title": "transfer ID (should be unique)"
+        },
+        "channelTo": {
+          "type": "string",
+          "title": "destination channel"
+        },
+        "address": {
+          "type": "string",
+          "title": "token's owner address"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/channel_transferTransferItem"
+          }
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufOption"
+          }
+        }
+      },
+      "title": "TransferBeginAdminRequest request for tokens transfer by platform administrator"
+    },
+    "channel_transferMultiTransferBeginCustomerRequest": {
+      "type": "object",
+      "properties": {
+        "generals": {
+          "$ref": "#/definitions/channel_transferGeneralParams",
+          "title": "general parameters"
+        },
+        "idTransfer": {
+          "type": "string",
+          "title": "transfer ID (should be unique)"
+        },
+        "channelTo": {
+          "type": "string",
+          "title": "destination channel"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/channel_transferTransferItem"
+          }
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufOption"
+          }
+        }
+      },
+      "title": "TransferBeginAdminRequest request for tokens transfer by tokens owner"
+    },
     "channel_transferTransferStatusResponse": {
       "type": "object",
       "properties": {
@@ -289,6 +435,20 @@
         "STATUS_ERROR"
       ],
       "default": "STATUS_IN_PROCESS"
+    },
+    "channel_transferTransferItem": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "title": "Token to transfer"
+        },
+        "amount": {
+          "type": "string",
+          "title": "Amount of token to transfer"
+        }
+      },
+      "title": "item parameters for MultiTransferBeginCustomerRequest and MultiTransferBeginAdminRequest"
     },
     "googlerpcStatus": {
       "type": "object",

@@ -188,7 +188,13 @@ func (h *Handler) launcher(ctx context.Context, group *errgroup.Group) {
 }
 
 func (h *Handler) createTransfer(ctx context.Context, request model.TransferRequest) {
-	status, err := h.createTransferFrom(ctx, request)
+	var status model.StatusKind
+	var err error
+	if len(request.Items) > 0 {
+		status, err = h.createMultiTransferFrom(ctx, request)
+	} else {
+		status, err = h.createTransferFrom(ctx, request)
+	}
 	if err != nil {
 		err = errors.Errorf("create transfer: %w", err)
 		request.Message = err.Error()

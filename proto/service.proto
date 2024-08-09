@@ -44,7 +44,7 @@ service API {
       body: "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Transfer cross chanel be customer";
+      summary: "Transfer cross channel by customer";
       operation_id: "transferByCustomer";
       tags: "Transfer";
     };
@@ -56,8 +56,32 @@ service API {
       body: "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Transfer cross chanel be admin";
+      summary: "Transfer cross channel by admin";
       operation_id: "transferByAdmin";
+      tags: "Transfer";
+    };
+  }
+
+  rpc MultiTransferByCustomer(MultiTransferBeginCustomerRequest) returns (TransferStatusResponse){
+    option (google.api.http) = {
+      post: "/v1/multi-transfer/customer"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Multi transfer cross channel by customer";
+      operation_id: "multiTransferByCustomer";
+      tags: "Transfer";
+    };
+  }
+
+  rpc MultiTransferByAdmin(MultiTransferBeginAdminRequest) returns(TransferStatusResponse) {
+    option (google.api.http) = {
+      post: "/v1/multi-transfer/admin"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Multi transfer cross channel by admin";
+      operation_id: "multiTransferByAdmin";
       tags: "Transfer";
     };
   }
@@ -86,7 +110,7 @@ message GeneralParams {
   repeated google.protobuf.Option options = 8;
 }
 
-// TransferBeginAdminRequest request for tokens transfer by tokens owner
+// TransferBeginCustomerRequest request for tokens transfer by tokens owner
 message TransferBeginCustomerRequest{
   GeneralParams generals = 1; // general parameters
   string id_transfer = 2; // transfer ID (should be unique)
@@ -105,6 +129,31 @@ message TransferBeginAdminRequest{
   string token = 5; // tokens to transfer
   string amount = 6; // amount of tokens to transfer
   repeated google.protobuf.Option options = 7;
+}
+
+// TransferItem item parameters for MultiTransferBeginCustomerRequest and MultiTransferBeginAdminRequest
+message TransferItem{
+  string token = 1; // Token to transfer
+  string amount = 2; // Amount of token to transfer
+}
+
+// MultiTransferBeginAdminRequest request for tokens transfer by tokens owner
+message MultiTransferBeginCustomerRequest{
+  GeneralParams generals = 1; // general parameters
+  string id_transfer = 2; // transfer ID (should be unique)
+  string channel_to = 3; // destination channel
+  repeated TransferItem items = 4; // items to transfer
+  repeated google.protobuf.Option options = 5;
+}
+
+// MultiTransferBeginAdminRequest request for tokens transfer by platform administrator
+message MultiTransferBeginAdminRequest{
+  GeneralParams generals = 1; // general parameters
+  string id_transfer = 2; // transfer ID (should be unique)
+  string channel_to = 3; // destination channel
+  string address = 4; // token's owner address
+  repeated TransferItem items = 5; // items to transfer
+  repeated google.protobuf.Option options = 6;
 }
 
 // TransferStatusResponse response for TransferStatus transaction
