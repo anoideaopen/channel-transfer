@@ -324,6 +324,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 		client.Query(network, peer, cmn.ChannelCC, cmn.ChannelCC,
 			fabricnetwork.CheckResult(fabricnetwork.CheckBalance("250"), nil),
 			"allowedBalanceOf", user.AddressBase58Check, "FIAT")
+		// Eventually(ordererRunners[3].Err(), network.EventuallyTimeout, time.Second).Should(gbytes.Say("PFIPFI1"))
 	})
 
 	It("transfer by customer test", func() {

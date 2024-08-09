@@ -8,6 +8,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/data"
 	"github.com/anoideaopen/channel-transfer/pkg/data/redis"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
+	"github.com/anoideaopen/glog"
 )
 
 type BlockCheckpoint struct {
@@ -20,17 +21,23 @@ func NewBlockCheckpoint(storage *redis.Storage) *BlockCheckpoint {
 	}
 }
 
-func (ckp *BlockCheckpoint) CheckpointSave(ctx context.Context, checkpoint model.Checkpoint) (model.Checkpoint, error) {
+func (ckp *BlockCheckpoint) CheckpointSave(ctx context.Context, checkpoint model.Checkpoint, log glog.Logger) (model.Checkpoint, error) {
 	existsCheckPoint := model.Checkpoint{}
-	if err := ckp.storage.Load(ctx, &existsCheckPoint, data.Key(checkpoint.Channel)); err != nil {
+	if err := ckp.storage.Load(ctx, &existsCheckPoint, data.Key(checkpoint.Channel)); err != nil { //nolint:nestif
 		if !errors.Is(err, data.ErrObjectNotFound) {
 			return model.Checkpoint{}, fmt.Errorf("save checkpoint : %w", err)
 		}
 	} else {
+		if log != nil {
+			log.Debug("PFI5 ", checkpoint.Ver, " ", existsCheckPoint.Ver)
+		}
 		if existsCheckPoint.Ver != checkpoint.Ver {
 			return model.Checkpoint{}, data.ErrVersionMismatch
 		}
 		checkpoint.Ver++
+		if log != nil {
+			log.Debug("PFI6 ", checkpoint.Ver)
+		}
 	}
 
 	if err := ckp.storage.Save(ctx, &checkpoint, data.Key(checkpoint.Channel)); err != nil {

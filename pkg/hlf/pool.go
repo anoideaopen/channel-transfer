@@ -221,6 +221,7 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 	checkPointVersion := int64(0)
 
 	checkPoint, err := pool.checkPoint.CheckpointLoad(pool.gCtx, model.ID(key))
+	pool.log.Debug("PFI1 ", checkPoint.Ver)
 	if err != nil {
 		if !errors.Is(err, data.ErrObjectNotFound) {
 			pool.log.Error(errors.Errorf("load checkpoint of %s: %w", string(key), err))
@@ -229,6 +230,7 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 		blockNumber = checkPoint.SrcCollectFromBlockNums
 		checkPointVersion = checkPoint.Ver
 	}
+	pool.log.Debug("PFI2 ", checkPoint.Ver, " ", checkPointVersion)
 
 	collector := createChCollector(pool.gCtx, string(key), blockNumber, provider, pool.opts.BatchTxPreimagePrefix, pool.opts.CollectorsBufSize)
 	defer func() {
@@ -272,6 +274,7 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 			readiness()
 		case <-saver.C:
 			go func() {
+				pool.log.Debug("PFI3 ", checkPointVersion)
 				nCheckPoint, err := pool.checkPoint.CheckpointSave(
 					pool.gCtx,
 					model.Checkpoint{
@@ -279,9 +282,10 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 						Channel:                 model.ID(key),
 						SrcCollectFromBlockNums: blockNumber,
 					},
+					pool.log,
 				)
 				if err != nil {
-					pool.log.Errorf("save checkpoint of %s : %s", string(key), err.Error())
+					pool.log.Errorf("PFI4 save checkpoint of %s : %s", string(key), err.Error())
 				} else {
 					checkPointVersion = nCheckPoint.Ver
 				}
