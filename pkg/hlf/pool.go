@@ -9,6 +9,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/config"
 	"github.com/anoideaopen/channel-transfer/pkg/data"
 	"github.com/anoideaopen/channel-transfer/pkg/data/redis"
+	"github.com/anoideaopen/channel-transfer/pkg/helpers/methods"
 	"github.com/anoideaopen/channel-transfer/pkg/helpers/nerrors"
 	"github.com/anoideaopen/channel-transfer/pkg/hlf/hlfprofile"
 	"github.com/anoideaopen/channel-transfer/pkg/logger"
@@ -305,11 +306,8 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error { /
 		isSendEvent := false
 
 		for _, transaction := range transferBlock.Transactions {
-			if (transaction.FuncName == model.TxChannelTransferByCustomer.String() ||
-				transaction.FuncName == model.TxChannelTransferByAdmin.String() ||
-				transaction.FuncName == model.TxChannelMultiTransferByCustomer.String() ||
-				transaction.FuncName == model.TxChannelMultiTransferByAdmin.String()) &&
-				transaction.BatchResponse != nil && !isSendEvent {
+			isCreateMethod := methods.IsTransferFromMethod(transaction.FuncName)
+			if isCreateMethod && transaction.BatchResponse != nil && !isSendEvent {
 				isSendEvent = true
 				pool.sendEvent(string(key))
 			}
@@ -329,12 +327,7 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error { /
 				return fmt.Errorf("streams buffer : channel %s not found", string(key))
 			}
 
-			if transaction.FuncName == model.TxChannelTransferByCustomer.String() ||
-				transaction.FuncName == model.TxChannelTransferByAdmin.String() ||
-				transaction.FuncName == model.TxChannelMultiTransferByCustomer.String() ||
-				transaction.FuncName == model.TxChannelMultiTransferByAdmin.String() {
-				canBeStored = true
-			}
+			canBeStored = isCreateMethod
 		}
 
 		if transferID == "" {
@@ -395,10 +388,7 @@ func (pool *Pool) updateBatchResponse(key channelKey, transactions []model.Trans
 
 				pool.streams.removeTransactionID(key, transactionID(tx.TxID))
 
-				if transferBlock.Transactions[i].FuncName != model.TxChannelTransferByCustomer.String() &&
-					transferBlock.Transactions[i].FuncName != model.TxChannelTransferByAdmin.String() &&
-					transferBlock.Transactions[i].FuncName != model.TxChannelMultiTransferByCustomer.String() &&
-					transferBlock.Transactions[i].FuncName != model.TxChannelMultiTransferByAdmin.String() {
+				if !methods.IsTransferFromMethod(transferBlock.Transactions[i].FuncName) {
 					continue
 				}
 

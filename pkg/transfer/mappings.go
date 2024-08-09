@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/anoideaopen/channel-transfer/pkg/helpers/methods"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	dto "github.com/anoideaopen/channel-transfer/proto"
 	"github.com/anoideaopen/foundation/proto"
@@ -162,11 +163,7 @@ func dtoBeginCustomerToModelMultiTransferRequest(
 func LedgerBlockToTransferBlock(channel string, block model.BlockData) map[model.ID]*model.TransferBlock {
 	transferBlocks := make(map[model.ID]*model.TransferBlock)
 	for _, tx := range block.Txs {
-		if tx.FuncName != model.TxChannelTransferByCustomer.String() &&
-			tx.FuncName != model.TxChannelTransferByAdmin.String() &&
-			tx.FuncName != model.TxCreateCCTransferTo.String() &&
-			tx.FuncName != model.TxChannelMultiTransferByCustomer.String() &&
-			tx.FuncName != model.TxChannelMultiTransferByAdmin.String() {
+		if !methods.IsCreateTransferMethod(tx.FuncName) {
 			continue
 		}
 
@@ -210,24 +207,19 @@ func BlockToRequest(block model.TransferBlock) (request model.TransferRequest, e
 	request.Transfer = block.Transfer
 	request.Status = dto.TransferStatusResponse_STATUS_UNDEFINED.String()
 	for _, transaction := range block.Transactions {
-		if transaction.FuncName != model.TxChannelTransferByCustomer.String() &&
-			transaction.FuncName != model.TxChannelTransferByAdmin.String() &&
-			transaction.FuncName != model.TxChannelMultiTransferByCustomer.String() &&
-			transaction.FuncName != model.TxChannelMultiTransferByAdmin.String() {
+		if !methods.IsTransferFromMethod(transaction.FuncName) {
 			continue
 		}
 
 		request.Transfer = block.Transfer
 		offset := 0
 
-		if transaction.FuncName == model.TxChannelTransferByAdmin.String() ||
-			transaction.FuncName == model.TxChannelMultiTransferByAdmin.String() {
+		if methods.IsByAdminMethod(transaction.FuncName) {
 			request.User = model.ID(transaction.Args[6])
 			offset = 1
 		}
 
-		if transaction.FuncName == model.TxChannelMultiTransferByAdmin.String() ||
-			transaction.FuncName == model.TxChannelMultiTransferByCustomer.String() {
+		if methods.IsMultiTransferMethod(transaction.FuncName) {
 			if len(transaction.Args) < 10+offset {
 				continue
 			}
@@ -273,10 +265,7 @@ func checkGeneral(gp *dto.GeneralParams, actualChannels map[string]struct{}) err
 	if gp.GetMethodName() == "" {
 		return ErrMethod
 	}
-	if gp.GetMethodName() != model.TxChannelTransferByAdmin.String() &&
-		gp.GetMethodName() != model.TxChannelTransferByCustomer.String() &&
-		gp.GetMethodName() != model.TxChannelMultiTransferByAdmin.String() &&
-		gp.GetMethodName() != model.TxChannelMultiTransferByCustomer.String() {
+	if !methods.IsTransferFromMethod(gp.GetMethodName()) {
 		return ErrUnknownMethod
 	}
 	if _, ok := actualChannels[gp.GetChannel()]; !ok {

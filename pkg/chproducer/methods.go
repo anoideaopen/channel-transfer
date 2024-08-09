@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/anoideaopen/channel-transfer/pkg/data"
+	"github.com/anoideaopen/channel-transfer/pkg/helpers/methods"
 	"github.com/anoideaopen/channel-transfer/pkg/metrics"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/channel-transfer/proto"
@@ -318,11 +319,7 @@ func (h *Handler) fromBatchResponse(ctx context.Context, transferID string) (mod
 		}
 
 		for _, transaction := range blocks.Transactions {
-			if (transaction.FuncName == model.TxChannelTransferByCustomer.String() ||
-				transaction.FuncName == model.TxChannelTransferByAdmin.String() ||
-				transaction.FuncName == model.TxChannelMultiTransferByCustomer.String() ||
-				transaction.FuncName == model.TxChannelMultiTransferByAdmin.String()) &&
-				transaction.BatchResponse != nil {
+			if methods.IsTransferFromMethod(transaction.FuncName) && transaction.BatchResponse != nil {
 				batchResponse = transaction.BatchResponse
 				return nil
 			}
