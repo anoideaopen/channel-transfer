@@ -6,8 +6,8 @@ require (
 	github.com/IBM/idemix v0.0.2-0.20231011101252-a4feda90f3f7
 	github.com/anoideaopen/acl v0.0.4-0.20240709131543-bf642c53380c
 	github.com/anoideaopen/channel-transfer v0.0.5-0.20240724145918-4e7c5bbd7339
-	github.com/anoideaopen/foundation v0.0.5
-	github.com/anoideaopen/foundation/test/integration v0.0.0-20240722222449-50dbeda831f0
+	github.com/anoideaopen/foundation v0.0.6-0.20240809062346-4a18d95a349b
+	github.com/anoideaopen/foundation/test/integration v0.0.0-20240809062346-4a18d95a349b
 	github.com/anoideaopen/robot v0.0.3-0.20240724144307-3051246b9d62
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
 	github.com/fsouza/go-dockerclient v1.11.1
@@ -186,7 +186,5 @@ require (
 
 replace (
 	github.com/anoideaopen/channel-transfer => ../../
-	github.com/anoideaopen/foundation => ../../../foundation
-	github.com/anoideaopen/foundation/test/integration => ../../../foundation/test/integration
 	github.com/hyperledger/fabric-sdk-go => github.com/anoideaopen/fabric-sdk-go v0.0.2
 )

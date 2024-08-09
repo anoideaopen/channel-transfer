@@ -4,7 +4,7 @@ go 1.22.5
 
 require (
 	github.com/anoideaopen/common-component v0.0.6
-	github.com/anoideaopen/foundation v0.0.5
+	github.com/anoideaopen/foundation v0.0.6-0.20240809062346-4a18d95a349b
 	github.com/anoideaopen/glog v0.0.3
 	github.com/avast/retry-go/v4 v4.6.0
 	github.com/felixge/httpsnoop v1.0.4
@@ -38,7 +38,6 @@ require (
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
-	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.5.1 // indirect
 )
 
 require (
@@ -95,7 +94,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace (
-	github.com/anoideaopen/foundation => ../foundation
-	github.com/hyperledger/fabric-sdk-go => github.com/anoideaopen/fabric-sdk-go v0.0.2
-)
+replace github.com/hyperledger/fabric-sdk-go => github.com/anoideaopen/fabric-sdk-go v0.0.2
