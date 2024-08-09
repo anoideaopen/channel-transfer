@@ -13,7 +13,6 @@ func IsCreateTransferMethod(method string) bool {
 	default:
 	}
 	return false
-
 }
 
 func IsTransferFromMethod(method string) bool {

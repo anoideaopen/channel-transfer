@@ -293,7 +293,7 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 	return errors.New(pool.gCtx.Err())
 }
 
-func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error { //nolint:gocognit
+func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 	if len(block.Txs) == 0 {
 		return nil
 	}
