@@ -139,7 +139,7 @@ func (h *Handler) Exec(ctx context.Context) error {
 }
 
 func (h *Handler) launcher(ctx context.Context, group *errgroup.Group) {
-	if !h.launcherInWork.CAS(false, true) {
+	if !h.launcherInWork.CompareAndSwap(false, true) {
 		return
 	}
 	defer h.launcherInWork.Store(false)
