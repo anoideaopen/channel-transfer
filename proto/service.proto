@@ -44,7 +44,7 @@ service API {
       body: "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Transfer cross chanel be customer";
+      summary: "Transfer cross channel by customer";
       operation_id: "transferByCustomer";
       tags: "Transfer";
     };
@@ -56,7 +56,7 @@ service API {
       body: "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Transfer cross chanel be admin";
+      summary: "Transfer cross channel by admin";
       operation_id: "transferByAdmin";
       tags: "Transfer";
     };
@@ -68,7 +68,7 @@ service API {
       body: "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Multi transfer cross chanel be customer";
+      summary: "Multi transfer cross channel by customer";
       operation_id: "multiTransferByCustomer";
       tags: "Transfer";
     };
@@ -80,7 +80,7 @@ service API {
       body: "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Multi transfer cross chanel be admin";
+      summary: "Multi transfer cross channel by admin";
       operation_id: "multiTransferByAdmin";
       tags: "Transfer";
     };
