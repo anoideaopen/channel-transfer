@@ -133,8 +133,8 @@ message TransferBeginAdminRequest{
 
 // TransferItem item parameters for MultiTransferBeginCustomerRequest and MultiTransferBeginAdminRequest
 message TransferItem{
-  string amount = 1; // Amount of token to transfer
-  string token = 2; // Token to transfer
+  string token = 1; // Token to transfer
+  string amount = 2; // Amount of token to transfer
 }
 
 // MultiTransferBeginAdminRequest request for tokens transfer by tokens owner

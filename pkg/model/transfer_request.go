@@ -18,8 +18,8 @@ type TransferResult struct {
 }
 
 type TransferItem struct {
-	Amount string `json:"amount"`
 	Token  string `json:"token"`
+	Amount string `json:"amount"`
 }
 
 // TransferRequest contains the internal representation of a request to transfer
