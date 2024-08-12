@@ -27,8 +27,11 @@ func (ckp *BlockCheckpoint) CheckpointSave(ctx context.Context, checkpoint model
 			return model.Checkpoint{}, fmt.Errorf("save checkpoint : %w", err)
 		}
 	} else {
-		if existsCheckPoint.Ver != checkpoint.Ver {
+		if checkpoint.Ver > existsCheckPoint.Ver {
 			return model.Checkpoint{}, data.ErrVersionMismatch
+		}
+		if checkpoint.Ver < existsCheckPoint.Ver {
+			checkpoint.Ver = existsCheckPoint.Ver
 		}
 		checkpoint.Ver++
 	}

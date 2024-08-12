@@ -4,16 +4,10 @@ import (
 	"context"
 	"errors"
 	"sync"
-	"time"
 
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/glog"
 	hlfcontext "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
-)
-
-const (
-	startFromZero            = 0
-	checkpointFrequencySaver = time.Duration(5) * time.Second
 )
 
 var (

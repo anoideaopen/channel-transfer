@@ -23,6 +23,7 @@ import (
 	"github.com/go-errors/errors"
 	hlfcontext "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
+	"go.uber.org/atomic"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -218,8 +219,10 @@ func (pool *Pool) blockchainHeight(key channelKey) (*uint64, error) {
 
 //nolint:funlen
 func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvider) error {
-	blockNumber := uint64(startFromZero)
-	checkPointVersion := int64(0)
+	var (
+		blockNumber       uint64
+		checkPointVersion atomic.Int64
+	)
 
 	checkPoint, err := pool.checkPoint.CheckpointLoad(pool.gCtx, model.ID(key))
 	if err != nil {
@@ -228,7 +231,7 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 		}
 	} else {
 		blockNumber = checkPoint.SrcCollectFromBlockNums
-		checkPointVersion = checkPoint.Ver
+		checkPointVersion.Store(checkPoint.Ver)
 	}
 
 	collector := createChCollector(pool.gCtx, string(key), blockNumber, provider, pool.opts.BatchTxPreimagePrefix, pool.opts.CollectorsBufSize)
@@ -252,8 +255,7 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 	}
 	readiness()
 
-	saver := time.NewTicker(checkpointFrequencySaver)
-	defer saver.Stop()
+	saver := make(chan struct{}, 1)
 
 	pool.m.TotalReconnectsToFabric().Inc(metrics.Labels().Channel.Create(string(key)))
 
@@ -271,26 +273,36 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 			}
 			blockNumber = block.BlockNum
 			readiness()
-		case <-saver.C:
+			sendSaver(saver)
+		case <-saver:
 			go func() {
+				ver := checkPointVersion.Load()
 				nCheckPoint, err := pool.checkPoint.CheckpointSave(
 					pool.gCtx,
 					model.Checkpoint{
-						Ver:                     checkPointVersion,
+						Ver:                     ver,
 						Channel:                 model.ID(key),
 						SrcCollectFromBlockNums: blockNumber,
 					},
 				)
 				if err != nil {
 					pool.log.Errorf("save checkpoint of %s : %s", string(key), err.Error())
-				} else {
-					checkPointVersion = nCheckPoint.Ver
+					return
 				}
+
+				checkPointVersion.CompareAndSwap(ver, nCheckPoint.Ver)
 			}()
 		}
 	}
 
 	return errors.New(pool.gCtx.Err())
+}
+
+func sendSaver(c chan struct{}) {
+	select {
+	case c <- struct{}{}:
+	default:
+	}
 }
 
 func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
