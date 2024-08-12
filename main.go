@@ -30,7 +30,7 @@ import (
 	"github.com/go-errors/errors"
 	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	prometheus2 "github.com/prometheus/client_golang/prometheus"
-	redis3 "github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -107,8 +107,8 @@ func main() {
 	)
 
 	storage, err := redis2.NewStorage(
-		redis3.NewUniversalClient(
-			&redis3.UniversalOptions{
+		redis.NewUniversalClient(
+			&redis.UniversalOptions{
 				Addrs:     cfg.RedisStorage.Addr,
 				Password:  cfg.RedisStorage.Password,
 				ReadOnly:  false,
