@@ -17,7 +17,6 @@ linters:
     - bodyclose
     - dogsled
     - errorlint
-    - exportloopref
     - misspell
     - nestif
     - noctx
@@ -93,6 +92,7 @@ linters-settings:
   gosec:
     excludes:
       - 'G107'
+      - 'G115'
       - 'G402'
       - 'G404'
   revive:

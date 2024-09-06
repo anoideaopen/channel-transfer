@@ -80,7 +80,7 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 				return nil, errors.Errorf("failed to get action args: %w", err)
 			}
 
-			if !new(model.TransactionKind).Is(method) && method != BatchExecuteMethod {
+			if !new(model.TransactionKind).Is(method) && method != BatchExecuteMethod && method != ExecuteTasksMethod {
 				continue
 			}
 
@@ -108,6 +108,38 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 									Channel:        p.channel,
 									BlockNum:       blockNum,
 									TxID:           txID,
+									FuncName:       tsResponse.GetMethod(),
+									Args:           nil,
+									TimeNs:         0,
+									ValidationCode: tx.validationCode,
+									BatchResponse:  tsResponse,
+									Response:       nil,
+								},
+							)
+						}
+					}
+				}
+				continue
+			}
+
+			if method == ExecuteTasksMethod {
+				extractTaskRequest, err := p.extractTaskRequest(args[1])
+				if err != nil {
+					return nil, errors.Errorf("failed to extract taskRequest from chaincodeAction response payload: %w", err)
+				}
+				for _, task := range extractTaskRequest.GetTasks() {
+					batchResponse, err := p.extractBatchResponse(chaincodeAction.GetResponse().GetPayload())
+					if err != nil {
+						return nil, errors.Errorf("failed to extract batchResponse from chaincodeAction response payload: %w", err)
+					}
+					for _, tsResponse := range batchResponse.GetTxResponses() {
+						if string(tsResponse.GetId()) == task.GetId() && new(model.TransactionKind).Is(tsResponse.GetMethod()) {
+							tOperations = append(
+								tOperations,
+								model.Transaction{
+									Channel:        p.channel,
+									BlockNum:       blockNum,
+									TxID:           task.GetId(),
 									FuncName:       tsResponse.GetMethod(),
 									Args:           nil,
 									TimeNs:         0,
