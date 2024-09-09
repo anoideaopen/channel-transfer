@@ -3,12 +3,8 @@ package http
 import (
 	"context"
 	"encoding/json"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
-	"syscall"
-	"time"
 
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	clihttp "github.com/anoideaopen/channel-transfer/test/integration/clihttp/client"
@@ -17,87 +13,41 @@ import (
 	pbfound "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
-	"github.com/anoideaopen/foundation/test/integration/cmn/fabricnetwork"
-	"github.com/anoideaopen/foundation/test/integration/cmn/runner"
 	"github.com/btcsuite/btcutil/base58"
-	docker "github.com/fsouza/go-dockerclient"
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 	"github.com/google/uuid"
-	"github.com/hyperledger/fabric/integration/nwo"
-	"github.com/hyperledger/fabric/integration/nwo/fabricconfig"
-	runnerFbk "github.com/hyperledger/fabric/integration/nwo/runner"
+	"github.com/hyperledger/fabric/integration"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gbytes"
-	"github.com/tedsuo/ifrit"
-	ginkgomon "github.com/tedsuo/ifrit/ginkgomon_v2"
 	"google.golang.org/grpc/metadata"
 )
 
 const (
+	fnIndustrialBalanceOf            = "industrialBalanceOf"
+	fnAllowedBalanceOf               = "allowedBalanceOf"
 	fnChannelMultiTransferByAdmin    = "channelMultiTransferByAdmin"
 	fnChannelMultiTransferByCustomer = "channelMultiTransferByCustomer"
 )
 
 var _ = Describe("Channel multi transfer HTTP tests", func() {
 	var (
-		testDir          string
-		cli              *docker.Client
-		network          *nwo.Network
-		networkProcess   ifrit.Process
-		ordererProcesses []ifrit.Process
-		peerProcesses    ifrit.Process
+		ts client.TestSuite
 	)
 
 	BeforeEach(func() {
-		networkProcess = nil
-		ordererProcesses = nil
-		peerProcesses = nil
-		var err error
-		testDir, err = os.MkdirTemp("", "foundation")
-		Expect(err).NotTo(HaveOccurred())
-
-		cli, err = docker.NewClientFromEnv()
-		Expect(err).NotTo(HaveOccurred())
+		ts = client.NewTestSuite(components)
 	})
-
 	AfterEach(func() {
-		if networkProcess != nil {
-			networkProcess.Signal(syscall.SIGTERM)
-			Eventually(networkProcess.Wait(), network.EventuallyTimeout).Should(Receive())
-		}
-		if peerProcesses != nil {
-			peerProcesses.Signal(syscall.SIGTERM)
-			Eventually(peerProcesses.Wait(), network.EventuallyTimeout).Should(Receive())
-		}
-		if network != nil {
-			network.Cleanup()
-		}
-		for _, ordererInstance := range ordererProcesses {
-			ordererInstance.Signal(syscall.SIGTERM)
-			Eventually(ordererInstance.Wait(), network.EventuallyTimeout).Should(Receive())
-		}
-		err := os.RemoveAll(testDir)
-		Expect(err).NotTo(HaveOccurred())
+		ts.ShutdownNetwork()
 	})
 
 	var (
-		channels            = []string{cmn.ChannelAcl, cmn.ChannelCC, cmn.ChannelIndustrial}
-		ordererRunners      []*ginkgomon.Runner
-		redisProcess        ifrit.Process
-		redisDB             *runner.RedisDB
-		networkFound        *cmn.NetworkFoundation
-		robotProc           ifrit.Process
-		channelTransferProc ifrit.Process
-		skiBackend          string
-		skiRobot            string
-		peer                *nwo.Peer
-		admin               *client.UserFoundation
-		user                *client.UserFoundation
-		feeSetter           *client.UserFoundation
-		feeAddressSetter    *client.UserFoundation
+		channels = []string{cmn.ChannelAcl, cmn.ChannelCC, cmn.ChannelIndustrial}
+		user     *client.UserFoundation
+
+		networkFound *cmn.NetworkFoundation
 
 		clientCtx   context.Context
 		transferCli *clihttp.CrossChanelTransfer
@@ -109,144 +59,49 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 	)
 	BeforeEach(func() {
 		By("start redis")
-		redisDB = &runner.RedisDB{}
-		redisProcess = ifrit.Invoke(redisDB)
-		Eventually(redisProcess.Ready(), runnerFbk.DefaultStartTimeout).Should(BeClosed())
-		Consistently(redisProcess.Wait()).ShouldNot(Receive())
+		ts.StartRedis()
 	})
 	BeforeEach(func() {
-		networkConfig := nwo.MultiNodeSmartBFT()
-		networkConfig.Channels = nil
-
-		pchs := make([]*nwo.PeerChannel, 0, cap(channels))
-		for _, ch := range channels {
-			pchs = append(pchs, &nwo.PeerChannel{
-				Name:   ch,
-				Anchor: true,
-			})
-		}
-		for _, peer := range networkConfig.Peers {
-			peer.Channels = pchs
-		}
-
-		network = nwo.New(networkConfig, testDir, cli, StartPort(), components)
-		cwd, err := os.Getwd()
-		Expect(err).NotTo(HaveOccurred())
-		network.ExternalBuilders = append(network.ExternalBuilders,
-			fabricconfig.ExternalBuilder{
-				Path:                 filepath.Join(cwd, ".", "externalbuilders", "binary"),
-				Name:                 "binary",
-				PropagateEnvironment: []string{"GOPROXY"},
-			},
-		)
-
-		networkFound = cmn.New(network, channels)
-		networkFound.Robot.RedisAddresses = []string{redisDB.Address()}
-		networkFound.ChannelTransfer.RedisAddresses = []string{redisDB.Address()}
-
-		networkFound.GenerateConfigTree()
-		networkFound.Bootstrap()
-
-		for _, orderer := range network.Orderers {
-			runner := network.OrdererRunner(orderer)
-			runner.Command.Env = append(runner.Command.Env, "FABRIC_LOGGING_SPEC=orderer.consensus.smartbft=debug:grpc=debug")
-			ordererRunners = append(ordererRunners, runner)
-			proc := ifrit.Invoke(runner)
-			ordererProcesses = append(ordererProcesses, proc)
-			Eventually(proc.Ready(), network.EventuallyTimeout).Should(BeClosed())
-		}
-
-		peerGroupRunner, _ := fabricnetwork.PeerGroupRunners(network)
-		peerProcesses = ifrit.Invoke(peerGroupRunner)
-		Eventually(peerProcesses.Ready(), network.EventuallyTimeout).Should(BeClosed())
-
-		By("Joining orderers to channels")
-		for _, channel := range channels {
-			fabricnetwork.JoinChannel(network, channel)
-		}
-
-		By("Waiting for followers to see the leader")
-		Eventually(ordererRunners[1].Err(), network.EventuallyTimeout, time.Second).Should(gbytes.Say("Message from 1"))
-		Eventually(ordererRunners[2].Err(), network.EventuallyTimeout, time.Second).Should(gbytes.Say("Message from 1"))
-		Eventually(ordererRunners[3].Err(), network.EventuallyTimeout, time.Second).Should(gbytes.Say("Message from 1"))
-
-		By("Joining peers to channels")
-		for _, channel := range channels {
-			network.JoinChannel(channel, network.Orderers[0], network.PeersWithChannel(channel)...)
-		}
-
-		peer = network.Peer("Org1", "peer0")
-
-		pathToPrivateKeyBackend := network.PeerUserKey(peer, "User1")
-		skiBackend, err = cmn.ReadSKI(pathToPrivateKeyBackend)
-		Expect(err).NotTo(HaveOccurred())
-
-		pathToPrivateKeyRobot := network.PeerUserKey(peer, "User2")
-		skiRobot, err = cmn.ReadSKI(pathToPrivateKeyRobot)
-		Expect(err).NotTo(HaveOccurred())
-
-		admin, err = client.NewUserFoundation(pbfound.KeyType_ed25519)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(admin.PrivateKeyBytes).NotTo(Equal(nil))
-
-		feeSetter, err = client.NewUserFoundation(pbfound.KeyType_ed25519)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(feeSetter.PrivateKeyBytes).NotTo(Equal(nil))
-
-		feeAddressSetter, err = client.NewUserFoundation(pbfound.KeyType_ed25519)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(feeAddressSetter.PrivateKeyBytes).NotTo(Equal(nil))
-
-		cmn.DeployACL(network, components, peer, testDir, skiBackend, admin.PublicKeyBase58, admin.KeyType)
-		cmn.DeployCC(network, components, peer, testDir, skiRobot, admin.AddressBase58Check)
-		cmn.DeployIndustrial(network, components, peer, testDir, skiRobot,
-			admin.AddressBase58Check, feeSetter.AddressBase58Check, feeAddressSetter.AddressBase58Check)
+		ts.InitNetwork(channels, integration.GossipBasePort)
+		ts.DeployChaincodes()
 	})
 	BeforeEach(func() {
 		By("start robot")
-		robotRunner := networkFound.RobotRunner()
-		robotProc = ifrit.Invoke(robotRunner)
-		Eventually(robotProc.Ready(), network.EventuallyTimeout).Should(BeClosed())
-
+		ts.StartRobot()
 		By("start channel transfer")
-		channelTransferRunner := networkFound.ChannelTransferRunner()
-		channelTransferProc = ifrit.Invoke(channelTransferRunner)
-		Eventually(channelTransferProc.Ready(), network.EventuallyTimeout).Should(BeClosed())
+		ts.StartChannelTransfer()
 	})
 	AfterEach(func() {
 		By("stop robot")
-		if robotProc != nil {
-			robotProc.Signal(syscall.SIGTERM)
-			Eventually(robotProc.Wait(), network.EventuallyTimeout).Should(Receive())
-		}
-
+		ts.StopRobot()
 		By("stop channel transfer")
-		if channelTransferProc != nil {
-			channelTransferProc.Signal(syscall.SIGTERM)
-			Eventually(channelTransferProc.Wait(), network.EventuallyTimeout).Should(Receive())
-		}
-
-		By("stop redis " + redisDB.Address())
-		if redisProcess != nil {
-			redisProcess.Signal(syscall.SIGTERM)
-			Eventually(redisProcess.Wait(), time.Minute).Should(Receive())
-		}
+		ts.StopChannelTransfer()
+		By("stop redis")
+		ts.StopRedis()
 	})
 
 	BeforeEach(func() {
+		networkFound = ts.NetworkFound()
+
 		By("add admin to acl")
-		client.AddUser(network, peer, network.Orderers[0], admin)
+		ts.AddAdminToACL()
 
 		By("add user to acl")
 		var err error
 		user, err = client.NewUserFoundation(pbfound.KeyType_ed25519)
 		Expect(err).NotTo(HaveOccurred())
 
-		client.AddUser(network, peer, network.Orderers[0], user)
+		ts.AddUser(user)
 
 		By("emit tokens")
-		client.NBTxInvokeWithSign(network, peer, network.Orderers[0], nil, cmn.ChannelIndustrial, cmn.ChannelIndustrial,
-			admin, "initialize", "", client.NewNonceByTime().Get())
+		ts.NBTxInvokeWithSign(
+			cmn.ChannelIndustrial,
+			cmn.ChannelIndustrial,
+			ts.Admin(),
+			"initialize",
+			"",
+			client.NewNonceByTime().Get(),
+		).CheckErrorIsNil()
 
 		// Here we use model.TransferItem to preserve the order of the fields
 		// when marshalling to json string to sign the transaction arguments.
@@ -317,17 +172,32 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 		for _, initial := range initialBalances {
 			group := strings.Split(initial.Token, "_")[1]
 
-			client.Query(network, peer, cmn.ChannelIndustrial, cmn.ChannelIndustrial,
-				fabricnetwork.CheckResult(fabricnetwork.CheckIndustrialBalance(group, initial.Amount), nil),
-				"industrialBalanceOf", admin.AddressBase58Check)
+			ts.Query(
+				cmn.ChannelIndustrial,
+				cmn.ChannelIndustrial,
+				fnIndustrialBalanceOf,
+				ts.Admin().AddressBase58Check,
+			).CheckIndustrialBalance(group, initial.Amount)
 
-			client.TxInvokeWithSign(network, peer, network.Orderers[0], cmn.ChannelIndustrial, cmn.ChannelIndustrial,
-				admin, "transferIndustrial", "", client.NewNonceByTime().Get(), nil,
-				user.AddressBase58Check, group, initial.Amount, "transfer industrial tokens")
+			ts.TxInvokeWithSign(
+				cmn.ChannelIndustrial,
+				cmn.ChannelIndustrial,
+				ts.Admin(),
+				"transferIndustrial",
+				"",
+				client.NewNonceByTime().Get(),
+				user.AddressBase58Check,
+				group,
+				initial.Amount,
+				"transfer industrial tokens",
+			).CheckErrorIsNil()
 
-			client.Query(network, peer, cmn.ChannelIndustrial, cmn.ChannelIndustrial,
-				fabricnetwork.CheckResult(fabricnetwork.CheckIndustrialBalance(group, initial.Amount), nil),
-				"industrialBalanceOf", user.AddressBase58Check)
+			ts.Query(
+				cmn.ChannelIndustrial,
+				cmn.ChannelIndustrial,
+				fnIndustrialBalanceOf,
+				user.AddressBase58Check,
+			).CheckIndustrialBalance(group, initial.Amount)
 		}
 
 		By("creating http connection")
@@ -355,7 +225,7 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 		requestID := uuid.NewString()
 		nonce := client.NewNonceByTime().Get()
 		signArgs := append(append([]string{fnChannelMultiTransferByAdmin, requestID, cmn.ChannelIndustrial, cmn.ChannelIndustrial}, channelTransferArgs...), nonce)
-		publicKey, sign, err := admin.Sign(signArgs...)
+		publicKey, sign, err := ts.Admin().Sign(signArgs...)
 		Expect(err).NotTo(HaveOccurred())
 
 		transferRequest := &models.ChannelTransferMultiTransferBeginAdminRequest{
@@ -389,13 +259,20 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 		for i, expected := range expectedIndustrialBalances {
 			group := strings.Split(expected.Token, "_")[1]
 
-			client.Query(network, peer, cmn.ChannelIndustrial, cmn.ChannelIndustrial,
-				fabricnetwork.CheckResult(fabricnetwork.CheckIndustrialBalance(group, expected.Amount), nil),
-				"industrialBalanceOf", user.AddressBase58Check)
+			ts.Query(
+				cmn.ChannelIndustrial,
+				cmn.ChannelIndustrial,
+				fnIndustrialBalanceOf,
+				user.AddressBase58Check,
+			).CheckIndustrialBalance(group, expected.Amount)
 
-			client.Query(network, peer, cmn.ChannelCC, cmn.ChannelCC,
-				fabricnetwork.CheckResult(fabricnetwork.CheckBalance(transferItems[i].Amount), nil),
-				"allowedBalanceOf", user.AddressBase58Check, transferItems[i].Token)
+			ts.Query(
+				cmn.ChannelCC,
+				cmn.ChannelCC,
+				fnAllowedBalanceOf,
+				user.AddressBase58Check,
+				transferItems[i].Token,
+			).CheckBalance(transferItems[i].Amount)
 		}
 	})
 
@@ -447,16 +324,22 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 		for i, expected := range expectedIndustrialBalances {
 			group := strings.Split(expected.Token, "_")[1]
 
-			client.Query(network, peer, cmn.ChannelIndustrial, cmn.ChannelIndustrial,
-				fabricnetwork.CheckResult(fabricnetwork.CheckIndustrialBalance(group, expected.Amount), nil),
-				"industrialBalanceOf", user.AddressBase58Check)
+			ts.Query(
+				cmn.ChannelIndustrial,
+				cmn.ChannelIndustrial,
+				fnIndustrialBalanceOf,
+				user.AddressBase58Check,
+			).CheckIndustrialBalance(group, expected.Amount)
 
-			client.Query(network, peer, cmn.ChannelCC, cmn.ChannelCC,
-				fabricnetwork.CheckResult(fabricnetwork.CheckBalance(transferItems[i].Amount), nil),
-				"allowedBalanceOf", user.AddressBase58Check, transferItems[i].Token)
+			ts.Query(
+				cmn.ChannelCC,
+				cmn.ChannelCC,
+				fnAllowedBalanceOf,
+				user.AddressBase58Check,
+				transferItems[i].Token,
+			).CheckBalance(transferItems[i].Amount)
 		}
 	})
-
 })
 
 func mapTransferItems(transferItems []model.TransferItem) []*models.ChannelTransferTransferItem {
