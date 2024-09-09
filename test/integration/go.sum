@@ -663,15 +663,10 @@ github.com/anoideaopen/fabric-sdk-go v0.0.2 h1:8Nm1jpaCxtgphFtc1GuQoQxREz6Y7TrsC
 github.com/anoideaopen/fabric-sdk-go v0.0.2/go.mod h1:L8ECPqpdBc/ObG4PDH4wHTsYLoi74UcSPgI0hLR/vHc=
 github.com/anoideaopen/foundation v0.0.6-0.20240809062346-4a18d95a349b h1:Dx0tPe30Xtph9BwGabFnBzoE7cAC67FdsuDxcCMXq7Q=
 github.com/anoideaopen/foundation v0.0.6-0.20240809062346-4a18d95a349b/go.mod h1:5dkuaC4WuhkzRz2D/2067dwQ7L7XBeLmo21Ln5CDYFI=
-github.com/anoideaopen/foundation/test/integration v0.0.0-20240809062346-4a18d95a349b h1:1tdL+IjRw/CXP9nSZaXu4rqnV+4EaZILaG04OXSSOjU=
-github.com/anoideaopen/foundation/test/integration v0.0.0-20240809062346-4a18d95a349b/go.mod h1:EBbWLwHfdA4zn4pkUOMAjgsiiJMtdGUo2zmJvbDvcT4=
-github.com/anoideaopen/foundation/test/integration v0.0.0-20240903083613-925228974a3c h1:keB7W+f36SicWwdVFLZPoYPiDq8uXQIWvMsXG3oNH6Q=
-github.com/anoideaopen/foundation/test/integration v0.0.0-20240903083613-925228974a3c/go.mod h1:d5lDv+K24jP2flzQ+foSW5AMWegWgbqnt80P8Viw+CI=
+github.com/anoideaopen/foundation/test/integration v0.0.0-20240909081609-af8e7ac3d816 h1:ydWDSgxhHH+XP98bRoZ4UnlZUY3I/LBc8OikJlZvJao=
 github.com/anoideaopen/foundation/test/integration v0.0.0-20240909081609-af8e7ac3d816/go.mod h1:/fdDnOw52YjraodgrBY+euSV3IYT0ojg4nCAv1XntWs=
 github.com/anoideaopen/glog v0.0.3 h1:vsWM5QvHzTMbrDy3cydkNPFpfdWrxeC8ne02f//qNaA=
 github.com/anoideaopen/glog v0.0.3/go.mod h1:8J4509ClNmF/kvvPA8XFKZ7OX+860JaFH3+nXVD+R3k=
-github.com/anoideaopen/robot v0.0.3-0.20240730145328-bc561367aff8 h1:SRY1cGcbnPR5oRwKXNYnsGBdihqkCg+nUuF8gq39R28=
-github.com/anoideaopen/robot v0.0.3-0.20240730145328-bc561367aff8/go.mod h1:TWRrgU0ZDz88Qsw3QiiLil9RgO7TBtwWXZhL+rxjidI=
 github.com/anoideaopen/robot v0.0.3-0.20240814133021-25a749a95916 h1:QNzQ/3+nvoiQqPCdfaFgPShr/fQcttTQikHIjHlkND0=
 github.com/anoideaopen/robot v0.0.3-0.20240814133021-25a749a95916/go.mod h1:eDyUAu67Lc+oWX7FVj24Q6IKX26n+rXf3ilXVCvhFTc=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
@@ -943,8 +938,6 @@ github.com/go-playground/universal-translator v0.18.1 h1:Bcnm0ZwsGyWbCzImXv+pAJn
 github.com/go-playground/universal-translator v0.18.1/go.mod h1:xekY+UJKNuX9WP91TpwSH2VMlDf28Uj24BCp08ZFTUY=
 github.com/go-playground/validator/v10 v10.22.0 h1:k6HsTZ0sTnROkhS//R0O+55JgM8C4Bx7ia+JlgcnOao=
 github.com/go-playground/validator/v10 v10.22.0/go.mod h1:dbuPbCMFw/DrkbEynArYaCwl3amGuJotoKCe95atGMM=
-github.com/go-redis/redis/v8 v8.11.5 h1:AcZZR7igkdvfVmQTPnu9WE37LRrO/YrBH5zWyjDC0oI=
-github.com/go-redis/redis/v8 v8.11.5/go.mod h1:gREzHqY1hg6oD9ngVRbLStwAWKhA0FEgq8Jd4h5lpwo=
 github.com/go-sql-driver/mysql v1.3.0/go.mod h1:zAC/RDZ24gD3HViQzih4MyKcchzm+sOG5ZlKdlhCg5w=
 github.com/go-sql-driver/mysql v1.4.0/go.mod h1:zAC/RDZ24gD3HViQzih4MyKcchzm+sOG5ZlKdlhCg5w=
 github.com/go-stack/stack v1.8.0 h1:5SgMzNM5HxrEjV0ww2lTmX6E2Izsfxas4+YHWRs3Lsk=
@@ -1130,8 +1123,6 @@ github.com/hyperledger/fabric v1.4.0-rc1.0.20240729123800-908b9655d423 h1:sqaonv
 github.com/hyperledger/fabric v1.4.0-rc1.0.20240729123800-908b9655d423/go.mod h1:eGIUdoE/zqv9bBaGAkD49rIPDBpR/GrGCtGD0CYKzK0=
 github.com/hyperledger/fabric-amcl v0.0.0-20230602173724-9e02669dceb2 h1:B1Nt8hKb//KvgGRprk0h1t4lCnwhE9/ryb1WqfZbV+M=
 github.com/hyperledger/fabric-amcl v0.0.0-20230602173724-9e02669dceb2/go.mod h1:X+DIyUsaTmalOpmpQfIvFZjKHQedrURQ5t4YqquX7lE=
-github.com/hyperledger/fabric-chaincode-go v0.0.0-20230228194215-b84622ba6a7a h1:HwSCxEeiBthwcazcAykGATQ36oG9M+HEQvGLvB7aLvA=
-github.com/hyperledger/fabric-chaincode-go v0.0.0-20230228194215-b84622ba6a7a/go.mod h1:TDSu9gxURldEnaGSFbH1eMlfSQBWQcMQfnDBcpQv5lU=
 github.com/hyperledger/fabric-chaincode-go v0.0.0-20240124143825-7dec3c7e7d45 h1:tZeJCTwbAE3cwi6XId+dYd/gTtfTKzZ3uEb1ksvQf7I=
 github.com/hyperledger/fabric-chaincode-go v0.0.0-20240124143825-7dec3c7e7d45/go.mod h1:YZBt6/ZlJCzyPoWecbfFp34G+ZIYKodTQA46c0sxHIk=
 github.com/hyperledger/fabric-config v0.2.1 h1:CsReuxvi5c5NUyKKQOIVbHux32o+XtmDNceYLYjycxo=
