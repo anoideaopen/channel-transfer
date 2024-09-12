@@ -1,7 +1,7 @@
-package batcher_builder
+package batcher
 
 import (
-	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/proto" //nolint:staticcheck
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/pkg/errors"
 )
@@ -33,7 +33,7 @@ func (b *BlockBuilder) SetHeader(number uint64, previousHash, dataHash []byte) *
 func (b *BlockBuilder) AddData(data *common.Envelope) *BlockBuilder {
 	dataBytes, err := proto.Marshal(data)
 	if err != nil {
-		panic(errors.Errorf("failed to marshal data: %w", err))
+		panic(errors.Errorf("failed to marshal data: %v", err))
 	}
 
 	b.block.Data.Data = append(b.block.Data.Data, dataBytes)
@@ -42,8 +42,8 @@ func (b *BlockBuilder) AddData(data *common.Envelope) *BlockBuilder {
 }
 
 func (b *BlockBuilder) AddMetadata(index int, value []byte, signature []byte, signatureHeader []byte, identifierHeader []byte) *BlockBuilder {
-	if len(b.block.Metadata.Metadata) <= index {
-		b.block.Metadata.Metadata = append(b.block.Metadata.Metadata, make([][]byte, index-len(b.block.Metadata.Metadata)+1)...)
+	if len(b.block.GetMetadata().GetMetadata()) <= index {
+		b.block.Metadata.Metadata = append(b.block.Metadata.Metadata, make([][]byte, index-len(b.block.GetMetadata().GetMetadata())+1)...)
 	}
 
 	metadata := &common.Metadata{

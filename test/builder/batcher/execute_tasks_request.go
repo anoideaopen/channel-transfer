@@ -1,4 +1,4 @@
-package batcher_builder
+package batcher
 
 import (
 	fpb "github.com/anoideaopen/foundation/proto"

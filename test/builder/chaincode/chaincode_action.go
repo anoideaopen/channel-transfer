@@ -1,7 +1,7 @@
-package chaincode_builder
+package chaincode
 
 import (
-	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/proto" //nolint:staticcheck
 	"github.com/hyperledger/fabric-protos-go/ledger/rwset"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/pkg/errors"
@@ -37,8 +37,8 @@ func (b *ChaincodeActionBuilder) SetResponse(response *peer.Response) *Chaincode
 	return b
 }
 
-func (b *ChaincodeActionBuilder) SetChaincodeId(chaincodeId *peer.ChaincodeID) *ChaincodeActionBuilder {
-	b.chaincodeAction.ChaincodeId = chaincodeId
+func (b *ChaincodeActionBuilder) SetChaincodeID(chaincodeID *peer.ChaincodeID) *ChaincodeActionBuilder {
+	b.chaincodeAction.ChaincodeId = chaincodeID
 	return b
 }
 

@@ -1,4 +1,4 @@
-package batcher_builder
+package batcher
 
 import (
 	fpb "github.com/anoideaopen/foundation/proto"
@@ -19,7 +19,7 @@ func NewTaskBuilder() *TaskBuilder {
 	}
 }
 
-func (b *TaskBuilder) SetId(id string) *TaskBuilder {
+func (b *TaskBuilder) SetID(id string) *TaskBuilder {
 	b.task.Id = id
 	return b
 }
@@ -35,7 +35,7 @@ func (b *TaskBuilder) SetArgs(args []string) *TaskBuilder {
 }
 
 func (b *TaskBuilder) Build() *fpb.Task {
-	if b.task.Id == "" {
+	if b.task.GetId() == "" {
 		b.task.Id = uuid.New().String()
 	}
 	return b.task

@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/anoideaopen/channel-transfer/pkg/hlf/parser"
-	"github.com/anoideaopen/channel-transfer/test/build/batcher_builder"
-	"github.com/anoideaopen/channel-transfer/test/build/chaincode_builder"
+	"github.com/anoideaopen/channel-transfer/test/builder/batcher"
+	"github.com/anoideaopen/channel-transfer/test/builder/chaincode"
 	fpb "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/glog"
 	"github.com/hyperledger/fabric-protos-go/common"
@@ -16,17 +16,17 @@ import (
 )
 
 func newBlock(channel, txId string, txMethod string) *common.Block {
-	task := batcher_builder.NewTaskBuilder().
-		SetId(txId).
+	task := batcher.NewTaskBuilder().
+		SetID(txId).
 		SetMethod(txMethod).
 		SetArgs([]string{"arg1", "arg2"}).
 		Build()
 
-	executeTasksRequest := batcher_builder.NewExecuteTasksRequestBuilder().
+	executeTasksRequest := batcher.NewExecuteTasksRequestBuilder().
 		AddTask(task).
 		Marshal()
 
-	ccInvocationSpec := chaincode_builder.NewChaincodeInvocationSpecBuilder().
+	ccInvocationSpec := chaincode.NewChaincodeInvocationSpecBuilder().
 		SetChaincodeSpec(&peer.ChaincodeSpec{
 			Type: peer.ChaincodeSpec_Type(1),
 			ChaincodeId: &peer.ChaincodeID{
@@ -40,41 +40,41 @@ func newBlock(channel, txId string, txMethod string) *common.Block {
 		}).
 		Marshal()
 
-	batchResponse := chaincode_builder.NewBatchResponseBuilder().
+	batchResponse := chaincode.NewBatchResponseBuilder().
 		AddTxResponse(&fpb.TxResponse{
 			Id:     []byte(txId),
 			Method: txMethod,
 		}).
 		Marshal()
 
-	chaincodeAction := chaincode_builder.NewChaincodeActionBuilder().
+	chaincodeAction := chaincode.NewChaincodeActionBuilder().
 		SetEvents([]byte("events")).
 		SetResponse(&peer.Response{
 			Payload: batchResponse,
 		}).
 		Marshal()
 
-	chaincodeEndorsedAction := chaincode_builder.NewChaincodeEndorsedActionBuilder().
+	chaincodeEndorsedAction := chaincode.NewChaincodeEndorsedActionBuilder().
 		SetProposalResponsePayload([]byte("proposalHash"), chaincodeAction).
 		AddEndorsement([]byte("signature_1"), []byte("endorser_1")).
 		AddEndorsement([]byte("signature_2"), []byte("endorser_2")).
 		Build()
 
-	chaincodeActionPayload := chaincode_builder.NewChaincodeActionPayloadBuilder().
+	chaincodeActionPayload := chaincode.NewChaincodeActionPayloadBuilder().
 		SetChaincodeProposalPayload(&peer.ChaincodeProposalPayload{
 			Input: ccInvocationSpec,
 		}).
 		SetEndorsedAction(chaincodeEndorsedAction).
 		Build()
 
-	transaction := chaincode_builder.NewTransactionBuilder().
+	transaction := chaincode.NewTransactionBuilder().
 		AddAction(
 			[]byte("header1"),
 			chaincodeActionPayload,
 		).
 		Build()
 
-	envelope := chaincode_builder.NewEnvelopeBuilder().
+	envelope := chaincode.NewEnvelopeBuilder().
 		SetChannelHeader(&common.ChannelHeader{
 			Type:      int32(common.HeaderType_ENDORSER_TRANSACTION),
 			Version:   1,
@@ -90,7 +90,7 @@ func newBlock(channel, txId string, txMethod string) *common.Block {
 		SetSignature([]byte("signature-data")).
 		Build()
 
-	block := batcher_builder.NewBlockBuilder().
+	block := batcher.NewBlockBuilder().
 		SetHeader(1, []byte("previousHash"), []byte("dataHash")).
 		AddData(envelope).
 		AddMetadata(
