@@ -4,9 +4,13 @@ import (
 	fpb "github.com/anoideaopen/foundation/proto"
 	"github.com/golang/protobuf/proto" //nolint:staticcheck
 	"github.com/hyperledger/fabric-protos-go/peer"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
-const BatchExecuteMethod = "batchExecute"
+const (
+	BatchExecuteMethod = "batchExecute"
+	ExecuteTasksMethod = "executeTasks"
+)
 
 func (p *Parser) extractBatchPreImageTxIDs(rwSets []prsRwSet) []string {
 	txIDs := make([]string, 0)
@@ -44,6 +48,15 @@ func (p *Parser) extractChaincodeArgs(input *peer.ChaincodeInput) (string, [][]b
 func (p *Parser) extractBatchResponse(payload []byte) (*fpb.BatchResponse, error) {
 	response := &fpb.BatchResponse{}
 	if err := proto.Unmarshal(payload, response); err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+func (p *Parser) extractTaskRequest(payload []byte) (*fpb.ExecuteTasksRequest, error) {
+	response := &fpb.ExecuteTasksRequest{}
+	if err := protojson.Unmarshal(payload, response); err != nil {
 		return nil, err
 	}
 
