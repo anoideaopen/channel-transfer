@@ -29,9 +29,23 @@ type Config struct {
 	Service      *Service      `mapstructure:"service" validate:"required"`
 	PromMetrics  *PromMetrics  `mapstructure:"promMetrics"`
 
-	Channels []string `mapstructure:"channels" validate:"required,dive,required"`
+	Channels []Channel `mapstructure:"channels" validate:"required,dive,required"`
 
 	Options Options `mapstructure:"options" validate:"required"`
+}
+
+type Channel struct {
+	Name    string   `mapstructure:"name" validate:"required"`
+	Batcher *Batcher `mapstructure:"batcher"`
+}
+
+type Batcher struct {
+	AddressGRPC string      `mapstructure:"addressGRPC" validate:"required"`
+	tlsConfig   *tls.Config `mapstructure:"-"`
+}
+
+func (b *Batcher) TLSConfig() *tls.Config {
+	return b.tlsConfig
 }
 
 type ListenAPI struct {

@@ -15,14 +15,18 @@ func Execute(
 	ctx context.Context,
 	group *errgroup.Group,
 	cfg *config.ListenAPI,
-	channels []string,
+	channels []config.Channel,
 	output chan model.TransferRequest,
 	storage *redis.Storage,
 	grpcMetrics *grpcprom.ServerMetrics,
 ) error {
 	tlsConfig := cfg.TLSConfig()
 
-	apiServer := NewAPIServer(ctx, output, NewRequest(storage), channels)
+	channelNames := make([]string, 0)
+	for _, channel := range channels {
+		channelNames = append(channelNames, channel.Name)
+	}
+	apiServer := NewAPIServer(ctx, output, NewRequest(storage), channelNames)
 
 	group.Go(func() error {
 		return runGRPC(ctx, apiServer, tlsConfig, cfg.AddressGRPC, cfg.AccessToken, grpcMetrics)

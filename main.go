@@ -155,7 +155,7 @@ func main() {
 	})
 
 	for _, channel := range cfg.Channels {
-		chName := channel
+		chName := channel.Name
 		eGroup.Go(func() error {
 			producer, err := chproducer.NewHandler(
 				ctx,
@@ -250,15 +250,15 @@ func initMetrics(
 		for i := model.InProgressTransferFrom; i <= model.ExistsChannelTo; i++ {
 			m.TotalInWorkTransfer().Set(
 				0,
-				metrics.Labels().Channel.Create(channel),
+				metrics.Labels().Channel.Create(channel.Name),
 				metrics.Labels().TransferStatus.Create(i.String()),
 			)
 		}
 		m.FabricConnectionStatus().Set(0,
-			metrics.Labels().Channel.Create(channel),
+			metrics.Labels().Channel.Create(channel.Name),
 		)
 		m.CollectorProcessBlockNum().Set(0,
-			metrics.Labels().Channel.Create(channel),
+			metrics.Labels().Channel.Create(channel.Name),
 		)
 	}
 

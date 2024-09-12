@@ -23,9 +23,10 @@ type executor interface {
 
 type ChExecutor struct {
 	// args
-	log    glog.Logger
-	m      metrics.Metrics
-	chName string
+	log          glog.Logger
+	m            metrics.Metrics
+	chName       string
+	gRPCExecutor *gRPCExecutor
 
 	// init
 	executor             executor
@@ -89,6 +90,9 @@ func (che *ChExecutor) initExecutor(chProvider hlfcontext.ChannelProvider, execO
 
 func (che *ChExecutor) Invoke(ctx context.Context, req channel.Request, options []channel.RequestOption) (channel.Response, error) {
 	return che.executeWithRetry(ctx, func() (channel.Response, error) {
+		if che.gRPCExecutor != nil {
+			return che.gRPCExecutor.invoke(ctx, req, options)
+		}
 		return che.executor.invoke(ctx, req, options)
 	})
 }
@@ -100,6 +104,11 @@ func (che *ChExecutor) Query(ctx context.Context, req channel.Request, options [
 }
 
 func (che *ChExecutor) Close() {
+	if che.gRPCExecutor != nil && che.gRPCExecutor.Client != nil {
+		if err := che.gRPCExecutor.Client.Close(); err != nil {
+			che.log.Errorf(err.Error())
+		}
+	}
 	che.executor = nil
 }
 
