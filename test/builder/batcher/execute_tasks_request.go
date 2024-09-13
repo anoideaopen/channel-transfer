@@ -2,7 +2,7 @@ package batcher
 
 import (
 	fpb "github.com/anoideaopen/foundation/proto"
-	"github.com/pkg/errors"
+	"github.com/go-errors/errors"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 

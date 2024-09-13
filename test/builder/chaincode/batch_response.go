@@ -2,8 +2,8 @@ package chaincode
 
 import (
 	fpb "github.com/anoideaopen/foundation/proto"
+	"github.com/go-errors/errors"
 	"github.com/golang/protobuf/proto" //nolint:staticcheck
-	"github.com/pkg/errors"
 )
 
 type BatchResponseBuilder struct {

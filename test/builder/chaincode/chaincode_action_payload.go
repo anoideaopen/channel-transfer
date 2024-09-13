@@ -1,9 +1,9 @@
 package chaincode
 
 import (
+	"github.com/go-errors/errors"
 	"github.com/golang/protobuf/proto" //nolint:staticcheck
 	"github.com/hyperledger/fabric-protos-go/peer"
-	"github.com/pkg/errors"
 )
 
 type ChaincodeActionPayloadBuilder struct {
