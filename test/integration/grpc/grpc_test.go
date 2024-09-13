@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	cligrpc "github.com/anoideaopen/channel-transfer/proto"
+	"github.com/anoideaopen/channel-transfer/test/integration/patch"
 	pbfound "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
@@ -56,6 +57,8 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 		By("start robot")
 		ts.StartRobot()
 		By("start channel transfer")
+		networkFound = ts.NetworkFound()
+		patch.ChannelTransferConfig(networkFound, channels)
 		ts.StartChannelTransfer()
 	})
 	AfterEach(func() {

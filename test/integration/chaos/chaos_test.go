@@ -3,21 +3,22 @@ package chaos
 import (
 	"context"
 	"fmt"
-	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/client/transfer"
-	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/models"
-	"github.com/google/uuid"
-	"github.com/hyperledger/fabric/integration"
 	"strconv"
 	"strings"
 	"time"
 
 	clihttp "github.com/anoideaopen/channel-transfer/test/integration/clihttp/client"
+	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/client/transfer"
+	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/models"
+	"github.com/anoideaopen/channel-transfer/test/integration/patch"
 	pbfound "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
+	"github.com/google/uuid"
+	"github.com/hyperledger/fabric/integration"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"google.golang.org/grpc/metadata"
@@ -77,6 +78,8 @@ var _ = Describe("Channel transfer chaos tests", func() {
 		By("start robot")
 		ts.StartRobot()
 		By("start channel transfer")
+		networkFound := ts.NetworkFound()
+		patch.ChannelTransferConfig(networkFound, channels)
 		ts.StartChannelTransfer()
 	})
 	AfterEach(func() {

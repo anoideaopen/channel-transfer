@@ -3,15 +3,13 @@ package batcher
 import (
 	"context"
 	"fmt"
-	"html/template"
-	"io"
-	"os"
 	"os/exec"
 	"strconv"
 	"syscall"
 	"time"
 
 	cligrpc "github.com/anoideaopen/channel-transfer/proto"
+	"github.com/anoideaopen/channel-transfer/test/integration/patch"
 	pbfound "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
@@ -19,10 +17,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/hyperledger/fabric/integration"
 	"github.com/hyperledger/fabric/integration/nwo"
-	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gexec"
 	"github.com/tedsuo/ifrit"
 	ginkgomon "github.com/tedsuo/ifrit/ginkgomon_v2"
 	"google.golang.org/grpc"
@@ -69,7 +65,7 @@ var _ = Describe("Channel transfer with batcher GRPC tests", func() {
 		ts.AddUser(user)
 
 		networkFound = ts.NetworkFound()
-		patchChannelTransferConfig(networkFound, channels)
+		patch.ChannelTransferConfigWithBatcher(networkFound, channels, mockBatcherPort())
 	})
 
 	BeforeEach(func() {
@@ -171,88 +167,4 @@ func mockBatcherModulePath() string {
 
 func mockBatcherPort() string {
 	return fmt.Sprintf("%d", integration.LifecyclePort)
-}
-
-func patchChannelTransferConfig(networkFound *cmn.NetworkFoundation, channels []string) {
-	const ChannelTransferConfigWithBatcherTemplate = `{{ with $w := . -}}
-logLevel: debug
-logType: console
-profilePath: {{ .ConnectionPath }}
-userName: backend
-listenAPI:
-  accessToken: {{ .AccessToken }}
-  addressHTTP: {{ .HTTPAddress }}
-  addressGRPC: {{ .GRPCAddress }}
-service:
-  address: {{ .HostAddress }}
-options:
-  batchTxPreimagePrefix: batchTransactions
-  collectorsBufSize: 1
-  executeTimeout: 0s
-  retryExecuteAttempts: 3
-  retryExecuteMaxDelay: 2s
-  retryExecuteDelay: 500ms
-  ttl: {{ .TTL }}
-  transfersInHandleOnChannel: 50
-  newestRequestStreamBufferSize: 50
-channels:{{ range .Channels }}
-  {{- if ne .Name "acl" }}
-  - name: {{ .Name }}
-    batcher:
-      addressGRPC: {{ .BatcherAddress }}
-  {{- end }}
-{{- end }}
-redisStorage:
-  addr:{{ range .RedisAddresses }}
-    - {{ . }}
-  {{- end }}
-  dbPrefix: transfer
-  password: ""
-  afterTransferTTL: 3600s	
-promMetrics:
-  prefix: transfer
-{{ end }}
-`
-
-	type channelTransferConfigWithBatcher struct {
-		AccessToken    string
-		ConnectionPath string
-		HTTPAddress    string
-		GRPCAddress    string
-		HostAddress    string
-		RedisAddresses []string
-		TTL            string
-		Channels       []struct {
-			Name           string
-			BatcherAddress string
-		}
-	}
-
-	newConfig := channelTransferConfigWithBatcher{
-		AccessToken:    networkFound.ChannelTransferAccessToken(),
-		ConnectionPath: networkFound.ConnectionPath("User2"),
-		HTTPAddress:    networkFound.ChannelTransferHTTPAddress(),
-		GRPCAddress:    networkFound.ChannelTransferGRPCAddress(),
-		HostAddress:    networkFound.ChannelTransferHostAddress(),
-		RedisAddresses: networkFound.ChannelTransfer.RedisAddresses,
-		TTL:            networkFound.ChannelTransferTTL(),
-	}
-
-	for _, channel := range channels {
-		newConfig.Channels = append(newConfig.Channels, struct {
-			Name           string
-			BatcherAddress string
-		}{Name: channel, BatcherAddress: fmt.Sprintf("localhost:%s", mockBatcherPort())})
-	}
-
-	t, err := template.New("channel_transfer").Funcs(template.FuncMap{
-		"User": func() string { return "User2" },
-	}).Parse(ChannelTransferConfigWithBatcherTemplate)
-	Expect(err).NotTo(HaveOccurred())
-
-	pw := gexec.NewPrefixedWriter("[channel_transfer.yaml] ", ginkgo.GinkgoWriter)
-	config, err := os.Create(networkFound.ChannelTransferPath())
-	Expect(err).NotTo(HaveOccurred())
-	err = t.Execute(io.MultiWriter(config, pw), newConfig)
-	Expect(err).NotTo(HaveOccurred())
 }

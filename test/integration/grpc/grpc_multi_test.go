@@ -3,7 +3,11 @@ package grpc
 import (
 	"context"
 	"encoding/json"
+	"strconv"
+	"strings"
+
 	cligrpc "github.com/anoideaopen/channel-transfer/proto"
+	"github.com/anoideaopen/channel-transfer/test/integration/patch"
 	pbfound "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
@@ -19,8 +23,6 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/typepb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
-	"strconv"
-	"strings"
 )
 
 var _ = Describe("Channel multi transfer GRPC tests", func() {
@@ -65,6 +67,8 @@ var _ = Describe("Channel multi transfer GRPC tests", func() {
 		By("start robot")
 		ts.StartRobot()
 		By("start channel transfer")
+		networkFound = ts.NetworkFound()
+		patch.ChannelTransferConfig(networkFound, channels)
 		ts.StartChannelTransfer()
 	})
 	AfterEach(func() {

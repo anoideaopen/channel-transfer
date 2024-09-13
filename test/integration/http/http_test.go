@@ -10,6 +10,7 @@ import (
 	clihttp "github.com/anoideaopen/channel-transfer/test/integration/clihttp/client"
 	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/client/transfer"
 	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/models"
+	"github.com/anoideaopen/channel-transfer/test/integration/patch"
 	pbfound "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
@@ -78,6 +79,7 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		By("start robot")
 		ts.StartRobot()
 		By("start channel transfer")
+		patch.ChannelTransferConfig(networkFound, channels)
 		ts.StartChannelTransfer()
 	})
 	AfterEach(func() {
