@@ -79,6 +79,7 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		By("start robot")
 		ts.StartRobot()
 		By("start channel transfer")
+		networkFound = ts.NetworkFound()
 		patch.ChannelTransferConfig(networkFound, channels)
 		ts.StartChannelTransfer()
 	})
