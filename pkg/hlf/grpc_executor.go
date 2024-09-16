@@ -3,12 +3,13 @@ package hlf
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
+	"time"
 
 	"github.com/anoideaopen/channel-transfer/proto"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
-	"github.com/hyperledger/fabric/common/crypto"
 	"google.golang.org/grpc"
 )
 
@@ -44,16 +45,13 @@ func (ex *gRPCExecutor) invoke(ctx context.Context, req channel.Request, _ []cha
 }
 
 func computeRequestID(req channel.Request) (string, error) {
-	nonce, err := crypto.GetRandomNonce()
-	if err != nil {
-		return "", err
-	}
-
 	b, err := json.Marshal(req)
 	if err != nil {
 		return "", err
 	}
 
+	nonce := make([]byte, 8)
+	binary.LittleEndian.PutUint64(nonce, uint64(time.Now().UnixMilli()))
 	b = append(nonce, b...)
 
 	digest := sha256.Sum256(b)
