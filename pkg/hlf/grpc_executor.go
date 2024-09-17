@@ -13,11 +13,13 @@ import (
 	"google.golang.org/grpc"
 )
 
+// gRPCExecutor stores a gRPC client to work with external batcher service
 type gRPCExecutor struct {
 	Channel string
 	Client  *grpc.ClientConn
 }
 
+// invoke sends a transaction request to an external batcher service instead of HLF
 func (ex *gRPCExecutor) invoke(ctx context.Context, req channel.Request, _ []channel.RequestOption) (channel.Response, error) {
 	adaptor := proto.NewHLFBatcherAdapterClient(ex.Client)
 
