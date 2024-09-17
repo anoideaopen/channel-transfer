@@ -94,9 +94,28 @@ func NewPool(
 		return nil, errorshlp.WrapWithDetails(errors.New("upper bound of ttl is small, change ttl option"), nerrors.ErrTypeHlf, nerrors.ComponentHLFStreamsPool)
 	}
 
+	// map of gRPC clients for every gRPC address in channels config
+	gRPCClients := make(map[string]*grpc.ClientConn)
 	for _, channel := range channels {
 		channelProvider := createChannelProvider(channel.Name, userName, profile.OrgName, pool.fabricSDK)
-		err = pool.createExecutor(ctx, channel.Name, channelProvider, channel.Batcher)
+
+		// if the channel has batcher options, create the client for it
+		var gRPCClient *grpc.ClientConn = nil
+		if channel.Batcher != nil {
+			var ok bool
+			// check if a client for the gRPC address already created
+			gRPCClient, ok = gRPCClients[channel.Batcher.AddressGRPC]
+			if !ok {
+				// if not, create the new one
+				gRPCClient, err = createGRPCClient(channel.Batcher)
+				if err != nil {
+					return nil, errorshlp.WrapWithDetails(errors.Errorf("create gRPC client: %w", err), nerrors.ErrTypeHlf, nerrors.ComponentHLFStreamsPool)
+				}
+				gRPCClients[channel.Batcher.AddressGRPC] = gRPCClient
+			}
+		}
+
+		err = pool.createExecutor(ctx, channel.Name, channelProvider, gRPCClient)
 		if err != nil {
 			return nil, errorshlp.WrapWithDetails(
 				errors.Errorf("create executor: %w", err),
@@ -172,7 +191,7 @@ func (pool *Pool) createExecutor(
 	ctx context.Context,
 	channel string,
 	channelProvider hlfcontext.ChannelProvider,
-	batcherOpts *config.Batcher,
+	gRPCClient *grpc.ClientConn,
 ) error {
 	if pool.streams.exists(channelKey(channel)) {
 		return ErrExecutorAlreadyExists
@@ -194,12 +213,7 @@ func (pool *Pool) createExecutor(
 		return errors.Errorf("start executor: %w", err)
 	}
 
-	if batcherOpts != nil {
-		gRPCClient, err := newGRPCClient(batcherOpts)
-		if err != nil {
-			return errors.Errorf("create grpc client: %w", err)
-		}
-
+	if gRPCClient != nil {
 		executor.gRPCExecutor = &gRPCExecutor{
 			Channel: channel,
 			Client:  gRPCClient,
@@ -518,4 +532,13 @@ func (pool *Pool) sendEvent(channel string) {
 	case ev <- struct{}{}:
 	default:
 	}
+}
+
+func createGRPCClient(options *config.Batcher) (*grpc.ClientConn, error) {
+	gRPCClient, err := newGRPCClient(options)
+	if err != nil {
+		return nil, errors.Errorf("create grpc client: %w", err)
+	}
+
+	return gRPCClient, nil
 }

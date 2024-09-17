@@ -90,9 +90,11 @@ func (che *ChExecutor) initExecutor(chProvider hlfcontext.ChannelProvider, execO
 
 func (che *ChExecutor) Invoke(ctx context.Context, req channel.Request, options []channel.RequestOption) (channel.Response, error) {
 	return che.executeWithRetry(ctx, func() (channel.Response, error) {
+		// if we have gRPC executor for the channel, we use it to send the request to external batcher service
 		if che.gRPCExecutor != nil {
 			return che.gRPCExecutor.invoke(ctx, req, options)
 		}
+		// otherwise we use hlf executor and send the request to HLF
 		return che.executor.invoke(ctx, req, options)
 	})
 }
