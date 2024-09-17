@@ -1,5 +1,11 @@
 package patch
 
+/*
+  Functions that patch the channel transfer configuration, bringing it to a new format
+  with external batcher information for channels. When the new configuration format is
+  supported in foundation, these functions can be removed.
+*/
+
 import (
 	"fmt"
 	"html/template"
@@ -12,6 +18,11 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
+// ChannelTransferConfig changes format of channel description in the configuration
+// to the new form which is:
+// channels:
+//   - name: channel1
+//   - name: channel2
 func ChannelTransferConfig(networkFound *cmn.NetworkFoundation, channels []string) {
 	const channelTransferConfigPatchedTemplate = `{{ with $w := . -}}
 logLevel: debug
@@ -92,6 +103,16 @@ promMetrics:
 	Expect(err).NotTo(HaveOccurred())
 }
 
+// ChannelTransferConfigWithBatcher changes format of channel description in the configuration
+// to the new form and adds batcher data to every channel:
+// channels:
+//
+//   - name: channel1
+//     batcher:
+//       addressGRPC: "localhost:8881"
+//   - name: channel2
+//     batcher:
+//       addressGRPC: "localhost:8881"
 func ChannelTransferConfigWithBatcher(networkFound *cmn.NetworkFoundation, channels []string, batcherPort string) {
 	const channelTransferConfigWithBatcherTemplate = `{{ with $w := . -}}
 logLevel: debug

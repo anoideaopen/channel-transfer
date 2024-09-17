@@ -30,7 +30,7 @@ var _ = Describe("Channel transfer with batcher GRPC tests", func() {
 	var (
 		channels     = []string{cmn.ChannelAcl, cmn.ChannelCC, cmn.ChannelFiat}
 		ts           client.TestSuite
-		mockBatcher  ifrit.Process
+		batcher      ifrit.Process
 		networkFound *cmn.NetworkFoundation
 		clientCtx    context.Context
 		apiClient    cligrpc.APIClient
@@ -65,12 +65,13 @@ var _ = Describe("Channel transfer with batcher GRPC tests", func() {
 		ts.AddUser(user)
 
 		networkFound = ts.NetworkFound()
-		patch.ChannelTransferConfigWithBatcher(networkFound, channels, mockBatcherPort())
+		// patch channel transfer config since its update is not supported by foundation yet
+		patch.ChannelTransferConfigWithBatcher(networkFound, channels, batcherPort())
 	})
 
 	BeforeEach(func() {
-		By("start mock batcher")
-		mockBatcher = startMockBatcher(components)
+		By("start batcher")
+		batcher = startBatcher(components)
 		By("start channel transfer")
 		ts.StartChannelTransfer()
 	})
@@ -80,8 +81,8 @@ var _ = Describe("Channel transfer with batcher GRPC tests", func() {
 		ts.StopRedis()
 		By("stop channel transfer")
 		ts.StopChannelTransfer()
-		By("stop mock batcher")
-		stopMockBatcher(mockBatcher)
+		By("stop batcher")
+		stopBatcher(batcher)
 	})
 
 	It("Submit transaction", func() {
@@ -137,34 +138,34 @@ var _ = Describe("Channel transfer with batcher GRPC tests", func() {
 	})
 })
 
-func startMockBatcher(components *nwo.Components) ifrit.Process {
-	mockBatcherProcess := ifrit.Invoke(mockBatcherRunner(components))
-	Eventually(mockBatcherProcess.Ready(), time.Minute).Should(BeClosed())
-	return mockBatcherProcess
+func startBatcher(components *nwo.Components) ifrit.Process {
+	batcherProcess := ifrit.Invoke(batcherRunner(components))
+	Eventually(batcherProcess.Ready(), time.Minute).Should(BeClosed())
+	return batcherProcess
 }
 
-func stopMockBatcher(mockBatcher ifrit.Process) {
-	if mockBatcher != nil {
-		mockBatcher.Signal(syscall.SIGTERM)
-		Eventually(mockBatcher.Wait(), time.Minute).Should(Receive())
+func stopBatcher(batcher ifrit.Process) {
+	if batcher != nil {
+		batcher.Signal(syscall.SIGTERM)
+		Eventually(batcher.Wait(), time.Minute).Should(Receive())
 	}
 }
 
-func mockBatcherRunner(components *nwo.Components) *ginkgomon.Runner {
-	cmd := exec.Command(components.Build(mockBatcherModulePath()), "--port", mockBatcherPort())
+func batcherRunner(components *nwo.Components) *ginkgomon.Runner {
+	cmd := exec.Command(components.Build(batcherModulePath()), "--port", batcherPort())
 	return ginkgomon.New(ginkgomon.Config{
 		AnsiColorCode:     "yellow",
-		Name:              "Mock Batcher",
+		Name:              "Batcher",
 		Command:           cmd,
 		StartCheck:        "listening on port",
 		StartCheckTimeout: 15 * time.Second,
 	})
 }
 
-func mockBatcherModulePath() string {
-	return "github.com/anoideaopen/channel-transfer/test/mock/batcher"
+func batcherModulePath() string {
+	return "github.com/anoideaopen/channel-transfer/test/external-services/batcher"
 }
 
-func mockBatcherPort() string {
+func batcherPort() string {
 	return fmt.Sprintf("%d", integration.LifecyclePort)
 }

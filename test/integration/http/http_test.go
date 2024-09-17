@@ -80,6 +80,7 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		ts.StartRobot()
 		By("start channel transfer")
 		networkFound = ts.NetworkFound()
+		// patch channel transfer config since its update is not supported by foundation yet
 		patch.ChannelTransferConfig(networkFound, channels)
 		ts.StartChannelTransfer()
 	})

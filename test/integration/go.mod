@@ -6,7 +6,7 @@ require (
 	github.com/IBM/idemix v0.0.2-0.20231011101252-a4feda90f3f7
 	github.com/anoideaopen/acl v0.0.4-0.20240709131543-bf642c53380c
 	github.com/anoideaopen/channel-transfer v0.0.5
-	github.com/anoideaopen/channel-transfer/test/mock/batcher v0.0.0-00010101000000-000000000000
+	github.com/anoideaopen/channel-transfer/test/external-services/batcher v0.0.0-00010101000000-000000000000
 	github.com/anoideaopen/foundation v0.0.7
 	github.com/anoideaopen/foundation/test/integration v0.0.0-20240909081609-af8e7ac3d816
 	github.com/anoideaopen/robot v0.0.3-0.20240730145328-bc561367aff8
@@ -187,6 +187,6 @@ require (
 
 replace (
 	github.com/anoideaopen/channel-transfer => ../../
-	github.com/anoideaopen/channel-transfer/test/mock/batcher => ../mock/batcher
+	github.com/anoideaopen/channel-transfer/test/external-services/batcher => ../external_services/batcher
 	github.com/hyperledger/fabric-sdk-go => github.com/anoideaopen/fabric-sdk-go v0.0.2
 )

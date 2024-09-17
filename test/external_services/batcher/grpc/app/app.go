@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net"
 
-	"github.com/anoideaopen/channel-transfer/test/mock/batcher/grpc/batcher"
+	"github.com/anoideaopen/channel-transfer/test/external-services/batcher/grpc/batcher"
 	"google.golang.org/grpc"
 )
 

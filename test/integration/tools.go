@@ -7,7 +7,7 @@ import (
 	_ "github.com/IBM/idemix/tools/idemixgen"
 	_ "github.com/anoideaopen/acl"
 	_ "github.com/anoideaopen/channel-transfer"
-	_ "github.com/anoideaopen/channel-transfer/test/mock/batcher"
+	_ "github.com/anoideaopen/channel-transfer/test/external-services/batcher"
 	_ "github.com/anoideaopen/foundation/test/chaincode/cc"
 	_ "github.com/anoideaopen/foundation/test/chaincode/fiat"
 	_ "github.com/anoideaopen/foundation/test/chaincode/industrial"

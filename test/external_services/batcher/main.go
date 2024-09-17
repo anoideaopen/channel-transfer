@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/anoideaopen/channel-transfer/test/mock/batcher/grpc/app"
+	"github.com/anoideaopen/channel-transfer/test/external-services/batcher/grpc/app"
 )
 
 func main() {

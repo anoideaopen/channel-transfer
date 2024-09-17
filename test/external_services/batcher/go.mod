@@ -1,4 +1,4 @@
-module github.com/anoideaopen/channel-transfer/test/mock/batcher
+module github.com/anoideaopen/channel-transfer/test/external-services/batcher
 
 go 1.23.1
 
