@@ -11,6 +11,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/proto"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
 )
 
 // gRPCExecutor stores a gRPC client to work with external batcher service
@@ -44,6 +45,14 @@ func (ex *gRPCExecutor) invoke(ctx context.Context, req channel.Request, _ []cha
 	}
 
 	return channel.Response{}, nil
+}
+
+func (ex *gRPCExecutor) close() error {
+	if ex.Client != nil && ex.Client.GetState() != connectivity.Shutdown {
+		return ex.Client.Close()
+	}
+
+	return nil
 }
 
 func computeRequestID(req channel.Request) (string, error) {

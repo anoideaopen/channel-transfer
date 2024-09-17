@@ -106,9 +106,9 @@ func (che *ChExecutor) Query(ctx context.Context, req channel.Request, options [
 }
 
 func (che *ChExecutor) Close() {
-	if che.gRPCExecutor != nil && che.gRPCExecutor.Client != nil {
-		if err := che.gRPCExecutor.Client.Close(); err != nil {
-			che.log.Errorf(err.Error())
+	if che.gRPCExecutor != nil {
+		if err := che.gRPCExecutor.close(); err != nil {
+			che.log.Errorf("failed closing gRPC client: %w", err)
 		}
 	}
 	che.executor = nil
