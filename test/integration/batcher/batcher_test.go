@@ -2,11 +2,7 @@ package batcher
 
 import (
 	"context"
-	"fmt"
-	"os/exec"
 	"strconv"
-	"syscall"
-	"time"
 
 	cligrpc "github.com/anoideaopen/channel-transfer/proto"
 	"github.com/anoideaopen/channel-transfer/test/integration/patch"
@@ -16,11 +12,8 @@ import (
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/google/uuid"
 	"github.com/hyperledger/fabric/integration"
-	"github.com/hyperledger/fabric/integration/nwo"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/tedsuo/ifrit"
-	ginkgomon "github.com/tedsuo/ifrit/ginkgomon_v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -30,7 +23,7 @@ var _ = Describe("Channel transfer with batcher GRPC tests", func() {
 	var (
 		channels     = []string{cmn.ChannelAcl, cmn.ChannelCC, cmn.ChannelFiat}
 		ts           client.TestSuite
-		batcher      ifrit.Process
+		batcher      *grpc.Server
 		networkFound *cmn.NetworkFoundation
 		clientCtx    context.Context
 		apiClient    cligrpc.APIClient
@@ -71,7 +64,7 @@ var _ = Describe("Channel transfer with batcher GRPC tests", func() {
 
 	BeforeEach(func() {
 		By("start batcher")
-		batcher = startBatcher(components)
+		batcher = StartBatcher()
 		By("start channel transfer")
 		ts.StartChannelTransfer()
 	})
@@ -82,7 +75,7 @@ var _ = Describe("Channel transfer with batcher GRPC tests", func() {
 		By("stop channel transfer")
 		ts.StopChannelTransfer()
 		By("stop batcher")
-		stopBatcher(batcher)
+		StopBatcher(batcher)
 	})
 
 	It("Submit transaction", func() {
@@ -137,35 +130,3 @@ var _ = Describe("Channel transfer with batcher GRPC tests", func() {
 		Expect(r.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_IN_PROCESS))
 	})
 })
-
-func startBatcher(components *nwo.Components) ifrit.Process {
-	batcherProcess := ifrit.Invoke(batcherRunner(components))
-	Eventually(batcherProcess.Ready(), time.Minute).Should(BeClosed())
-	return batcherProcess
-}
-
-func stopBatcher(batcher ifrit.Process) {
-	if batcher != nil {
-		batcher.Signal(syscall.SIGTERM)
-		Eventually(batcher.Wait(), time.Minute).Should(Receive())
-	}
-}
-
-func batcherRunner(components *nwo.Components) *ginkgomon.Runner {
-	cmd := exec.Command(components.Build(batcherModulePath()), "--port", batcherPort())
-	return ginkgomon.New(ginkgomon.Config{
-		AnsiColorCode:     "yellow",
-		Name:              "Batcher",
-		Command:           cmd,
-		StartCheck:        "listening on port",
-		StartCheckTimeout: 15 * time.Second,
-	})
-}
-
-func batcherModulePath() string {
-	return "github.com/anoideaopen/channel-transfer/test/external-services/batcher"
-}
-
-func batcherPort() string {
-	return fmt.Sprintf("%d", integration.LifecyclePort)
-}
