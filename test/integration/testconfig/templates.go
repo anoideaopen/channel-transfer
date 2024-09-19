@@ -1,6 +1,9 @@
 package testconfig
 
-const ChannelTransferConfigWithBatcherTemplate = `{{ with $w := . -}}
+import "fmt"
+
+func ChannelTransferConfigWithBatcherTemplate(batcherPort string) string {
+	return fmt.Sprintf(`{{ with $w := . -}}
 logLevel: debug
 logType: console
 profilePath: {{ .ConnectionPath User }}
@@ -25,7 +28,7 @@ channels:{{ range .Channels }}
   {{- if ne . "acl" }}
   - name: {{ . }}
     batcher:
-      addressGRPC: "localhost:24500"
+      addressGRPC: "localhost:%s"
   {{- end }}
 {{- end }}
 redisStorage:
@@ -38,9 +41,11 @@ redisStorage:
 promMetrics:
   prefix: transfer
 {{ end }}
-`
+`, batcherPort)
+}
 
-const ChannelTransferConfigTemplate = `{{ with $w := . -}}
+func ChannelTransferConfigTemplate() string {
+	return `{{ with $w := . -}}
 logLevel: debug
 logType: console
 profilePath: {{ .ConnectionPath User }}
@@ -77,3 +82,4 @@ promMetrics:
   prefix: transfer
 {{ end }}
 `
+}

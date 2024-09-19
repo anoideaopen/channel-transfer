@@ -75,7 +75,7 @@ var _ = Describe("Channel transfer chaos tests", func() {
 			channels,
 			integration.IdemixBasePort,
 			client.WithChannelTransferTTL(ttl),
-			client.WithChannelTransferTemplate(testconfig.ChannelTransferConfigTemplate),
+			client.WithChannelTransferTemplate(testconfig.ChannelTransferConfigTemplate()),
 		)
 		ts.DeployChaincodes()
 	})

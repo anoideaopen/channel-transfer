@@ -75,7 +75,7 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		ts.InitNetwork(
 			channels,
 			integration.GossipBasePort,
-			client.WithChannelTransferTemplate(testconfig.ChannelTransferConfigTemplate),
+			client.WithChannelTransferTemplate(testconfig.ChannelTransferConfigTemplate()),
 		)
 		ts.DeployChaincodes()
 	})

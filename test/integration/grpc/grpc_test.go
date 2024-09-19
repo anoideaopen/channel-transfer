@@ -53,7 +53,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 		ts.InitNetwork(
 			channels,
 			integration.GatewayBasePort,
-			client.WithChannelTransferTemplate(testconfig.ChannelTransferConfigTemplate),
+			client.WithChannelTransferTemplate(testconfig.ChannelTransferConfigTemplate()),
 		)
 		ts.DeployChaincodes()
 	})

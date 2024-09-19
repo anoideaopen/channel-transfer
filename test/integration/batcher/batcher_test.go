@@ -47,7 +47,7 @@ var _ = Describe("Channel transfer with batcher GRPC tests", func() {
 		ts.InitNetwork(
 			channels,
 			integration.LedgerPort,
-			client.WithChannelTransferTemplate(testconfig.ChannelTransferConfigWithBatcherTemplate),
+			client.WithChannelTransferTemplate(testconfig.ChannelTransferConfigWithBatcherTemplate(batcherPort())),
 		)
 		ts.DeployChaincodes()
 
