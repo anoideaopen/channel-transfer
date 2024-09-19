@@ -667,8 +667,8 @@ github.com/anoideaopen/foundation/test/integration v0.0.0-20240909081609-af8e7ac
 github.com/anoideaopen/foundation/test/integration v0.0.0-20240909081609-af8e7ac3d816/go.mod h1:/fdDnOw52YjraodgrBY+euSV3IYT0ojg4nCAv1XntWs=
 github.com/anoideaopen/glog v0.0.3 h1:vsWM5QvHzTMbrDy3cydkNPFpfdWrxeC8ne02f//qNaA=
 github.com/anoideaopen/glog v0.0.3/go.mod h1:8J4509ClNmF/kvvPA8XFKZ7OX+860JaFH3+nXVD+R3k=
-github.com/anoideaopen/robot v0.0.3-0.20240730145328-bc561367aff8 h1:SRY1cGcbnPR5oRwKXNYnsGBdihqkCg+nUuF8gq39R28=
-github.com/anoideaopen/robot v0.0.3-0.20240730145328-bc561367aff8/go.mod h1:TWRrgU0ZDz88Qsw3QiiLil9RgO7TBtwWXZhL+rxjidI=
+github.com/anoideaopen/robot v0.0.3-0.20240814133021-25a749a95916 h1:QNzQ/3+nvoiQqPCdfaFgPShr/fQcttTQikHIjHlkND0=
+github.com/anoideaopen/robot v0.0.3-0.20240814133021-25a749a95916/go.mod h1:eDyUAu67Lc+oWX7FVj24Q6IKX26n+rXf3ilXVCvhFTc=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/apache/arrow/go/v10 v10.0.1/go.mod h1:YvhnlEePVnBS4+0z3fhPfUy7W1Ikj0Ih0vcRo/gZ1M0=
 github.com/apache/arrow/go/v11 v11.0.0/go.mod h1:Eg5OsL5H+e299f7u5ssuXsuHQVEGC4xei5aX110hRiI=
