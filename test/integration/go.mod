@@ -7,7 +7,7 @@ require (
 	github.com/anoideaopen/acl v0.0.4-0.20240709131543-bf642c53380c
 	github.com/anoideaopen/channel-transfer v0.0.5
 	github.com/anoideaopen/foundation v0.0.7
-	github.com/anoideaopen/foundation/test/integration v0.0.0-20240909081609-af8e7ac3d816
+	github.com/anoideaopen/foundation/test/integration v0.0.0-20240919131753-f2e578e31e77
 	github.com/anoideaopen/robot v0.0.3-0.20240814133021-25a749a95916
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
 	github.com/go-openapi/errors v0.22.0

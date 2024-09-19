@@ -31,7 +31,7 @@ func StartBatcher() *grpc.Server {
 	proto.RegisterHLFBatcherAdapterServer(gRPCServer, &batcherAPI{})
 
 	go func() {
-		lis, err := net.Listen("tcp", fmt.Sprintf(":%s", batcherPort()))
+		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", integration.LifecyclePort))
 		if err != nil {
 			panic(err)
 		}
@@ -47,8 +47,4 @@ func StartBatcher() *grpc.Server {
 // StopBatcher stops given grpc server
 func StopBatcher(server *grpc.Server) {
 	server.GracefulStop()
-}
-
-func batcherPort() string {
-	return fmt.Sprintf("%d", integration.LifecyclePort)
 }

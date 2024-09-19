@@ -10,7 +10,7 @@ import (
 	clihttp "github.com/anoideaopen/channel-transfer/test/integration/clihttp/client"
 	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/client/transfer"
 	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/models"
-	"github.com/anoideaopen/channel-transfer/test/integration/patch"
+	"github.com/anoideaopen/channel-transfer/test/integration/testconfig"
 	pbfound "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
@@ -72,16 +72,17 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		ts.StartRedis()
 	})
 	BeforeEach(func() {
-		ts.InitNetwork(channels, integration.GossipBasePort)
+		ts.InitNetwork(
+			channels,
+			integration.GossipBasePort,
+			client.WithChannelTransferTemplate(testconfig.ChannelTransferConfigTemplate),
+		)
 		ts.DeployChaincodes()
 	})
 	BeforeEach(func() {
 		By("start robot")
 		ts.StartRobot()
 		By("start channel transfer")
-		networkFound = ts.NetworkFound()
-		// patch channel transfer config since its update is not supported by foundation yet
-		patch.ChannelTransferConfig(networkFound, channels)
 		ts.StartChannelTransfer()
 	})
 	AfterEach(func() {

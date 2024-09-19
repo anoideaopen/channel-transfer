@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	cligrpc "github.com/anoideaopen/channel-transfer/proto"
-	"github.com/anoideaopen/channel-transfer/test/integration/patch"
+	"github.com/anoideaopen/channel-transfer/test/integration/testconfig"
 	pbfound "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
@@ -44,7 +44,11 @@ var _ = Describe("Channel transfer with batcher GRPC tests", func() {
 	})
 
 	BeforeEach(func() {
-		ts.InitNetwork(channels, integration.LedgerPort)
+		ts.InitNetwork(
+			channels,
+			integration.LedgerPort,
+			client.WithChannelTransferTemplate(testconfig.ChannelTransferConfigWithBatcherTemplate),
+		)
 		ts.DeployChaincodes()
 
 		By("add admin to acl")
@@ -58,8 +62,6 @@ var _ = Describe("Channel transfer with batcher GRPC tests", func() {
 		ts.AddUser(user)
 
 		networkFound = ts.NetworkFound()
-		// patch channel transfer config since its update is not supported by foundation yet
-		patch.ChannelTransferConfigWithBatcher(networkFound, channels, batcherPort())
 	})
 
 	BeforeEach(func() {
