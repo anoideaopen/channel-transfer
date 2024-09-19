@@ -46,3 +46,16 @@ func IsMultiTransferMethod(method string) bool {
 	}
 	return false
 }
+
+func IsBatchMethod(method string) bool {
+	switch method {
+	case model.TxCancelCCTransferFrom.String(),
+		model.TxChannelTransferByAdmin.String(),
+		model.TxChannelTransferByCustomer.String(),
+		model.TxCreateCCTransferTo.String(),
+		model.TxChannelMultiTransferByAdmin.String(),
+		model.TxChannelMultiTransferByCustomer.String():
+		return true
+	}
+	return false
+}
