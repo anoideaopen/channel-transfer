@@ -20,7 +20,8 @@ func (s *batcherAPI) SubmitTransaction(
 	_ *proto.HlfBatcherRequest,
 ) (*proto.HLFBatcherResponse, error) {
 	return &proto.HLFBatcherResponse{
-		Status: proto.Status_STATUS_ACCEPTED,
+		Status:  proto.HLFBatcherResponse_STATUS_ACCEPTED,
+		Message: "response from batcher API",
 	}, nil
 }
 

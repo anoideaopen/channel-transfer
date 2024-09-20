@@ -1,35 +1,33 @@
 syntax = "proto3";
 
 package core.hlf_batcher;
+
 option go_package = "github.com/anoideaopen/channel-transfer/proto";
 
-import "google/protobuf/wrappers.proto";
-
-// Enumeration for request status
-enum Status {
-  STATUS_UNKNOWN = 0;    // Default, unspecified status
-  STATUS_ACCEPTED = 1;   // Request accepted for processing
-  STATUS_REJECTED = 2;   // Request rejected
-}
-
 // Simplified request for gRPC service
-message hlfBatcherRequest {
+message HlfBatcherRequest {
   string channel = 1;             // Channel identifier (mandatory)
   string chaincode = 2;           // Chaincode identifier (mandatory)
   string method = 3;              // Method, the chaincode function to invoke (mandatory)
   string batcher_request_id = 4;  // Unique batcher request ID (mandatory)
   repeated bytes args = 5;        // Arguments for the chaincode function (mandatory)
-  google.protobuf.StringValue trace_id = 6;  // Trace ID for tracking the request (optional)
-  google.protobuf.StringValue span_id = 7;   // Span ID for tracking a specific step in the trace (optional)
+  string trace_id = 6;            // Trace ID for tracking the request (optional)
+  string span_id = 7;             // Span ID for tracking a specific step in the trace (optional)
 }
 
 // Response from HLF Batcher to Channel Transfer
 message HLFBatcherResponse {
-  Status status = 1;              // Status of the request ("accepted" or "rejected")
-  google.protobuf.StringValue message = 2; // Confirmation or error message (optional)
+  // Enumeration for response status
+  enum Status {
+    STATUS_UNKNOWN = 0;   // Default, unspecified status
+    STATUS_ACCEPTED = 1;  // Request accepted for processing
+    STATUS_REJECTED = 2;  // Request rejected
+  }
+  Status status = 1;      // Status of the request ("accepted" or "rejected")
+  string message = 2;     // Confirmation or error message (optional)
 }
 
 // gRPC service for interaction between Channel Transfer and HLF Batcher
 service HLFBatcherAdapter {
-  rpc SubmitTransaction (hlfBatcherRequest) returns (HLFBatcherResponse);
+  rpc SubmitTransaction (HlfBatcherRequest) returns (HLFBatcherResponse);
 }

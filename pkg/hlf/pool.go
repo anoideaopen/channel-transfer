@@ -137,9 +137,16 @@ func newGRPCClient(opts *config.Batcher) (*grpc.ClientConn, error) {
 		PermitWithoutStream: true,             // send pings even without active streams
 	}
 
+	bOff := backoff.Config{
+		BaseDelay:  1.0 * time.Second,
+		Multiplier: 1.6,
+		Jitter:     0.2,
+		MaxDelay:   30 * time.Second,
+	}
+
 	dialOpts := []grpc.DialOption{
 		grpc.WithKeepaliveParams(kacp),
-		grpc.WithConnectParams(grpc.ConnectParams{Backoff: backoff.DefaultConfig}),
+		grpc.WithConnectParams(grpc.ConnectParams{Backoff: bOff}),
 	}
 
 	if opts.TLSConfig() != nil {

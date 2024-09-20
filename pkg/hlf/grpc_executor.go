@@ -2,13 +2,9 @@ package hlf
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/binary"
-	"encoding/hex"
-	"encoding/json"
-	"time"
 
 	"github.com/anoideaopen/channel-transfer/proto"
+	"github.com/google/uuid"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
@@ -24,23 +20,15 @@ type gRPCExecutor struct {
 func (ex *gRPCExecutor) invoke(ctx context.Context, req channel.Request, _ []channel.RequestOption) (channel.Response, error) {
 	adaptor := proto.NewHLFBatcherAdapterClient(ex.Client)
 
-	requestID, err := computeRequestID(req)
-	if err != nil {
-		return channel.Response{}, err
-	}
-
 	request := &proto.HlfBatcherRequest{
 		Channel:          ex.Channel,
 		Chaincode:        req.ChaincodeID,
 		Method:           req.Fcn,
-		BatcherRequestId: requestID,
+		BatcherRequestId: uuid.New().String(),
 		Args:             req.Args,
-		TraceId:          nil,
-		SpanId:           nil,
 	}
 
-	_, err = adaptor.SubmitTransaction(ctx, request)
-	if err != nil {
+	if _, err := adaptor.SubmitTransaction(ctx, request); err != nil {
 		return channel.Response{}, err
 	}
 
@@ -53,18 +41,4 @@ func (ex *gRPCExecutor) close() error {
 	}
 
 	return nil
-}
-
-func computeRequestID(req channel.Request) (string, error) {
-	b, err := json.Marshal(req)
-	if err != nil {
-		return "", err
-	}
-
-	nonce := make([]byte, 8)
-	binary.LittleEndian.PutUint64(nonce, uint64(time.Now().UnixMilli()))
-	b = append(nonce, b...)
-
-	digest := sha256.Sum256(b)
-	return hex.EncodeToString(digest[:]), nil
 }
