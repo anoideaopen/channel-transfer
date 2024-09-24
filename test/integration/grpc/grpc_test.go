@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	cligrpc "github.com/anoideaopen/channel-transfer/proto"
+	"github.com/anoideaopen/channel-transfer/test/integration/testconfig"
 	pbfound "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
@@ -49,7 +50,11 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 		ts.StartRedis()
 	})
 	BeforeEach(func() {
-		ts.InitNetwork(channels, integration.GatewayBasePort)
+		ts.InitNetwork(
+			channels,
+			integration.GatewayBasePort,
+			client.WithChannelTransferTemplate(testconfig.ChannelTransferConfigTemplate()),
+		)
 		ts.DeployChaincodes()
 	})
 	BeforeEach(func() {

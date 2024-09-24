@@ -6,8 +6,8 @@ require (
 	github.com/IBM/idemix v0.0.2-0.20231011101252-a4feda90f3f7
 	github.com/anoideaopen/acl v0.0.4-0.20240709131543-bf642c53380c
 	github.com/anoideaopen/channel-transfer v0.0.5
-	github.com/anoideaopen/foundation v0.0.6-0.20240809062346-4a18d95a349b
-	github.com/anoideaopen/foundation/test/integration v0.0.0-20240909081609-af8e7ac3d816
+	github.com/anoideaopen/foundation v0.0.7
+	github.com/anoideaopen/foundation/test/integration v0.0.0-20240919131753-f2e578e31e77
 	github.com/anoideaopen/robot v0.0.3-0.20240814133021-25a749a95916
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
 	github.com/go-openapi/errors v0.22.0
@@ -174,7 +174,7 @@ require (
 	golang.org/x/sys v0.23.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
 	golang.org/x/tools v0.23.0 // indirect
-	google.golang.org/genproto v0.0.0-20240213162025-012b6fc9bca9 // indirect
+	google.golang.org/genproto v0.0.0-20240227224415-6ceb2ff114de // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240725223205-93522f1f2a9f // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240725223205-93522f1f2a9f // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6 // indirect

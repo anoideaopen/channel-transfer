@@ -12,7 +12,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// ChannelTransferTransferItem item parameters for MultiTransferBeginCustomerRequest and MultiTransferBeginAdminRequest
+// ChannelTransferTransferItem TransferItem item parameters for MultiTransferBeginCustomerRequest and MultiTransferBeginAdminRequest
 //
 // swagger:model channel_transferTransferItem
 type ChannelTransferTransferItem struct {

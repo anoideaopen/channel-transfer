@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package core.hlf_batcher;
+
+option go_package = "github.com/anoideaopen/channel-transfer/proto";
+
+// Simplified request for gRPC service
+message HlfBatcherRequest {
+  string channel = 1;             // Channel identifier (mandatory)
+  string chaincode = 2;           // Chaincode identifier (mandatory)
+  string method = 3;              // Method, the chaincode function to invoke (mandatory)
+  repeated bytes args = 4;        // Arguments for the chaincode function (mandatory)
+}
+
+// Response from HLF Batcher to Channel Transfer
+message HLFBatcherResponse {
+  // Enumeration for response status
+  enum Status {
+    STATUS_UNKNOWN = 0;   // Default, unspecified status
+    STATUS_ACCEPTED = 1;  // Request accepted for processing
+    STATUS_REJECTED = 2;  // Request rejected
+  }
+  Status status = 1;      // Status of the request ("accepted" or "rejected")
+  string message = 2;     // Confirmation or error message (optional)
+}
+
+// gRPC service for interaction between Channel Transfer and HLF Batcher
+service HLFBatcherAdapter {
+  rpc SubmitTransaction (HlfBatcherRequest) returns (HLFBatcherResponse);
+}

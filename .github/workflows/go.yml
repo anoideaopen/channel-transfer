@@ -102,7 +102,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        INTEGRATION_TEST_SUITE: [ "grpc","http","chaos" ]
+        INTEGRATION_TEST_SUITE: [ "grpc","http","chaos","batcher" ]
     runs-on: 'ubuntu-20.04'
     steps:
       - uses: actions/checkout@v4

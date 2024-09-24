@@ -33,9 +33,13 @@ options:
 
 # channels for transfer
 channels:
-  - ch1
-  - ch2
-  - ch3
+  - name: ch1
+    batcher:
+      addressGRPC: "localhost:8880"
+  - name: ch2
+    batcher:
+      addressGRPC: "localhost:8880"
+  - name: ch3
 
 # Redis configuration
 redisStorage:

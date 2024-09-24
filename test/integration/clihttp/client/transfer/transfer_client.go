@@ -68,7 +68,7 @@ type ClientService interface {
 }
 
 /*
-MultiTransferByAdmin multis transfer cross chanel be admin
+MultiTransferByAdmin multis transfer cross channel by admin
 */
 func (a *Client) MultiTransferByAdmin(params *MultiTransferByAdminParams, opts ...ClientOption) (*MultiTransferByAdminOK, error) {
 	// TODO: Validate the params before sending
@@ -105,7 +105,7 @@ func (a *Client) MultiTransferByAdmin(params *MultiTransferByAdminParams, opts .
 }
 
 /*
-MultiTransferByCustomer multis transfer cross chanel be customer
+MultiTransferByCustomer multis transfer cross channel by customer
 */
 func (a *Client) MultiTransferByCustomer(params *MultiTransferByCustomerParams, opts ...ClientOption) (*MultiTransferByCustomerOK, error) {
 	// TODO: Validate the params before sending
@@ -142,7 +142,7 @@ func (a *Client) MultiTransferByCustomer(params *MultiTransferByCustomerParams, 
 }
 
 /*
-TransferByAdmin transfers cross chanel be admin
+TransferByAdmin transfers cross channel by admin
 */
 func (a *Client) TransferByAdmin(params *TransferByAdminParams, opts ...ClientOption) (*TransferByAdminOK, error) {
 	// TODO: Validate the params before sending
@@ -179,7 +179,7 @@ func (a *Client) TransferByAdmin(params *TransferByAdminParams, opts ...ClientOp
 }
 
 /*
-TransferByCustomer transfers cross chanel be customer
+TransferByCustomer transfers cross channel by customer
 */
 func (a *Client) TransferByCustomer(params *TransferByCustomerParams, opts ...ClientOption) (*TransferByCustomerOK, error) {
 	// TODO: Validate the params before sending
