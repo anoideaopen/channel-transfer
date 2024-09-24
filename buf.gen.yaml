@@ -1,18 +1,13 @@
-version: v1
+version: v2
 plugins:
-  - name: go
+  - local: protoc-gen-go
     out: .
     opt: paths=source_relative
-    path: protoc-gen-go
-  - name: go-grpc
+  - local: protoc-gen-go-grpc
     out: .
     opt: paths=source_relative
-    path: protoc-gen-go-grpc
-  - name: grpc-gateway
+  - local: protoc-gen-grpc-gateway
     out: .
-    opt:
-      - paths=source_relative
-    path: protoc-gen-grpc-gateway
-  - name: openapiv2
+    opt: paths=source_relative
+  - local: protoc-gen-openapiv2
     out: .
-    path: protoc-gen-openapiv2
