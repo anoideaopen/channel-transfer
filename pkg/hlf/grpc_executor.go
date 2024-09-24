@@ -8,6 +8,7 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/metadata"
 )
 
 // gRPCExecutor stores a gRPC client to work with external batcher service
@@ -20,12 +21,13 @@ type gRPCExecutor struct {
 func (ex *gRPCExecutor) invoke(ctx context.Context, req channel.Request, _ []channel.RequestOption) (channel.Response, error) {
 	adaptor := proto.NewHLFBatcherAdapterClient(ex.Client)
 
+	ctx = metadata.NewOutgoingContext(ctx, metadata.Pairs("requestID", uuid.New().String()))
+
 	request := &proto.HlfBatcherRequest{
-		Channel:          ex.Channel,
-		Chaincode:        req.ChaincodeID,
-		Method:           req.Fcn,
-		BatcherRequestId: uuid.New().String(),
-		Args:             req.Args,
+		Channel:   ex.Channel,
+		Chaincode: req.ChaincodeID,
+		Method:    req.Fcn,
+		Args:      req.Args,
 	}
 
 	if _, err := adaptor.SubmitTransaction(ctx, request); err != nil {

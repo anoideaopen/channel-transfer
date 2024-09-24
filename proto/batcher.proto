@@ -9,10 +9,7 @@ message HlfBatcherRequest {
   string channel = 1;             // Channel identifier (mandatory)
   string chaincode = 2;           // Chaincode identifier (mandatory)
   string method = 3;              // Method, the chaincode function to invoke (mandatory)
-  string batcher_request_id = 4;  // Unique batcher request ID (mandatory)
-  repeated bytes args = 5;        // Arguments for the chaincode function (mandatory)
-  string trace_id = 6;            // Trace ID for tracking the request (optional)
-  string span_id = 7;             // Span ID for tracking a specific step in the trace (optional)
+  repeated bytes args = 4;        // Arguments for the chaincode function (mandatory)
 }
 
 // Response from HLF Batcher to Channel Transfer

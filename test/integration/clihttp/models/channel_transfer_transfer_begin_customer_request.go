@@ -14,7 +14,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// ChannelTransferTransferBeginCustomerRequest TransferBeginAdminRequest request for tokens transfer by tokens owner
+// ChannelTransferTransferBeginCustomerRequest TransferBeginCustomerRequest request for tokens transfer by tokens owner
 //
 // swagger:model channel_transferTransferBeginCustomerRequest
 type ChannelTransferTransferBeginCustomerRequest struct {

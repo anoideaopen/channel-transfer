@@ -14,7 +14,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// ChannelTransferMultiTransferBeginAdminRequest TransferBeginAdminRequest request for tokens transfer by platform administrator
+// ChannelTransferMultiTransferBeginAdminRequest MultiTransferBeginAdminRequest request for tokens transfer by platform administrator
 //
 // swagger:model channel_transferMultiTransferBeginAdminRequest
 type ChannelTransferMultiTransferBeginAdminRequest struct {
@@ -31,7 +31,7 @@ type ChannelTransferMultiTransferBeginAdminRequest struct {
 	// transfer ID (should be unique)
 	IDTransfer string `json:"idTransfer,omitempty"`
 
-	// items
+	// items to transfer
 	Items []*ChannelTransferTransferItem `json:"items"`
 
 	// options

@@ -8,6 +8,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/proto"
 	"github.com/hyperledger/fabric/integration"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 // Batcher API emulation structure
@@ -16,12 +17,28 @@ type batcherAPI struct {
 }
 
 func (s *batcherAPI) SubmitTransaction(
-	_ context.Context,
+	ctx context.Context,
 	_ *proto.HlfBatcherRequest,
 ) (*proto.HLFBatcherResponse, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return &proto.HLFBatcherResponse{
+			Status:  proto.HLFBatcherResponse_STATUS_REJECTED,
+			Message: "failed to retrieve metadata from context",
+		}, nil
+	}
+
+	requestID := md.Get("requestID")
+	if len(requestID) == 0 {
+		return &proto.HLFBatcherResponse{
+			Status:  proto.HLFBatcherResponse_STATUS_REJECTED,
+			Message: "empty requestID in metadata from context",
+		}, nil
+	}
+
 	return &proto.HLFBatcherResponse{
 		Status:  proto.HLFBatcherResponse_STATUS_ACCEPTED,
-		Message: "response from batcher API",
+		Message: fmt.Sprintf("request with ID %s submitted successfully", requestID[0]),
 	}, nil
 }
 
