@@ -1,11 +1,10 @@
-package batcher
+package task_executor
 
 import (
 	"context"
 	"strconv"
 
 	cligrpc "github.com/anoideaopen/channel-transfer/proto"
-	"github.com/anoideaopen/channel-transfer/test/integration/testconfig"
 	pbfound "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
@@ -19,11 +18,11 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-var _ = Describe("Channel transfer with batcher GRPC tests", func() {
+var _ = Describe("Channel transfer with task executor tests", func() {
 	var (
 		channels     = []string{cmn.ChannelAcl, cmn.ChannelCC, cmn.ChannelFiat}
 		ts           client.TestSuite
-		batcher      *grpc.Server
+		taskExecutor *grpc.Server
 		networkFound *cmn.NetworkFoundation
 		clientCtx    context.Context
 		apiClient    cligrpc.APIClient
@@ -47,7 +46,7 @@ var _ = Describe("Channel transfer with batcher GRPC tests", func() {
 		ts.InitNetwork(
 			channels,
 			integration.LedgerPort,
-			client.WithChannelTransferTemplate(testconfig.ChannelTransferConfigWithBatcherTemplate(batcherPort())),
+			client.WithTaskExecutorForChannels(taskExecutorHost(), taskExecutorPorts(), cmn.ChannelCC, cmn.ChannelFiat),
 		)
 		ts.DeployChaincodes()
 
@@ -65,8 +64,8 @@ var _ = Describe("Channel transfer with batcher GRPC tests", func() {
 	})
 
 	BeforeEach(func() {
-		By("start batcher")
-		batcher = StartBatcher()
+		By("start taskExecutor")
+		taskExecutor = StartTaskExecutor()
 		By("start channel transfer")
 		ts.StartChannelTransfer()
 	})
@@ -76,8 +75,8 @@ var _ = Describe("Channel transfer with batcher GRPC tests", func() {
 		ts.StopRedis()
 		By("stop channel transfer")
 		ts.StopChannelTransfer()
-		By("stop batcher")
-		StopBatcher(batcher)
+		By("stop taskExecutor")
+		StopTaskExecutor(taskExecutor)
 	})
 
 	It("Submit transaction", func() {

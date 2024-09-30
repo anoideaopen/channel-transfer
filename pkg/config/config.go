@@ -35,16 +35,16 @@ type Config struct {
 }
 
 type Channel struct {
-	Name    string   `mapstructure:"name" validate:"required"`
-	Batcher *Batcher `mapstructure:"batcher"`
+	Name         string        `mapstructure:"name" validate:"required"`
+	TaskExecutor *TaskExecutor `mapstructure:"taskExecutor"`
 }
 
-type Batcher struct {
+type TaskExecutor struct {
 	AddressGRPC string      `mapstructure:"addressGRPC" validate:"required"`
 	tlsConfig   *tls.Config `mapstructure:"-"`
 }
 
-func (b *Batcher) TLSConfig() *tls.Config {
+func (b *TaskExecutor) TLSConfig() *tls.Config {
 	return b.tlsConfig
 }
 

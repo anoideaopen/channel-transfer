@@ -661,10 +661,10 @@ github.com/anoideaopen/common-component v0.0.6 h1:drRkPGoeIowzyUZn/YUdNa3GmD5j1p
 github.com/anoideaopen/common-component v0.0.6/go.mod h1:m1adEQdkVfAy4efFlY3+uqL73dAKXRSOiTsklHOzf3c=
 github.com/anoideaopen/fabric-sdk-go v0.0.2 h1:8Nm1jpaCxtgphFtc1GuQoQxREz6Y7TrsCmc63fYqCC0=
 github.com/anoideaopen/fabric-sdk-go v0.0.2/go.mod h1:L8ECPqpdBc/ObG4PDH4wHTsYLoi74UcSPgI0hLR/vHc=
-github.com/anoideaopen/foundation v0.0.7 h1:M8+E3p3gnlFTmt0qbO811c5NIr9jgCn2fPggbZdnjhw=
-github.com/anoideaopen/foundation v0.0.7/go.mod h1:kX+2uJzmPyFylcqpKX8J3pHNsNVIN5MSihl3d3hinU4=
-github.com/anoideaopen/foundation/test/integration v0.0.0-20240919131753-f2e578e31e77 h1:ovBOLzRd/Aw9sl+U91iqY/X0AG4mZ+gAoqW6RJwvqHs=
-github.com/anoideaopen/foundation/test/integration v0.0.0-20240919131753-f2e578e31e77/go.mod h1:/fdDnOw52YjraodgrBY+euSV3IYT0ojg4nCAv1XntWs=
+github.com/anoideaopen/foundation v0.0.8-0.20240930112204-15803aac8779 h1:3lqezWCuJ5vl7b57+5F0R4NdoIw6fEQErbZAdgsAexo=
+github.com/anoideaopen/foundation v0.0.8-0.20240930112204-15803aac8779/go.mod h1:qH0eJLA4OVcRXmhUQBXJwEaZBVbuukrKZlbMB2ABwrU=
+github.com/anoideaopen/foundation/test/integration v0.0.0-20240930112204-15803aac8779 h1:Ii2GgaLeZctDdnwFVQZKX7ERDk3cWVx+ZjVmL5KgB1U=
+github.com/anoideaopen/foundation/test/integration v0.0.0-20240930112204-15803aac8779/go.mod h1:eD+F6LHFGP+SoCraSw1a4O09QgQfux65yzd+vOtWqCw=
 github.com/anoideaopen/glog v0.0.3 h1:vsWM5QvHzTMbrDy3cydkNPFpfdWrxeC8ne02f//qNaA=
 github.com/anoideaopen/glog v0.0.3/go.mod h1:8J4509ClNmF/kvvPA8XFKZ7OX+860JaFH3+nXVD+R3k=
 github.com/anoideaopen/robot v0.0.3-0.20240814133021-25a749a95916 h1:QNzQ/3+nvoiQqPCdfaFgPShr/fQcttTQikHIjHlkND0=
@@ -1305,7 +1305,6 @@ github.com/onsi/gomega v1.27.4/go.mod h1:riYq/GJKh8hhoM01HN6Vmuy93AarCXCBGpvFDK3
 github.com/onsi/gomega v1.27.6/go.mod h1:PIQNjfQwkP3aQAH7lf7j87O/5FiNr+ZR8+ipb+qQlhg=
 github.com/onsi/gomega v1.34.1 h1:EUMJIKUjM8sKjYbtxQI9A4z2o+rruxnzNvpknOXie6k=
 github.com/onsi/gomega v1.34.1/go.mod h1:kU1QgUvBDLXBJq618Xvm2LUX6rSAfRaFRTcdOeDLwwY=
-github.com/op/go-logging v0.0.0-20160315200505-970db520ece7 h1:lDH9UUVJtmYCjyT0CI4q8xvlXPxeZ0gYCVvWbmPlp88=
 github.com/op/go-logging v0.0.0-20160315200505-970db520ece7/go.mod h1:HzydrMdWErDVzsI23lYNej1Htcns9BCg93Dk0bBINWk=
 github.com/opencontainers/go-digest v1.0.0 h1:apOUWs51W5PlhuyGyz9FCeeBIOUDA/6nW8Oi/yOhh5U=
 github.com/opencontainers/go-digest v1.0.0/go.mod h1:0JzlMkj0TRzQZfJkVvzbP0HBR3IKzErnv2BNG4W4MAM=
@@ -2184,8 +2183,6 @@ google.golang.org/genproto v0.0.0-20230323212658-478b75c54725/go.mod h1:UUQDJDOl
 google.golang.org/genproto v0.0.0-20230330154414-c0448cd141ea/go.mod h1:UUQDJDOlWu4KYeJZffbWgBkS1YFobzKbLVfK69pe0Ak=
 google.golang.org/genproto v0.0.0-20230331144136-dcfb400f0633/go.mod h1:UUQDJDOlWu4KYeJZffbWgBkS1YFobzKbLVfK69pe0Ak=
 google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1/go.mod h1:nKE/iIaLqn2bQwXBg8f1g2Ylh6r5MN5CmZvuzZCgsCU=
-google.golang.org/genproto v0.0.0-20240227224415-6ceb2ff114de h1:F6qOa9AZTYJXOUEr4jDysRDLrm4PHePlge4v4TGAlxY=
-google.golang.org/genproto v0.0.0-20240227224415-6ceb2ff114de/go.mod h1:VUhTRKeHn9wwcdrk73nvdC9gF178Tzhmt/qyaFcPLSo=
 google.golang.org/genproto/googleapis/api v0.0.0-20240725223205-93522f1f2a9f h1:b1Ln/PG8orm0SsBbHZWke8dDp2lrCD4jSmfglFpTZbk=
 google.golang.org/genproto/googleapis/api v0.0.0-20240725223205-93522f1f2a9f/go.mod h1:AHT0dDg3SoMOgZGnZk29b5xTbPHMoEC8qthmBLJCpys=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20240725223205-93522f1f2a9f h1:RARaIm8pxYuxyNPbBQf5igT7XdOyCNtat1qAT2ZxjU4=

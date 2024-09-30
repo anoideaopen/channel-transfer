@@ -1,4 +1,4 @@
-package batcher
+package task_executor
 
 import (
 	"encoding/json"

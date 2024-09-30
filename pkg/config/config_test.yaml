@@ -34,10 +34,10 @@ options:
 # channels for transfer
 channels:
   - name: ch1
-    batcher:
+    taskExecutor:
       addressGRPC: "localhost:8880"
   - name: ch2
-    batcher:
+    taskExecutor:
       addressGRPC: "localhost:8880"
   - name: ch3
 

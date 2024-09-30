@@ -1,19 +1,19 @@
 syntax = "proto3";
 
-package core.hlf_batcher;
+package core.task_executor;
 
 option go_package = "github.com/anoideaopen/channel-transfer/proto";
 
-// Simplified request for gRPC service
-message HlfBatcherRequest {
+// Simplified request for gRPC Task Executor service
+message TaskExecutorRequest {
   string channel = 1;             // Channel identifier (mandatory)
   string chaincode = 2;           // Chaincode identifier (mandatory)
   string method = 3;              // Method, the chaincode function to invoke (mandatory)
   repeated bytes args = 4;        // Arguments for the chaincode function (mandatory)
 }
 
-// Response from HLF Batcher to Channel Transfer
-message HLFBatcherResponse {
+// Response from Task Executor to Channel Transfer
+message TaskExecutorResponse {
   // Enumeration for response status
   enum Status {
     STATUS_UNKNOWN = 0;   // Default, unspecified status
@@ -25,6 +25,6 @@ message HLFBatcherResponse {
 }
 
 // gRPC service for interaction between Channel Transfer and HLF Batcher
-service HLFBatcherAdapter {
-  rpc SubmitTransaction (HlfBatcherRequest) returns (HLFBatcherResponse);
+service TaskExecutorAdapter {
+  rpc SubmitTransaction (TaskExecutorRequest) returns (TaskExecutorResponse);
 }
