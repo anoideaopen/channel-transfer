@@ -101,17 +101,17 @@ func NewPool(
 
 		// if the channel has batcher options, create the client for it
 		var gRPCClient *grpc.ClientConn = nil
-		if channel.Batcher != nil {
+		if channel.TaskExecutor != nil {
 			var ok bool
 			// check if a client for the gRPC address already created
-			gRPCClient, ok = gRPCClients[channel.Batcher.AddressGRPC]
+			gRPCClient, ok = gRPCClients[channel.TaskExecutor.AddressGRPC]
 			if !ok {
 				// if not, create the new one
-				gRPCClient, err = createGRPCClient(channel.Batcher)
+				gRPCClient, err = createGRPCClient(channel.TaskExecutor)
 				if err != nil {
 					return nil, errorshlp.WrapWithDetails(errors.Errorf("create gRPC client: %w", err), nerrors.ErrTypeHlf, nerrors.ComponentHLFStreamsPool)
 				}
-				gRPCClients[channel.Batcher.AddressGRPC] = gRPCClient
+				gRPCClients[channel.TaskExecutor.AddressGRPC] = gRPCClient
 			}
 		}
 
@@ -130,7 +130,7 @@ func NewPool(
 	return pool, nil
 }
 
-func newGRPCClient(opts *config.Batcher) (*grpc.ClientConn, error) {
+func newGRPCClient(opts *config.TaskExecutor) (*grpc.ClientConn, error) {
 	kacp := keepalive.ClientParameters{
 		Time:                10 * time.Second, // send pings every 10 seconds if there is no activity
 		Timeout:             time.Second,      // wait 1 second for ping ack before considering the connection dead
@@ -541,7 +541,7 @@ func (pool *Pool) sendEvent(channel string) {
 	}
 }
 
-func createGRPCClient(options *config.Batcher) (*grpc.ClientConn, error) {
+func createGRPCClient(options *config.TaskExecutor) (*grpc.ClientConn, error) {
 	gRPCClient, err := newGRPCClient(options)
 	if err != nil {
 		return nil, errors.Errorf("create grpc client: %w", err)

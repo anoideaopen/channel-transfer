@@ -19,11 +19,11 @@ type gRPCExecutor struct {
 
 // invoke sends a transaction request to an external batcher service instead of HLF
 func (ex *gRPCExecutor) invoke(ctx context.Context, req channel.Request, _ []channel.RequestOption) (channel.Response, error) {
-	adaptor := proto.NewHLFBatcherAdapterClient(ex.Client)
+	adaptor := proto.NewTaskExecutorAdapterClient(ex.Client)
 
 	ctx = metadata.NewOutgoingContext(ctx, metadata.Pairs("requestID", uuid.New().String()))
 
-	request := &proto.HlfBatcherRequest{
+	request := &proto.TaskExecutorRequest{
 		Channel:   ex.Channel,
 		Chaincode: req.ChaincodeID,
 		Method:    req.Fcn,

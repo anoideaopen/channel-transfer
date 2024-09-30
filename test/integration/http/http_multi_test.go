@@ -10,7 +10,6 @@ import (
 	clihttp "github.com/anoideaopen/channel-transfer/test/integration/clihttp/client"
 	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/client/transfer"
 	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/models"
-	"github.com/anoideaopen/channel-transfer/test/integration/testconfig"
 	pbfound "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
@@ -66,7 +65,6 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 		ts.InitNetwork(
 			channels,
 			integration.GossipBasePort,
-			client.WithChannelTransferTemplate(testconfig.ChannelTransferConfigTemplate()),
 		)
 		ts.DeployChaincodes()
 	})
