@@ -1,6 +1,6 @@
 # Logger
 logLevel: info # values: error, warning, info, debug
-logType: console # values: console, json
+logType: console # values: console, json, gcp
 # Fabric
 profilePath: "profilePath" # path to Fabric connection profile
 userName: "userName" # Fabric user

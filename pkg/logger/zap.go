@@ -15,6 +15,7 @@ import (
 const (
 	LogTypeTTY  = "console"
 	LogTypeJSON = "json"
+	LogTypeGCP  = "gcp"
 )
 
 type sugaredLogger struct {
@@ -95,14 +96,32 @@ func (sl *sugaredLogger) Panicf(format string, args ...interface{}) {
 	sl.sugar.Panicf(format, args...)
 }
 
-func newSugarLogger(outputEncoding string, level string) (*sugaredLogger, error) {
+func logEncoding(loggerType string) string {
+	switch loggerType {
+	case LogTypeGCP:
+		return LogTypeJSON
+	default:
+		return loggerType
+	}
+}
+
+func logLevelKey(loggerType string) string {
+	switch loggerType {
+	case LogTypeGCP:
+		return "severity"
+	default:
+		return "level"
+	}
+}
+
+func newSugarLogger(loggerType string, level string) (*sugaredLogger, error) {
 	cfg := zap.Config{
-		Encoding:         outputEncoding,
+		Encoding:         logEncoding(loggerType),
 		OutputPaths:      []string{"stdout"},
 		ErrorOutputPaths: []string{"stderr"},
 		EncoderConfig: zapcore.EncoderConfig{
 			MessageKey:   "message",
-			LevelKey:     "level",
+			LevelKey:     logLevelKey(loggerType),
 			EncodeLevel:  zapcore.CapitalLevelEncoder,
 			TimeKey:      "time",
 			EncodeTime:   zapcore.TimeEncoderOfLayout(time.RFC3339Nano),
@@ -143,7 +162,7 @@ func CreateLogger(loggerType, logLevel string) (glog.Logger, SyncLoggerMethod, e
 
 func verifyLoggerType(loggerEncoding string) error {
 	switch loggerEncoding {
-	case LogTypeTTY, LogTypeJSON:
+	case LogTypeTTY, LogTypeJSON, LogTypeGCP:
 		return nil
 	}
 	return errors.Errorf("unknown logger's encoding %s", loggerEncoding)
