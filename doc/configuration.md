@@ -9,7 +9,7 @@
 #### CHANNEL_TRANSFER_LOGLEVEL
 - values: debug, error, info, warn
 #### CHANNEL_TRANSFER_LOGTYPE
-- values: console, json
+- values: console, json, gcp
 #### CHANNEL_TRANSFER_PROFILEPATH
 - path to Fabric connection profile 
 #### CHANNEL_TRANSFER_USERNAME
