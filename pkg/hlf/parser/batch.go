@@ -56,8 +56,10 @@ func (p *Parser) extractBatchResponse(payload []byte) (*fpb.BatchResponse, error
 
 func (p *Parser) extractTaskRequest(payload []byte) (*fpb.ExecuteTasksRequest, error) {
 	response := &fpb.ExecuteTasksRequest{}
-	if err := protojson.Unmarshal(payload, response); err != nil {
-		return nil, err
+	if err := proto.Unmarshal(payload, response); err != nil {
+		if err = protojson.Unmarshal(payload, response); err != nil {
+			return nil, err
+		}
 	}
 
 	return response, nil
