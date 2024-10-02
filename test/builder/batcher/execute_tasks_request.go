@@ -3,7 +3,7 @@ package batcher
 import (
 	fpb "github.com/anoideaopen/foundation/proto"
 	"github.com/go-errors/errors"
-	"google.golang.org/protobuf/encoding/protojson"
+	"github.com/golang/protobuf/proto" //nolint:staticcheck
 )
 
 type ExecuteTasksRequestBuilder struct {
@@ -28,7 +28,7 @@ func (b *ExecuteTasksRequestBuilder) Build() *fpb.ExecuteTasksRequest {
 }
 
 func (b *ExecuteTasksRequestBuilder) Marshal() []byte {
-	requestBytes, err := protojson.Marshal(b.request)
+	requestBytes, err := proto.Marshal(b.request)
 	if err != nil {
 		panic(errors.Errorf("Failed to marshal ExecuteTasksRequest: %v\n", err))
 	}
