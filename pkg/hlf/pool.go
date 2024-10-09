@@ -346,21 +346,33 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 			sendSaver(saver)
 		case <-saver:
 			go func() {
-				ver := checkPointVersion.Load()
-				nCheckPoint, err := pool.checkPoint.CheckpointSave(
+				oldCheckPoint, err := pool.checkPoint.CheckpointLoad(
 					pool.gCtx,
-					model.Checkpoint{
-						Ver:                     ver,
-						Channel:                 model.ID(key),
-						SrcCollectFromBlockNums: blockNumber,
-					},
+					model.ID(key),
 				)
 				if err != nil {
-					pool.log.Errorf("save checkpoint of %s : %s", string(key), err.Error())
+					pool.log.Error(errors.Errorf("load checkpoint of %s: %w", string(key), err))
 					return
 				}
 
-				checkPointVersion.CompareAndSwap(ver, nCheckPoint.Ver)
+				// preventing from saving same block checkpoints
+				if oldCheckPoint.SrcCollectFromBlockNums != blockNumber {
+					ver := checkPointVersion.Load()
+					nCheckPoint, err := pool.checkPoint.CheckpointSave(
+						pool.gCtx,
+						model.Checkpoint{
+							Ver:                     ver,
+							Channel:                 model.ID(key),
+							SrcCollectFromBlockNums: blockNumber,
+						},
+					)
+					if err != nil {
+						pool.log.Errorf("save checkpoint of %s : %s", string(key), err.Error())
+						return
+					}
+
+					checkPointVersion.CompareAndSwap(ver, nCheckPoint.Ver)
+				}
 			}()
 		}
 	}
