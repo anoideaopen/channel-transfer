@@ -325,8 +325,6 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 	}
 	readiness()
 
-	saver := make(chan struct{}, 1)
-
 	pool.m.TotalReconnectsToFabric().Inc(metrics.Labels().Channel.Create(string(key)))
 
 	for pool.gCtx.Err() == nil {
@@ -343,8 +341,7 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 			}
 			blockNumber = block.BlockNum
 			readiness()
-			sendSaver(saver)
-		case <-saver:
+			// saving event checkpoint
 			checkPointVersion = pool.saveCheckPoint(key, blockNumber, checkPointVersion)
 		}
 	}
@@ -382,13 +379,6 @@ func (pool *Pool) saveCheckPoint(key channelKey, blockNumber uint64, checkPointV
 	}
 
 	return checkPointVersion
-}
-
-func sendSaver(c chan struct{}) {
-	select {
-	case c <- struct{}{}:
-	default:
-	}
 }
 
 func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {

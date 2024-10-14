@@ -147,6 +147,7 @@ func (cc *chCollector) loopProxyByEvents(ctx context.Context, startedFrom uint64
 			case <-ctx.Done():
 				return lastPushedBlockNum
 			case cc.stream <- data:
+				// sending data to channel executor
 				lastPushedBlockNum = &ev.Block.Header.Number
 				expectedBlockNum++
 			}
