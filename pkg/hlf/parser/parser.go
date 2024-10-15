@@ -8,6 +8,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/logger"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/common-component/errorshlp"
+	"github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/glog"
 	"github.com/go-errors/errors"
 	"github.com/hyperledger/fabric-protos-go/common"
@@ -141,7 +142,7 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 									BlockNum:       blockNum,
 									TxID:           task.GetId(),
 									FuncName:       tsResponse.GetMethod(),
-									Args:           nil,
+									Args:           argsFromTask(task),
 									TimeNs:         0,
 									ValidationCode: tx.validationCode,
 									BatchResponse:  tsResponse,
@@ -172,4 +173,12 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 	}
 
 	return tOperations, nil
+}
+
+func argsFromTask(task *proto.Task) [][]byte {
+	argsBytes := [][]byte{[]byte(task.GetMethod())}
+	for _, arg := range task.GetArgs() {
+		argsBytes = append(argsBytes, []byte(arg))
+	}
+	return argsBytes
 }
