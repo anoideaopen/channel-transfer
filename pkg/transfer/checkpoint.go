@@ -20,16 +20,11 @@ func NewBlockCheckpoint(storage *redis.Storage) *BlockCheckpoint {
 }
 
 func (ckp *BlockCheckpoint) CheckpointSave(ctx context.Context, checkpoint model.Checkpoint) (model.Checkpoint, error) {
-	emptyCheckPoint := model.Checkpoint{
-		Channel:                 "",
-		Ver:                     0,
-		SrcCollectFromBlockNums: 0,
-	}
-	if checkpoint == emptyCheckPoint {
-		return emptyCheckPoint, nil
+	if checkpoint.Channel == "" || checkpoint.SrcCollectFromBlockNums == 0 || checkpoint.Ver == 0 {
+		return checkpoint, nil
 	}
 	if err := ckp.storage.Save(ctx, &checkpoint, data.Key(checkpoint.Channel)); err != nil {
-		return emptyCheckPoint, fmt.Errorf("save checkpoint : %w", err)
+		return model.Checkpoint{}, fmt.Errorf("save checkpoint : %w", err)
 	}
 
 	return checkpoint, nil

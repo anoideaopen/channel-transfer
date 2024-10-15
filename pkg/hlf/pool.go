@@ -322,8 +322,6 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 
 	pool.m.TotalReconnectsToFabric().Inc(metrics.Labels().Channel.Create(string(key)))
 
-	oldCheckPoint := checkPoint
-
 	for pool.gCtx.Err() == nil {
 		select {
 		case <-pool.gCtx.Done():
@@ -339,7 +337,7 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 			blockNumber = block.BlockNum
 			readiness()
 			// saving event checkpoint
-			oldCheckPoint = pool.saveCheckPoint(oldCheckPoint, key, blockNumber)
+			checkPoint = pool.saveCheckPoint(checkPoint, key, blockNumber)
 		}
 	}
 
