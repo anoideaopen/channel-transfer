@@ -15,11 +15,11 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func newBlock(channel, txId string, txMethod string) *common.Block {
+func newBlock(channel, txId string, txMethod string, args []string) *common.Block {
 	task := batcher.NewTaskBuilder().
 		SetID(txId).
 		SetMethod(txMethod).
-		SetArgs([]string{"arg1", "arg2"}).
+		SetArgs(args).
 		Build()
 
 	executeTasksRequest := batcher.NewExecuteTasksRequestBuilder().
@@ -114,17 +114,17 @@ func newBlock(channel, txId string, txMethod string) *common.Block {
 
 func TestExtractData_ExecuteTasksMethod(t *testing.T) {
 	var (
-		channel        string = "test-channel"
+		channel               = "test-channel"
 		blockNum       uint64 = 1
-		txId           string = "unique-task-id"
-		funcName       string = "deleteCCTransferTo"
-		args           [][]uint8
+		txId                  = "unique-task-id"
+		funcName              = "deleteCCTransferTo"
+		args                  = []string{"arg1", "arg2"}
 		timeNs         uint64 = 0
 		validationCode int32  = 0
 		response       *peer.Response
 	)
 
-	block := newBlock(channel, txId, funcName)
+	block := newBlock(channel, txId, funcName, args)
 
 	ctx := context.Background()
 
@@ -146,7 +146,12 @@ func TestExtractData_ExecuteTasksMethod(t *testing.T) {
 	assert.Equal(t, blockNum, tx.BlockNum)
 	assert.Equal(t, txId, tx.TxID)
 	assert.Equal(t, funcName, tx.FuncName)
-	assert.Equal(t, args, tx.Args)
+
+	expectedArgs := [][]byte{[]byte(funcName)}
+	for _, arg := range args {
+		expectedArgs = append(expectedArgs, []byte(arg))
+	}
+	assert.Equal(t, expectedArgs, tx.Args)
 	assert.Equal(t, timeNs, tx.TimeNs)
 	assert.Equal(t, validationCode, tx.ValidationCode)
 	assert.NotNil(t, tx.BatchResponse)
