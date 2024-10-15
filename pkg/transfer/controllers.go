@@ -33,7 +33,7 @@ type BlockController interface {
 //go:generate mockgen -source controllers.go -destination mock/controllers.go -package mock -mock_names CheckpointController=MockCheckpointController
 type CheckpointController interface {
 	// CheckpointSave saves the checkpoint of the processed data of the ledger channel.
-	CheckpointSave(context.Context, model.Checkpoint, model.Checkpoint) (model.Checkpoint, error)
+	CheckpointSave(context.Context, model.Checkpoint) (model.Checkpoint, error)
 
 	// CheckpointLoad retrieves the checkpoint of the processed data of the ledger channel.
 	CheckpointLoad(context.Context, model.ID) (model.Checkpoint, error)
