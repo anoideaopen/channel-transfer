@@ -23,7 +23,6 @@ import (
 	"github.com/go-errors/errors"
 	hlfcontext "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
-	"go.uber.org/atomic"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/backoff"
@@ -83,7 +82,7 @@ func NewPool(
 	pool.fabricSDK, err = createFabricSDK(profilePath)
 	if err != nil {
 		return nil, errorshlp.WrapWithDetails(
-			errors.Errorf("create connection to fabric: %w", err),
+			fmt.Errorf("create connection to fabric: %w", err),
 			nerrors.ErrTypeHlf,
 			nerrors.ComponentHLFStreamsPool,
 		)
@@ -109,7 +108,7 @@ func NewPool(
 				// if not, create the new one
 				gRPCClient, err = createGRPCClient(channel.TaskExecutor)
 				if err != nil {
-					return nil, errorshlp.WrapWithDetails(errors.Errorf("create gRPC client: %w", err), nerrors.ErrTypeHlf, nerrors.ComponentHLFStreamsPool)
+					return nil, errorshlp.WrapWithDetails(fmt.Errorf("create gRPC client: %w", err), nerrors.ErrTypeHlf, nerrors.ComponentHLFStreamsPool)
 				}
 				gRPCClients[channel.TaskExecutor.AddressGRPC] = gRPCClient
 			}
@@ -118,7 +117,7 @@ func NewPool(
 		err = pool.createExecutor(ctx, channel.Name, channelProvider, gRPCClient)
 		if err != nil {
 			return nil, errorshlp.WrapWithDetails(
-				errors.Errorf("create executor: %w", err),
+				fmt.Errorf("create executor: %w", err),
 				nerrors.ErrTypeHlf,
 				nerrors.ComponentHLFStreamsPool,
 			)
@@ -217,7 +216,7 @@ func (pool *Pool) createExecutor(
 	)
 	if err != nil {
 		pool.m.TotalReconnectsToFabric().Inc(metrics.Labels().Channel.Create(channel))
-		return errors.Errorf("start executor: %w", err)
+		return fmt.Errorf("start executor: %w", err)
 	}
 
 	if gRPCClient != nil {
@@ -268,7 +267,7 @@ func (pool *Pool) Expand(ctx context.Context, channel string) error {
 		ready, err := pool.Readiness(channel)
 		if err != nil {
 			return errorshlp.WrapWithDetails(
-				errors.Errorf("pool readiness: %w", err),
+				fmt.Errorf("pool readiness: %w", err),
 				nerrors.ErrTypeHlf,
 				nerrors.ComponentHLFStreamsPool,
 			)
@@ -289,19 +288,15 @@ func (pool *Pool) blockchainHeight(key channelKey) (*uint64, error) {
 
 //nolint:funlen
 func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvider) error {
-	var (
-		blockNumber       uint64
-		checkPointVersion atomic.Int64
-	)
+	var blockNumber uint64
 
 	checkPoint, err := pool.checkPoint.CheckpointLoad(pool.gCtx, model.ID(key))
 	if err != nil {
 		if !errors.Is(err, data.ErrObjectNotFound) {
-			pool.log.Error(errors.Errorf("load checkpoint of %s: %w", string(key), err))
+			pool.log.Error(fmt.Errorf("load checkpoint of %s: %w", string(key), err))
 		}
 	} else {
 		blockNumber = checkPoint.SrcCollectFromBlockNums
-		checkPointVersion.Store(checkPoint.Ver)
 	}
 
 	collector := createChCollector(pool.gCtx, string(key), blockNumber, provider, pool.opts.BatchTxPreimagePrefix, pool.opts.CollectorsBufSize)
@@ -316,7 +311,7 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 
 	bcHeight, err := pool.blockchainHeight(key)
 	if err != nil {
-		return errors.Errorf("create channel %s hasCollector, get blockchain height: %w", string(key), err)
+		return fmt.Errorf("create channel %s hasCollector, get blockchain height: %w", string(key), err)
 	}
 	readiness := func() {
 		if *bcHeight-blockNumber <= 1 {
@@ -324,8 +319,6 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 		}
 	}
 	readiness()
-
-	saver := make(chan struct{}, 1)
 
 	pool.m.TotalReconnectsToFabric().Inc(metrics.Labels().Channel.Create(string(key)))
 
@@ -339,40 +332,33 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 			}
 			pool.log.Debugf("store block: %d", block.BlockNum)
 			if err = pool.storeTransfer(key, *block); err != nil {
-				return errors.Errorf("store block to redis: %w", err)
+				return fmt.Errorf("store block to redis: %w", err)
 			}
 			blockNumber = block.BlockNum
 			readiness()
-			sendSaver(saver)
-		case <-saver:
-			go func() {
-				ver := checkPointVersion.Load()
-				nCheckPoint, err := pool.checkPoint.CheckpointSave(
-					pool.gCtx,
-					model.Checkpoint{
-						Ver:                     ver,
-						Channel:                 model.ID(key),
-						SrcCollectFromBlockNums: blockNumber,
-					},
-				)
-				if err != nil {
-					pool.log.Errorf("save checkpoint of %s : %s", string(key), err.Error())
-					return
-				}
-
-				checkPointVersion.CompareAndSwap(ver, nCheckPoint.Ver)
-			}()
+			// saving event checkpoint
+			checkPoint = pool.saveCheckPoint(checkPoint, key, blockNumber)
 		}
 	}
 
 	return errors.New(pool.gCtx.Err())
 }
 
-func sendSaver(c chan struct{}) {
-	select {
-	case c <- struct{}{}:
-	default:
+func (pool *Pool) saveCheckPoint(oldCheckPoint model.Checkpoint, key channelKey, blockNumber uint64) model.Checkpoint {
+	nCheckPoint, err := pool.checkPoint.CheckpointSave(
+		pool.gCtx,
+		model.Checkpoint{
+			Ver:                     oldCheckPoint.Ver + 1,
+			Channel:                 model.ID(key),
+			SrcCollectFromBlockNums: blockNumber,
+		},
+	)
+	if err != nil {
+		pool.log.Errorf("save checkpoint of %s : %s", string(key), err.Error())
+		return oldCheckPoint
 	}
+
+	return nCheckPoint
 }
 
 func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
@@ -421,7 +407,7 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 
 		if canBeStored {
 			if err := pool.syncTransferRequest(*transferBlock, ttl); err != nil {
-				return errors.Errorf("sync transfer request: %w", err)
+				return fmt.Errorf("sync transfer request: %w", err)
 			}
 		}
 
@@ -544,7 +530,7 @@ func (pool *Pool) sendEvent(channel string) {
 func createGRPCClient(options *config.TaskExecutor) (*grpc.ClientConn, error) {
 	gRPCClient, err := newGRPCClient(options)
 	if err != nil {
-		return nil, errors.Errorf("create grpc client: %w", err)
+		return nil, fmt.Errorf("create grpc client: %w", err)
 	}
 
 	return gRPCClient, nil

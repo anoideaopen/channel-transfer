@@ -12,6 +12,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	channelName = model.ID("cc")
+	version1    = int64(1)
+	version2    = int64(2)
+)
+
 func TestBlockCheckpoint(t *testing.T) {
 	storage, err := redis.NewStorage(
 		redis2.NewUniversalClient(&redis2.UniversalOptions{
@@ -22,26 +28,35 @@ func TestBlockCheckpoint(t *testing.T) {
 	)
 	assert.NoError(t, err)
 
-	checkpoint := model.Checkpoint{
-		Channel:                 "cc",
-		Ver:                     1,
-		SrcCollectFromBlockNums: 1,
-	}
-
 	blockCheckpoint := NewBlockCheckpoint(storage)
 
-	got, err := blockCheckpoint.CheckpointSave(context.TODO(), checkpoint)
-	assert.NoError(t, err)
+	checkpoint := model.Checkpoint{
+		Channel:                 channelName,
+		Ver:                     version1,
+		SrcCollectFromBlockNums: uint64(version1),
+	}
 
-	got.SrcCollectFromBlockNums++
-	checkpoint.SrcCollectFromBlockNums++
-	checkpoint.Ver++
+	resultCheckPoint := model.Checkpoint{}
+	t.Run("saving initial checkpoint", func(t *testing.T) {
+		resultCheckPoint, err = blockCheckpoint.CheckpointSave(context.TODO(), checkpoint)
+		assert.NoError(t, err)
+	})
 
-	got, err = blockCheckpoint.CheckpointSave(context.TODO(), got)
-	assert.NoError(t, err)
-	assert.Equal(t, checkpoint, got)
+	resultCheckPoint.SrcCollectFromBlockNums++
+	resultCheckPoint.Ver++
+	checkpoint.SrcCollectFromBlockNums = uint64(version2)
+	checkpoint.Ver = version2
 
-	got, err = blockCheckpoint.CheckpointLoad(context.TODO(), checkpoint.Channel)
-	assert.NoError(t, err)
-	assert.Equal(t, int64(2), got.Ver)
+	t.Run("saving new checkpoint", func(t *testing.T) {
+		resultCheckPoint, err = blockCheckpoint.CheckpointSave(context.TODO(), checkpoint)
+		assert.NoError(t, err)
+		assert.Equal(t, checkpoint, resultCheckPoint)
+	})
+
+	t.Run("loading checkpoint", func(t *testing.T) {
+		resultCheckPoint, err = blockCheckpoint.CheckpointLoad(context.TODO(), checkpoint.Channel)
+		assert.NoError(t, err)
+		assert.Equal(t, version2, resultCheckPoint.Ver)
+		assert.Equal(t, uint64(version2), resultCheckPoint.SrcCollectFromBlockNums)
+	})
 }
