@@ -23,7 +23,6 @@ import (
 	"github.com/go-errors/errors"
 	hlfcontext "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
-	"go.uber.org/atomic"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/backoff"
@@ -289,10 +288,7 @@ func (pool *Pool) blockchainHeight(key channelKey) (*uint64, error) {
 
 //nolint:funlen
 func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvider) error {
-	var (
-		blockNumber       uint64
-		checkPointVersion atomic.Int64
-	)
+	var blockNumber uint64
 
 	checkPoint, err := pool.checkPoint.CheckpointLoad(pool.gCtx, model.ID(key))
 	if err != nil {
@@ -301,7 +297,6 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 		}
 	} else {
 		blockNumber = checkPoint.SrcCollectFromBlockNums
-		checkPointVersion.Store(checkPoint.Ver)
 	}
 
 	collector := createChCollector(pool.gCtx, string(key), blockNumber, provider, pool.opts.BatchTxPreimagePrefix, pool.opts.CollectorsBufSize)
@@ -327,6 +322,8 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 
 	pool.m.TotalReconnectsToFabric().Inc(metrics.Labels().Channel.Create(string(key)))
 
+	oldCheckPoint := checkPoint
+
 	for pool.gCtx.Err() == nil {
 		select {
 		case <-pool.gCtx.Done():
@@ -342,43 +339,28 @@ func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvide
 			blockNumber = block.BlockNum
 			readiness()
 			// saving event checkpoint
-			checkPointVersion = pool.saveCheckPoint(key, blockNumber, checkPointVersion)
+			oldCheckPoint = pool.saveCheckPoint(oldCheckPoint, key, blockNumber)
 		}
 	}
 
 	return errors.New(pool.gCtx.Err())
 }
 
-func (pool *Pool) saveCheckPoint(key channelKey, blockNumber uint64, checkPointVersion atomic.Int64) atomic.Int64 {
-	oldCheckPoint, err := pool.checkPoint.CheckpointLoad(
+func (pool *Pool) saveCheckPoint(oldCheckPoint model.Checkpoint, key channelKey, blockNumber uint64) model.Checkpoint {
+	nCheckPoint, err := pool.checkPoint.CheckpointSave(
 		pool.gCtx,
-		model.ID(key),
+		model.Checkpoint{
+			Ver:                     oldCheckPoint.Ver + 1,
+			Channel:                 model.ID(key),
+			SrcCollectFromBlockNums: blockNumber,
+		},
 	)
 	if err != nil {
-		pool.log.Error(fmt.Errorf("load checkpoint of %s: %w", string(key), err))
-		return checkPointVersion
+		pool.log.Errorf("save checkpoint of %s : %s", string(key), err.Error())
+		return oldCheckPoint
 	}
 
-	// preventing from saving same block checkpoints
-	if oldCheckPoint.SrcCollectFromBlockNums != blockNumber {
-		ver := checkPointVersion.Load()
-		nCheckPoint, err := pool.checkPoint.CheckpointSave(
-			pool.gCtx,
-			model.Checkpoint{
-				Ver:                     ver,
-				Channel:                 model.ID(key),
-				SrcCollectFromBlockNums: blockNumber,
-			},
-		)
-		if err != nil {
-			pool.log.Errorf("save checkpoint of %s : %s", string(key), err.Error())
-			return checkPointVersion
-		}
-
-		checkPointVersion.CompareAndSwap(ver, nCheckPoint.Ver)
-	}
-
-	return checkPointVersion
+	return nCheckPoint
 }
 
 func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {

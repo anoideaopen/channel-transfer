@@ -2,7 +2,6 @@ package transfer
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/anoideaopen/channel-transfer/pkg/data"
@@ -21,23 +20,16 @@ func NewBlockCheckpoint(storage *redis.Storage) *BlockCheckpoint {
 }
 
 func (ckp *BlockCheckpoint) CheckpointSave(ctx context.Context, checkpoint model.Checkpoint) (model.Checkpoint, error) {
-	existsCheckPoint := model.Checkpoint{}
-	if err := ckp.storage.Load(ctx, &existsCheckPoint, data.Key(checkpoint.Channel)); err != nil {
-		if !errors.Is(err, data.ErrObjectNotFound) {
-			return model.Checkpoint{}, fmt.Errorf("save checkpoint : %w", err)
-		}
-	} else {
-		if checkpoint.Ver > existsCheckPoint.Ver {
-			return model.Checkpoint{}, data.ErrVersionMismatch
-		}
-		if checkpoint.Ver < existsCheckPoint.Ver {
-			checkpoint.Ver = existsCheckPoint.Ver
-		}
-		checkpoint.Ver++
+	emptyCheckPoint := model.Checkpoint{
+		Channel:                 "",
+		Ver:                     0,
+		SrcCollectFromBlockNums: 0,
 	}
-
+	if checkpoint == emptyCheckPoint {
+		return emptyCheckPoint, nil
+	}
 	if err := ckp.storage.Save(ctx, &checkpoint, data.Key(checkpoint.Channel)); err != nil {
-		return model.Checkpoint{}, fmt.Errorf("save checkpoint : %w", err)
+		return emptyCheckPoint, fmt.Errorf("save checkpoint : %w", err)
 	}
 
 	return checkpoint, nil
