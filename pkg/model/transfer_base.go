@@ -9,7 +9,7 @@ const (
 	TxCreateCCTransferTo
 	NbTxCommitCCTransferFrom
 	NbTxDeleteCCTransferFrom
-	NbTxDeleteCCTransferTo
+	TxRemoveCCTransferTo
 	QueryChannelTransfersFrom
 	QueryChannelTransferTo
 	QueryChannelTransferFrom
@@ -25,7 +25,7 @@ var (
 		"createCCTransferTo":             TxCreateCCTransferTo,
 		"commitCCTransferFrom":           NbTxCommitCCTransferFrom,
 		"deleteCCTransferFrom":           NbTxDeleteCCTransferFrom,
-		"deleteCCTransferTo":             NbTxDeleteCCTransferTo,
+		"removeCCTransferTo":             TxRemoveCCTransferTo,
 		"channelTransfersFrom":           QueryChannelTransfersFrom,
 		"channelTransferFrom":            QueryChannelTransferFrom,
 		"channelTransferTo":              QueryChannelTransferTo,
@@ -39,7 +39,7 @@ var (
 		TxCreateCCTransferTo:             "createCCTransferTo",
 		NbTxCommitCCTransferFrom:         "commitCCTransferFrom",
 		NbTxDeleteCCTransferFrom:         "deleteCCTransferFrom",
-		NbTxDeleteCCTransferTo:           "deleteCCTransferTo",
+		TxRemoveCCTransferTo:             "removeCCTransferTo",
 		QueryChannelTransfersFrom:        "channelTransfersFrom",
 		QueryChannelTransferFrom:         "channelTransferFrom",
 		QueryChannelTransferTo:           "channelTransferTo",
@@ -72,9 +72,9 @@ const (
 
 	CommitTransferFrom
 
-	InProgressTransferToDelete
-	CompletedTransferToDelete
-	ErrorTransferToDelete
+	InProgressTransferToRemove
+	CompletedTransferToRemove
+	ErrorTransferToRemove
 
 	InProgressTransferFromDelete
 	CompletedTransferFromDelete
@@ -94,16 +94,16 @@ var (
 		InProgressTransferFrom:       "InProgressTransferFrom",
 		InProgressTransferTo:         "InProgressTransferTo",
 		InProgressTransferFromDelete: "InProgressTransferFromDelete",
-		InProgressTransferToDelete:   "InProgressTransferToDelete",
+		InProgressTransferToRemove:   "InProgressTransferToDelete",
 		CommitTransferFrom:           "CommitTransferFrom",
 		CompletedTransferFrom:        "CompletedTransferFrom",
 		CompletedTransferTo:          "CompletedTransferTo",
 		CompletedTransferFromDelete:  "CompletedTransferFromDelete",
-		CompletedTransferToDelete:    "CompletedTransferToDelete",
+		CompletedTransferToRemove:    "CompletedTransferToDelete",
 		ErrorTransferFrom:            "ErrorTransferFrom",
 		ErrorTransferTo:              "ErrorTransferTo",
 		ErrorTransferFromDelete:      "ErrorTransferFromDelete",
-		ErrorTransferToDelete:        "ErrorTransferToDelete",
+		ErrorTransferToRemove:        "ErrorTransferToDelete",
 		Completed:                    "Completed",
 		Canceled:                     "Canceled",
 		UnknownTransferStatus:        "Unknown",
@@ -116,16 +116,16 @@ var (
 		"InProgressTransferFrom":       InProgressTransferFrom,
 		"InProgressTransferTo":         InProgressTransferTo,
 		"InProgressTransferFromDelete": InProgressTransferFromDelete,
-		"InProgressTransferToDelete":   InProgressTransferToDelete,
+		"InProgressTransferToDelete":   InProgressTransferToRemove,
 		"CommitTransferFrom":           CommitTransferFrom,
 		"CompletedTransferFrom":        CompletedTransferFrom,
 		"CompletedTransferTo":          CompletedTransferTo,
 		"CompletedTransferFromDelete":  CompletedTransferFromDelete,
-		"CompletedTransferToDelete":    CompletedTransferToDelete,
+		"CompletedTransferToDelete":    CompletedTransferToRemove,
 		"ErrorTransferFrom":            ErrorTransferFrom,
 		"ErrorTransferTo":              ErrorTransferTo,
 		"ErrorTransferFromDelete":      ErrorTransferFromDelete,
-		"ErrorTransferToDelete":        ErrorTransferToDelete,
+		"ErrorTransferToDelete":        ErrorTransferToRemove,
 		"Completed":                    Completed,
 		"Canceled":                     Canceled,
 		"Unknown":                      UnknownTransferStatus,

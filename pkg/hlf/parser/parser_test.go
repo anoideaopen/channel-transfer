@@ -117,7 +117,7 @@ func TestExtractData_ExecuteTasksMethod(t *testing.T) {
 		channel               = "test-channel"
 		blockNum       uint64 = 1
 		txId                  = "unique-task-id"
-		funcName              = "deleteCCTransferTo"
+		funcName              = "removeCCTransferTo"
 		args                  = []string{"arg1", "arg2"}
 		timeNs         uint64 = 0
 		validationCode int32  = 0
@@ -155,6 +155,6 @@ func TestExtractData_ExecuteTasksMethod(t *testing.T) {
 	assert.Equal(t, timeNs, tx.TimeNs)
 	assert.Equal(t, validationCode, tx.ValidationCode)
 	assert.NotNil(t, tx.BatchResponse)
-	assert.Equal(t, "deleteCCTransferTo", tx.BatchResponse.Method)
+	assert.Equal(t, "removeCCTransferTo", tx.BatchResponse.Method)
 	assert.Equal(t, response, tx.Response)
 }

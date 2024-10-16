@@ -267,18 +267,18 @@ func (h *Handler) deleteTransferFrom(ctx context.Context, transferID string) (mo
 	return model.CompletedTransferFromDelete, nil
 }
 
-func (h *Handler) deleteTransferTo(ctx context.Context, channelName string, transferID string) (model.StatusKind, error) {
-	h.log.Debugf("delete cc transfer to, channel %s, id %s", channelName, transferID)
+func (h *Handler) removeTransferTo(ctx context.Context, channelName string, transferID string) (model.StatusKind, error) {
+	h.log.Debugf("remove cc transfer to, channel %s, id %s", channelName, transferID)
 
-	if err := h.invoke(ctx, channelName, channelName, model.NbTxDeleteCCTransferTo, transferID); err != nil {
+	if err := h.invoke(ctx, channelName, channelName, model.TxRemoveCCTransferTo, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
-			h.log.Error(errors.Errorf("delete transfer: %w", err))
-			return model.CompletedTransferToDelete, nil
+			h.log.Error(errors.Errorf("remove transfer: %w", err))
+			return model.CompletedTransferToRemove, nil
 		}
 		return model.InternalErrorTransferStatus, err
 	}
 
-	return model.CompletedTransferToDelete, nil
+	return model.CompletedTransferToRemove, nil
 }
 
 func (h *Handler) invoke(ctx context.Context, channelName string, chaincodeID string, method model.TransactionKind, transferID string) error {

@@ -26,7 +26,7 @@ import (
 
 var _ = Describe("Channel multi transfer GRPC tests", func() {
 	var (
-		ts client.TestSuite
+		ts *client.FoundationTestSuite
 	)
 
 	BeforeEach(func() {
@@ -62,8 +62,8 @@ var _ = Describe("Channel multi transfer GRPC tests", func() {
 		)
 		ts.DeployChaincodes()
 
-		network = ts.Network()
-		networkFound = ts.NetworkFound()
+		network = ts.Network
+		networkFound = ts.NetworkFound
 	})
 	BeforeEach(func() {
 		By("start robot")

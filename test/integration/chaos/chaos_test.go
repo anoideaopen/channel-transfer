@@ -40,7 +40,7 @@ const (
 	fnCreateCCTransferTo        = "createCCTransferTo"
 	fnChannelTransferTo         = "channelTransferTo"
 	fnCommitCCTransferFrom      = "commitCCTransferFrom"
-	fnDeleteCCTransferTo        = "deleteCCTransferTo"
+	fnRemoveCCTransferToo       = "removeCCTransferTo"
 	fnDeleteCCTransferFrom      = "deleteCCTransferFrom"
 
 	ttlExpireTimeout = 11
@@ -48,7 +48,7 @@ const (
 
 var _ = Describe("Channel transfer chaos tests", func() {
 	var (
-		ts       client.TestSuite
+		ts       *client.FoundationTestSuite
 		channels = []string{cmn.ChannelAcl, cmn.ChannelCC, cmn.ChannelFiat}
 		user     *client.UserFoundation
 
@@ -120,7 +120,7 @@ var _ = Describe("Channel transfer chaos tests", func() {
 			CheckBalance(emitAmount)
 
 		By("creating http connection")
-		networkFound := ts.NetworkFound()
+		networkFound := ts.NetworkFound
 		clientCtx = metadata.NewOutgoingContext(
 			context.Background(),
 			metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken),
@@ -693,8 +693,8 @@ var _ = Describe("Channel transfer chaos tests", func() {
 		By("commit cc transfer from")
 		ts.NBTxInvokeByRobot(cmn.ChannelFiat, cmn.ChannelFiat, fnCommitCCTransferFrom, transferID).CheckErrorIsNil()
 
-		By("delete cc transfer to")
-		ts.NBTxInvokeByRobot(cmn.ChannelCC, cmn.ChannelCC, fnDeleteCCTransferTo, transferID).CheckErrorIsNil()
+		By("remove cc transfer to")
+		ts.TxInvokeByRobot(cmn.ChannelCC, cmn.ChannelCC, fnRemoveCCTransferToo, transferID).CheckErrorIsNil()
 
 		By("Starting service")
 		ts.StartChannelTransfer()
@@ -776,8 +776,8 @@ var _ = Describe("Channel transfer chaos tests", func() {
 		By("commit cc transfer from")
 		ts.NBTxInvokeByRobot(cmn.ChannelFiat, cmn.ChannelFiat, fnCommitCCTransferFrom, transferID).CheckErrorIsNil()
 
-		By("delete cc transfer to")
-		ts.NBTxInvokeByRobot(cmn.ChannelCC, cmn.ChannelCC, fnDeleteCCTransferTo, transferID).CheckErrorIsNil()
+		By("remove cc transfer to")
+		ts.TxInvokeByRobot(cmn.ChannelCC, cmn.ChannelCC, fnRemoveCCTransferToo, transferID).CheckErrorIsNil()
 
 		By("Waiting TTL for expiring")
 		time.Sleep(time.Second * ttlExpireTimeout)
@@ -862,8 +862,8 @@ var _ = Describe("Channel transfer chaos tests", func() {
 		By("commit cc transfer from")
 		ts.NBTxInvokeByRobot(cmn.ChannelFiat, cmn.ChannelFiat, fnCommitCCTransferFrom, transferID).CheckErrorIsNil()
 
-		By("delete cc transfer to")
-		ts.NBTxInvokeByRobot(cmn.ChannelCC, cmn.ChannelCC, fnDeleteCCTransferTo, transferID).CheckErrorIsNil()
+		By("remove cc transfer to")
+		ts.TxInvokeByRobot(cmn.ChannelCC, cmn.ChannelCC, fnRemoveCCTransferToo, transferID).CheckErrorIsNil()
 
 		By("delete cc transfer from")
 		ts.NBTxInvokeByRobot(cmn.ChannelFiat, cmn.ChannelFiat, fnDeleteCCTransferFrom, transferID).CheckErrorIsNil()
@@ -948,8 +948,8 @@ var _ = Describe("Channel transfer chaos tests", func() {
 		By("commit cc transfer from")
 		ts.NBTxInvokeByRobot(cmn.ChannelFiat, cmn.ChannelFiat, fnCommitCCTransferFrom, transferID).CheckErrorIsNil()
 
-		By("delete cc transfer to")
-		ts.NBTxInvokeByRobot(cmn.ChannelCC, cmn.ChannelCC, fnDeleteCCTransferTo, transferID).CheckErrorIsNil()
+		By("remove cc transfer to")
+		ts.TxInvokeByRobot(cmn.ChannelCC, cmn.ChannelCC, fnRemoveCCTransferToo, transferID).CheckErrorIsNil()
 
 		By("delete cc transfer from")
 		ts.NBTxInvokeByRobot(cmn.ChannelFiat, cmn.ChannelFiat, fnDeleteCCTransferFrom, transferID).CheckErrorIsNil()

@@ -21,7 +21,7 @@ import (
 var _ = Describe("Channel transfer with task executor tests", func() {
 	var (
 		channels     = []string{cmn.ChannelAcl, cmn.ChannelCC, cmn.ChannelFiat}
-		ts           client.TestSuite
+		ts           *client.FoundationTestSuite
 		taskExecutor *grpc.Server
 		networkFound *cmn.NetworkFoundation
 		clientCtx    context.Context
@@ -60,7 +60,7 @@ var _ = Describe("Channel transfer with task executor tests", func() {
 
 		ts.AddUser(user)
 
-		networkFound = ts.NetworkFound()
+		networkFound = ts.NetworkFound
 	})
 
 	BeforeEach(func() {

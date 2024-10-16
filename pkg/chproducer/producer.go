@@ -280,7 +280,7 @@ func (h *Handler) syncAPIRequests(ctx context.Context) {
 
 func (h *Handler) restoreCompletedStatus(ctx context.Context, status model.StatusKind, transferID model.ID) {
 	if status != model.CompletedTransferTo &&
-		status != model.CompletedTransferToDelete &&
+		status != model.CompletedTransferToRemove &&
 		status != model.CommitTransferFrom {
 		return
 	}

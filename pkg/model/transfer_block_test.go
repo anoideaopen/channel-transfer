@@ -18,8 +18,8 @@ func TestTransferBlock(t *testing.T) {
 				{
 					BlockNum:       34,
 					TxID:           "63c54afa562f7e8c6c0f352eade8f8d77ae26017a09e4e30b450d79ba50bd403",
-					FuncName:       "deleteCCTransferTo",
-					Args:           [][]byte{[]byte("deleteCCTransferTo"), []byte("57214401-4713-4b24-ad44-e2f5935e408d")},
+					FuncName:       "removeCCTransferTo",
+					Args:           [][]byte{[]byte("removeCCTransferTo"), []byte("57214401-4713-4b24-ad44-e2f5935e408d")},
 					TimeNs:         1660058499519,
 					ValidationCode: 0,
 					BatchResponse:  nil,

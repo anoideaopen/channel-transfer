@@ -153,19 +153,19 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 				failTag = transferToError
 			case model.ErrorTransferTo:
 				failTag = transferToError
-				status, lastErr = h.deleteTransferTo(ctx, strings.ToLower(transfer.GetTo()), transfer.GetId())
+				status, lastErr = h.removeTransferTo(ctx, strings.ToLower(transfer.GetTo()), transfer.GetId())
 				if lastErr != nil {
 					lastErr = errors.Errorf("delete transfer: %w", lastErr)
 				}
 			case model.CommitTransferFrom:
 				// we continue technical operations with transfer
-				status, lastErr = h.deleteTransferTo(ctx, strings.ToLower(transfer.GetTo()), transfer.GetId())
+				status, lastErr = h.removeTransferTo(ctx, strings.ToLower(transfer.GetTo()), transfer.GetId())
 				if lastErr != nil {
 					lastErr = errors.Errorf("delete transfer: %w", lastErr)
 				}
 			case model.ToBatchNotFound:
 				status = model.InternalErrorTransferStatus
-			case model.CompletedTransferToDelete:
+			case model.CompletedTransferToRemove:
 				status, lastErr = h.deleteTransferFrom(ctx, transfer.GetId())
 				if lastErr != nil {
 					lastErr = errors.Errorf("delete transfer: %w", lastErr)
@@ -292,7 +292,7 @@ func (h *Handler) resolveStatus(ctx context.Context, transfer *fpb.CCTransfer) (
 		return model.CommitTransferFrom, nil
 	}
 
-	return model.CompletedTransferToDelete, nil
+	return model.CompletedTransferToRemove, nil
 }
 
 func (h *Handler) expiredTransfer(transfer *fpb.CCTransfer) bool {

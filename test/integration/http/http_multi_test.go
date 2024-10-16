@@ -33,7 +33,7 @@ const (
 
 var _ = Describe("Channel multi transfer HTTP tests", func() {
 	var (
-		ts client.TestSuite
+		ts *client.FoundationTestSuite
 	)
 
 	BeforeEach(func() {
@@ -84,7 +84,7 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 	})
 
 	BeforeEach(func() {
-		networkFound = ts.NetworkFound()
+		networkFound = ts.NetworkFound
 
 		By("add admin to acl")
 		ts.AddAdminToACL()
