@@ -79,6 +79,11 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
 	}
 
+	ctx, err = h.appendTransferMetadataToContext(ctx, request.Transfer)
+	if err != nil {
+		h.log.Warningf("couldn't load metadata for transfer %s from storage", request.Transfer)
+	}
+
 	args := [][]byte{
 		[]byte(request.Request),
 		[]byte(h.channel),
@@ -137,6 +142,11 @@ func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.Tra
 	doer, err := h.poolController.Executor(h.channel)
 	if err != nil {
 		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
+	}
+
+	ctx, err = h.appendTransferMetadataToContext(ctx, request.Transfer)
+	if err != nil {
+		h.log.Warningf("couldn't load metadata for transfer %s from storage", request.Transfer)
 	}
 
 	items, err := json.Marshal(request.Items)
@@ -287,6 +297,11 @@ func (h *Handler) invoke(ctx context.Context, channelName string, chaincodeID st
 		return errors.Errorf("executor: %w", err)
 	}
 
+	ctx, err = h.appendTransferMetadataToContext(ctx, model.ID(transferID))
+	if err != nil {
+		h.log.Warningf("couldn't load metadata for transfer %s from storage", model.ID(transferID))
+	}
+
 	_, err = doer.Invoke(
 		ctx,
 		channel.Request{
@@ -310,6 +325,12 @@ func (h *Handler) queryChannelTransferTo(ctx context.Context, channelName string
 	}
 
 	h.log.Debugf("query channel transfer to, channel %s, id %s", channelName, transferID)
+
+	ctx, err = h.appendTransferMetadataToContext(ctx, model.ID(transferID))
+	if err != nil {
+		h.log.Warningf("couldn't load metadata for transfer %s from storage", model.ID(transferID))
+	}
+
 	_, err = executor.Query(
 		ctx,
 		channel.Request{
@@ -337,6 +358,12 @@ func (h *Handler) queryChannelTransferFrom(ctx context.Context, channelName stri
 	}
 
 	h.log.Debugf("query channel transfer from, channel %s, id %s", channelName, transferID)
+
+	ctx, err = h.appendTransferMetadataToContext(ctx, model.ID(transferID))
+	if err != nil {
+		h.log.Warningf("couldn't load metadata for transfer %s from storage", model.ID(transferID))
+	}
+
 	_, err = executor.Query(
 		ctx,
 		channel.Request{

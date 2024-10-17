@@ -11,6 +11,7 @@ import (
 	"github.com/anoideaopen/glog"
 	"github.com/go-errors/errors"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -34,6 +35,7 @@ var (
 type APIServer struct {
 	dto.UnimplementedAPIServer
 	ctrl           RequestController
+	metadataCtrl   MetadataController
 	output         chan<- model.TransferRequest
 	actualChannels map[string]struct{}
 	log            glog.Logger
@@ -41,9 +43,16 @@ type APIServer struct {
 
 // NewAPIServer creates a new instance of the structure with the specified
 // controller.
-func NewAPIServer(ctx context.Context, output chan<- model.TransferRequest, ctrl RequestController, actualChannels []string) *APIServer {
+func NewAPIServer(
+	ctx context.Context,
+	output chan<- model.TransferRequest,
+	ctrl RequestController,
+	metadataCtrl MetadataController,
+	actualChannels []string,
+) *APIServer {
 	server := &APIServer{
 		ctrl:           ctrl,
+		metadataCtrl:   metadataCtrl,
 		output:         output,
 		actualChannels: make(map[string]struct{}),
 		log:            glog.FromContext(ctx),
@@ -52,6 +61,21 @@ func NewAPIServer(ctx context.Context, output chan<- model.TransferRequest, ctrl
 		server.actualChannels[channel] = struct{}{}
 	}
 	return server
+}
+
+func metadataFromContext(ctx context.Context) model.Metadata {
+	metadataModel := model.Metadata{}
+
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		if len(md.Get("trace_id")) > 0 {
+			metadataModel.TraceID = strings.Join(md.Get("trace_id"), "")
+		}
+		if len(md.Get("span_id")) > 0 {
+			metadataModel.SpanID = strings.Join(md.Get("span_id"), "")
+		}
+	}
+
+	return metadataModel
 }
 
 // TransferByCustomer registers a new transfer from one channel to another on
@@ -89,6 +113,13 @@ func (api *APIServer) TransferByCustomer(
 	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
 		return nil, fmt.Errorf(
 			"[APIServer] failed to save transfer request: %w",
+			err,
+		)
+	}
+
+	if err = api.metadataCtrl.MetadataSave(ctx, metadataFromContext(ctx), tr.Transfer); err != nil {
+		return nil, fmt.Errorf(
+			"[APIServer] failed to save transfer metadata: %w",
 			err,
 		)
 	}
@@ -131,6 +162,13 @@ func (api *APIServer) TransferByAdmin(
 				codes.InvalidArgument,
 				err.Error(),
 			)
+	}
+
+	if err = api.metadataCtrl.MetadataSave(ctx, metadataFromContext(ctx), tr.Transfer); err != nil {
+		return nil, fmt.Errorf(
+			"[APIServer] failed to save transfer metadata: %w",
+			err,
+		)
 	}
 
 	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
@@ -180,6 +218,13 @@ func (api *APIServer) MultiTransferByCustomer(
 			)
 	}
 
+	if err = api.metadataCtrl.MetadataSave(ctx, metadataFromContext(ctx), tr.Transfer); err != nil {
+		return nil, fmt.Errorf(
+			"[APIServer] failed to save transfer metadata: %w",
+			err,
+		)
+	}
+
 	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
 		return nil, fmt.Errorf(
 			"[APIServer] failed to save transfer request: %w",
@@ -225,6 +270,13 @@ func (api *APIServer) MultiTransferByAdmin(
 				codes.InvalidArgument,
 				err.Error(),
 			)
+	}
+
+	if err = api.metadataCtrl.MetadataSave(ctx, metadataFromContext(ctx), tr.Transfer); err != nil {
+		return nil, fmt.Errorf(
+			"[APIServer] failed to save transfer metadata: %w",
+			err,
+		)
 	}
 
 	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {

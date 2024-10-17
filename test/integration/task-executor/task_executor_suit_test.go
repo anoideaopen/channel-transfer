@@ -10,9 +10,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestBatcher(t *testing.T) {
+func TestTaskExecutor(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Channel transfer with batcher GRPC suite")
+	RunSpecs(t, "Channel transfer with task executor suite")
 }
 
 var (
