@@ -164,16 +164,16 @@ func (api *APIServer) TransferByAdmin(
 			)
 	}
 
-	if err = api.metadataCtrl.MetadataSave(ctx, metadataFromContext(ctx), tr.Transfer); err != nil {
+	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
 		return nil, fmt.Errorf(
-			"[APIServer] failed to save transfer metadata: %w",
+			"[APIServer] failed to save transfer request: %w",
 			err,
 		)
 	}
 
-	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
+	if err = api.metadataCtrl.MetadataSave(ctx, metadataFromContext(ctx), tr.Transfer); err != nil {
 		return nil, fmt.Errorf(
-			"[APIServer] failed to save transfer request: %w",
+			"[APIServer] failed to save transfer metadata: %w",
 			err,
 		)
 	}
@@ -218,16 +218,16 @@ func (api *APIServer) MultiTransferByCustomer(
 			)
 	}
 
-	if err = api.metadataCtrl.MetadataSave(ctx, metadataFromContext(ctx), tr.Transfer); err != nil {
+	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
 		return nil, fmt.Errorf(
-			"[APIServer] failed to save transfer metadata: %w",
+			"[APIServer] failed to save transfer request: %w",
 			err,
 		)
 	}
 
-	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
+	if err = api.metadataCtrl.MetadataSave(ctx, metadataFromContext(ctx), tr.Transfer); err != nil {
 		return nil, fmt.Errorf(
-			"[APIServer] failed to save transfer request: %w",
+			"[APIServer] failed to save transfer metadata: %w",
 			err,
 		)
 	}
@@ -272,16 +272,16 @@ func (api *APIServer) MultiTransferByAdmin(
 			)
 	}
 
-	if err = api.metadataCtrl.MetadataSave(ctx, metadataFromContext(ctx), tr.Transfer); err != nil {
+	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
 		return nil, fmt.Errorf(
-			"[APIServer] failed to save transfer metadata: %w",
+			"[APIServer] failed to save transfer request: %w",
 			err,
 		)
 	}
 
-	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
+	if err = api.metadataCtrl.MetadataSave(ctx, metadataFromContext(ctx), tr.Transfer); err != nil {
 		return nil, fmt.Errorf(
-			"[APIServer] failed to save transfer request: %w",
+			"[APIServer] failed to save transfer metadata: %w",
 			err,
 		)
 	}
