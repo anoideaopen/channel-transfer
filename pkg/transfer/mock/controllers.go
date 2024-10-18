@@ -6,49 +6,36 @@ package mock
 
 import (
 	context "context"
+	reflect "reflect"
+
 	model "github.com/anoideaopen/channel-transfer/pkg/model"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
 )
 
-// MockRequestController is a mock of RequestController interface
+// MockRequestController is a mock of RequestController interface.
 type MockRequestController struct {
 	ctrl     *gomock.Controller
 	recorder *MockRequestControllerMockRecorder
 }
 
-// MockRequestControllerMockRecorder is the mock recorder for MockRequestController
+// MockRequestControllerMockRecorder is the mock recorder for MockRequestController.
 type MockRequestControllerMockRecorder struct {
 	mock *MockRequestController
 }
 
-// NewMockRequestController creates a new mock instance
+// NewMockRequestController creates a new mock instance.
 func NewMockRequestController(ctrl *gomock.Controller) *MockRequestController {
 	mock := &MockRequestController{ctrl: ctrl}
 	mock.recorder = &MockRequestControllerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRequestController) EXPECT() *MockRequestControllerMockRecorder {
 	return m.recorder
 }
 
-// TransferKeep mocks base method
-func (m *MockRequestController) TransferKeep(arg0 context.Context, arg1 model.TransferRequest) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TransferKeep", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// TransferKeep indicates an expected call of TransferKeep
-func (mr *MockRequestControllerMockRecorder) TransferKeep(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransferKeep", reflect.TypeOf((*MockRequestController)(nil).TransferKeep), arg0, arg1)
-}
-
-// TransferFetch mocks base method
+// TransferFetch mocks base method.
 func (m *MockRequestController) TransferFetch(arg0 context.Context, arg1 model.ID) (model.TransferRequest, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TransferFetch", arg0, arg1)
@@ -57,50 +44,50 @@ func (m *MockRequestController) TransferFetch(arg0 context.Context, arg1 model.I
 	return ret0, ret1
 }
 
-// TransferFetch indicates an expected call of TransferFetch
+// TransferFetch indicates an expected call of TransferFetch.
 func (mr *MockRequestControllerMockRecorder) TransferFetch(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransferFetch", reflect.TypeOf((*MockRequestController)(nil).TransferFetch), arg0, arg1)
 }
 
-// MockBlockController is a mock of BlockController interface
+// TransferKeep mocks base method.
+func (m *MockRequestController) TransferKeep(arg0 context.Context, arg1 model.TransferRequest) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TransferKeep", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TransferKeep indicates an expected call of TransferKeep.
+func (mr *MockRequestControllerMockRecorder) TransferKeep(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransferKeep", reflect.TypeOf((*MockRequestController)(nil).TransferKeep), arg0, arg1)
+}
+
+// MockBlockController is a mock of BlockController interface.
 type MockBlockController struct {
 	ctrl     *gomock.Controller
 	recorder *MockBlockControllerMockRecorder
 }
 
-// MockBlockControllerMockRecorder is the mock recorder for MockBlockController
+// MockBlockControllerMockRecorder is the mock recorder for MockBlockController.
 type MockBlockControllerMockRecorder struct {
 	mock *MockBlockController
 }
 
-// NewMockBlockController creates a new mock instance
+// NewMockBlockController creates a new mock instance.
 func NewMockBlockController(ctrl *gomock.Controller) *MockBlockController {
 	mock := &MockBlockController{ctrl: ctrl}
 	mock.recorder = &MockBlockControllerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockBlockController) EXPECT() *MockBlockControllerMockRecorder {
 	return m.recorder
 }
 
-// BlockSave mocks base method
-func (m *MockBlockController) BlockSave(arg0 context.Context, arg1 model.TransferBlock) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BlockSave", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// BlockSave indicates an expected call of BlockSave
-func (mr *MockBlockControllerMockRecorder) BlockSave(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BlockSave", reflect.TypeOf((*MockBlockController)(nil).BlockSave), arg0, arg1)
-}
-
-// BlockLoad mocks base method
+// BlockLoad mocks base method.
 func (m *MockBlockController) BlockLoad(arg0 context.Context, arg1 model.ID) (model.TransferBlock, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BlockLoad", arg0, arg1)
@@ -109,51 +96,50 @@ func (m *MockBlockController) BlockLoad(arg0 context.Context, arg1 model.ID) (mo
 	return ret0, ret1
 }
 
-// BlockLoad indicates an expected call of BlockLoad
+// BlockLoad indicates an expected call of BlockLoad.
 func (mr *MockBlockControllerMockRecorder) BlockLoad(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BlockLoad", reflect.TypeOf((*MockBlockController)(nil).BlockLoad), arg0, arg1)
 }
 
-// MockCheckpointController is a mock of CheckpointController interface
+// BlockSave mocks base method.
+func (m *MockBlockController) BlockSave(arg0 context.Context, arg1 model.TransferBlock) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BlockSave", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BlockSave indicates an expected call of BlockSave.
+func (mr *MockBlockControllerMockRecorder) BlockSave(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BlockSave", reflect.TypeOf((*MockBlockController)(nil).BlockSave), arg0, arg1)
+}
+
+// MockCheckpointController is a mock of CheckpointController interface.
 type MockCheckpointController struct {
 	ctrl     *gomock.Controller
 	recorder *MockCheckpointControllerMockRecorder
 }
 
-// MockCheckpointControllerMockRecorder is the mock recorder for MockCheckpointController
+// MockCheckpointControllerMockRecorder is the mock recorder for MockCheckpointController.
 type MockCheckpointControllerMockRecorder struct {
 	mock *MockCheckpointController
 }
 
-// NewMockCheckpointController creates a new mock instance
+// NewMockCheckpointController creates a new mock instance.
 func NewMockCheckpointController(ctrl *gomock.Controller) *MockCheckpointController {
 	mock := &MockCheckpointController{ctrl: ctrl}
 	mock.recorder = &MockCheckpointControllerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCheckpointController) EXPECT() *MockCheckpointControllerMockRecorder {
 	return m.recorder
 }
 
-// CheckpointSave mocks base method
-func (m *MockCheckpointController) CheckpointSave(arg0 context.Context, arg1 model.Checkpoint) (model.Checkpoint, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckpointSave", arg0, arg1)
-	ret0, _ := ret[0].(model.Checkpoint)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CheckpointSave indicates an expected call of CheckpointSave
-func (mr *MockCheckpointControllerMockRecorder) CheckpointSave(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckpointSave", reflect.TypeOf((*MockCheckpointController)(nil).CheckpointSave), arg0, arg1)
-}
-
-// CheckpointLoad mocks base method
+// CheckpointLoad mocks base method.
 func (m *MockCheckpointController) CheckpointLoad(arg0 context.Context, arg1 model.ID) (model.Checkpoint, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CheckpointLoad", arg0, arg1)
@@ -162,8 +148,75 @@ func (m *MockCheckpointController) CheckpointLoad(arg0 context.Context, arg1 mod
 	return ret0, ret1
 }
 
-// CheckpointLoad indicates an expected call of CheckpointLoad
+// CheckpointLoad indicates an expected call of CheckpointLoad.
 func (mr *MockCheckpointControllerMockRecorder) CheckpointLoad(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckpointLoad", reflect.TypeOf((*MockCheckpointController)(nil).CheckpointLoad), arg0, arg1)
+}
+
+// CheckpointSave mocks base method.
+func (m *MockCheckpointController) CheckpointSave(arg0 context.Context, arg1 model.Checkpoint) (model.Checkpoint, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckpointSave", arg0, arg1)
+	ret0, _ := ret[0].(model.Checkpoint)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckpointSave indicates an expected call of CheckpointSave.
+func (mr *MockCheckpointControllerMockRecorder) CheckpointSave(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckpointSave", reflect.TypeOf((*MockCheckpointController)(nil).CheckpointSave), arg0, arg1)
+}
+
+// MockMetadataController is a mock of MetadataController interface.
+type MockMetadataController struct {
+	ctrl     *gomock.Controller
+	recorder *MockMetadataControllerMockRecorder
+}
+
+// MockMetadataControllerMockRecorder is the mock recorder for MockMetadataController.
+type MockMetadataControllerMockRecorder struct {
+	mock *MockMetadataController
+}
+
+// NewMockMetadataController creates a new mock instance.
+func NewMockMetadataController(ctrl *gomock.Controller) *MockMetadataController {
+	mock := &MockMetadataController{ctrl: ctrl}
+	mock.recorder = &MockMetadataControllerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMetadataController) EXPECT() *MockMetadataControllerMockRecorder {
+	return m.recorder
+}
+
+// MetadataLoad mocks base method.
+func (m *MockMetadataController) MetadataLoad(arg0 context.Context, arg1 model.ID) (model.Metadata, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MetadataLoad", arg0, arg1)
+	ret0, _ := ret[0].(model.Metadata)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MetadataLoad indicates an expected call of MetadataLoad.
+func (mr *MockMetadataControllerMockRecorder) MetadataLoad(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MetadataLoad", reflect.TypeOf((*MockMetadataController)(nil).MetadataLoad), arg0, arg1)
+}
+
+// MetadataSave mocks base method.
+func (m *MockMetadataController) MetadataSave(arg0 context.Context, arg1 model.Metadata, arg2 model.ID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MetadataSave", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MetadataSave indicates an expected call of MetadataSave.
+func (mr *MockMetadataControllerMockRecorder) MetadataSave(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MetadataSave", reflect.TypeOf((*MockMetadataController)(nil).MetadataSave), arg0, arg1, arg2)
 }

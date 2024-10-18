@@ -26,7 +26,7 @@ func Execute(
 	for _, channel := range channels {
 		channelNames = append(channelNames, channel.Name)
 	}
-	apiServer := NewAPIServer(ctx, output, NewRequest(storage), channelNames)
+	apiServer := NewAPIServer(ctx, output, NewRequest(storage), NewMetadata(storage), channelNames)
 
 	group.Go(func() error {
 		return runGRPC(ctx, apiServer, tlsConfig, cfg.AddressGRPC, cfg.AccessToken, grpcMetrics)

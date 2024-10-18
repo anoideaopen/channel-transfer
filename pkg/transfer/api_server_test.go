@@ -21,7 +21,8 @@ func TestAPIServerTransfer(t *testing.T) {
 		ctx      = context.Background()
 		ctrl     = gomock.NewController(t)
 		mc       = mock.NewMockRequestController(ctrl)
-		srv      = NewAPIServer(ctx, requests, mc, channels)
+		mdc      = mock.NewMockMetadataController(ctrl)
+		srv      = NewAPIServer(ctx, requests, mc, mdc, channels)
 	)
 
 	var (
@@ -101,6 +102,8 @@ func TestAPIServerTransfer(t *testing.T) {
 			},
 		}
 
+		mdlMetadata = model.Metadata{}
+
 		outAdmin = &dto.TransferStatusResponse{
 			IdTransfer: inAdmin.IdTransfer,
 			Status:     dto.TransferStatusResponse_STATUS_IN_PROCESS,
@@ -109,7 +112,9 @@ func TestAPIServerTransfer(t *testing.T) {
 
 	gomock.InOrder(
 		mc.EXPECT().TransferKeep(ctx, mdlCustomer).Return(nil),
+		mdc.EXPECT().MetadataSave(ctx, mdlMetadata, mdlCustomer.Transfer).Return(nil),
 		mc.EXPECT().TransferKeep(ctx, mdlAdmin).Return(nil),
+		mdc.EXPECT().MetadataSave(ctx, mdlMetadata, mdlAdmin.Transfer).Return(nil),
 	)
 
 	resp, err := srv.TransferByCustomer(ctx, inCustomer)
@@ -138,7 +143,8 @@ func TestAPIServerTransferStatus(t *testing.T) {
 		ctx  = context.Background()
 		ctrl = gomock.NewController(t)
 		mc   = mock.NewMockRequestController(ctrl)
-		srv  = NewAPIServer(ctx, requests, mc, nil)
+		mdc  = mock.NewMockMetadataController(ctrl)
+		srv  = NewAPIServer(ctx, requests, mc, mdc, nil)
 	)
 
 	var (
@@ -184,7 +190,8 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 		ctx      = context.Background()
 		ctrl     = gomock.NewController(t)
 		mc       = mock.NewMockRequestController(ctrl)
-		srv      = NewAPIServer(ctx, requests, mc, channels)
+		mdc      = mock.NewMockMetadataController(ctrl)
+		srv      = NewAPIServer(ctx, requests, mc, mdc, channels)
 	)
 
 	var (
@@ -296,6 +303,8 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 			},
 		}
 
+		mdlMetadata = model.Metadata{}
+
 		outAdmin = &dto.TransferStatusResponse{
 			IdTransfer: inAdmin.IdTransfer,
 			Status:     dto.TransferStatusResponse_STATUS_IN_PROCESS,
@@ -304,7 +313,9 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 
 	gomock.InOrder(
 		mc.EXPECT().TransferKeep(ctx, mdlCustomer).Return(nil),
+		mdc.EXPECT().MetadataSave(ctx, mdlMetadata, mdlCustomer.Transfer).Return(nil),
 		mc.EXPECT().TransferKeep(ctx, mdlAdmin).Return(nil),
+		mdc.EXPECT().MetadataSave(ctx, mdlMetadata, mdlAdmin.Transfer).Return(nil),
 	)
 
 	resp, err := srv.MultiTransferByCustomer(ctx, inCustomer)

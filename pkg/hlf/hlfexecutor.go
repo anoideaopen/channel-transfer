@@ -2,6 +2,7 @@ package hlf
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/go-errors/errors"
@@ -13,6 +14,7 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/status"
 	chctx "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
+	"google.golang.org/grpc/metadata"
 )
 
 type ExecuteOptions struct {
@@ -53,6 +55,8 @@ func (he *hlfExecutor) invoke(ctx context.Context, request channel.Request, opti
 		),
 	)
 
+	request.TransientMap = toTransientMap(ctx, request.TransientMap)
+
 	return he.chClient.InvokeHandler(h, request, options...)
 }
 
@@ -70,6 +74,8 @@ func (he *hlfExecutor) query(ctx context.Context, request channel.Request, optio
 		channel.WithTargetFilter(
 			filter.NewEndpointFilter(
 				he.chCtx, filter.EndorsingPeer)))
+
+	request.TransientMap = toTransientMap(ctx, request.TransientMap)
 
 	return he.chClient.Query(request, options...)
 }
@@ -138,4 +144,19 @@ func (he *hlfExecutor) blockchainHeight(options []ledger.RequestOption) (*uint64
 	}
 
 	return &bi.BCI.Height, nil
+}
+
+// toTransientMap prepares tracing context for using in transient map
+func toTransientMap(ctx context.Context, transientMap map[string][]byte) map[string][]byte {
+	md, _ := metadata.FromOutgoingContext(ctx)
+
+	if transientMap == nil {
+		transientMap = make(map[string][]byte)
+	}
+	for k, v := range md {
+		rawValue := []byte(strings.Join(v, ""))
+		transientMap[k] = rawValue
+	}
+
+	return transientMap
 }
