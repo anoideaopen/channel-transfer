@@ -7,10 +7,11 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func (h *Handler) appendTransferMetadataToContext(ctx context.Context, transferID model.ID) (context.Context, error) {
+func (h *Handler) appendTransferMetadataToContext(ctx context.Context, transferID model.ID) context.Context {
 	md, err := h.metadataStorage.MetadataLoad(ctx, transferID)
 	if err != nil {
-		return nil, err
+		h.log.Warningf("couldn't load metadata for transfer %s from storage", transferID)
+		return ctx
 	}
 
 	if len(md.TraceID) > 0 {
@@ -21,5 +22,5 @@ func (h *Handler) appendTransferMetadataToContext(ctx context.Context, transferI
 		ctx = metadata.AppendToOutgoingContext(ctx, "span_id", md.SpanID)
 	}
 
-	return ctx, nil
+	return ctx
 }

@@ -79,10 +79,7 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
 	}
 
-	ctx, err = h.appendTransferMetadataToContext(ctx, request.Transfer)
-	if err != nil {
-		h.log.Warningf("couldn't load metadata for transfer %s from storage", request.Transfer)
-	}
+	ctx = h.appendTransferMetadataToContext(ctx, request.Transfer)
 
 	args := [][]byte{
 		[]byte(request.Request),
@@ -144,10 +141,7 @@ func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.Tra
 		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
 	}
 
-	ctx, err = h.appendTransferMetadataToContext(ctx, request.Transfer)
-	if err != nil {
-		h.log.Warningf("couldn't load metadata for transfer %s from storage", request.Transfer)
-	}
+	ctx = h.appendTransferMetadataToContext(ctx, request.Transfer)
 
 	items, err := json.Marshal(request.Items)
 	if err != nil {
@@ -297,10 +291,7 @@ func (h *Handler) invoke(ctx context.Context, channelName string, chaincodeID st
 		return errors.Errorf("executor: %w", err)
 	}
 
-	ctx, err = h.appendTransferMetadataToContext(ctx, model.ID(transferID))
-	if err != nil {
-		h.log.Warningf("couldn't load metadata for transfer %s from storage", model.ID(transferID))
-	}
+	ctx = h.appendTransferMetadataToContext(ctx, model.ID(transferID))
 
 	_, err = doer.Invoke(
 		ctx,
@@ -326,10 +317,7 @@ func (h *Handler) queryChannelTransferTo(ctx context.Context, channelName string
 
 	h.log.Debugf("query channel transfer to, channel %s, id %s", channelName, transferID)
 
-	ctx, err = h.appendTransferMetadataToContext(ctx, model.ID(transferID))
-	if err != nil {
-		h.log.Warningf("couldn't load metadata for transfer %s from storage", model.ID(transferID))
-	}
+	ctx = h.appendTransferMetadataToContext(ctx, model.ID(transferID))
 
 	_, err = executor.Query(
 		ctx,
@@ -359,10 +347,7 @@ func (h *Handler) queryChannelTransferFrom(ctx context.Context, channelName stri
 
 	h.log.Debugf("query channel transfer from, channel %s, id %s", channelName, transferID)
 
-	ctx, err = h.appendTransferMetadataToContext(ctx, model.ID(transferID))
-	if err != nil {
-		h.log.Warningf("couldn't load metadata for transfer %s from storage", model.ID(transferID))
-	}
+	ctx = h.appendTransferMetadataToContext(ctx, model.ID(transferID))
 
 	_, err = executor.Query(
 		ctx,
