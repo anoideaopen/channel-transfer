@@ -22,6 +22,7 @@ require (
 	github.com/slok/go-http-metrics v0.12.0
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
+	go.opentelemetry.io/otel v1.24.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/sync v0.8.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240725223205-93522f1f2a9f
@@ -78,6 +79,7 @@ require (
 	github.com/yuin/gopher-lua v1.1.0 // indirect
 	github.com/zmap/zcrypto v0.0.0-20190729165852-9051775e6a2e // indirect
 	github.com/zmap/zlint v0.0.0-20190806154020-fd021b4cfbeb // indirect
+	go.opentelemetry.io/otel/trace v1.24.0 // indirect
 	go.uber.org/atomic v1.11.0
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.26.0 // indirect

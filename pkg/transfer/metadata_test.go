@@ -25,8 +25,8 @@ func TestMetadata(t *testing.T) {
 	metadata := NewMetadata(storage)
 
 	mdlMetadata := model.Metadata{
-		TraceID: "test-trace-id",
-		SpanID:  "test-span-id",
+		"traceId": "test-trace-id",
+		"spanId":  "test-span-id",
 	}
 
 	t.Run("saving metadata", func(t *testing.T) {

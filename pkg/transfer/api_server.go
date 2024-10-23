@@ -7,11 +7,11 @@ import (
 
 	"github.com/anoideaopen/channel-transfer/pkg/data"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
+	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
 	dto "github.com/anoideaopen/channel-transfer/proto"
 	"github.com/anoideaopen/glog"
 	"github.com/go-errors/errors"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -64,15 +64,11 @@ func NewAPIServer(
 }
 
 func metadataFromContext(ctx context.Context) model.Metadata {
-	metadataModel := model.Metadata{}
+	var metadataModel = model.Metadata{}
 
-	if md, ok := metadata.FromIncomingContext(ctx); ok {
-		if len(md.Get("trace_id")) > 0 {
-			metadataModel.TraceID = strings.Join(md.Get("trace_id"), "")
-		}
-		if len(md.Get("span_id")) > 0 {
-			metadataModel.SpanID = strings.Join(md.Get("span_id"), "")
-		}
+	carrier := telemetry.CarrierFromContext(ctx)
+	for _, k := range carrier.Keys() {
+		metadataModel[k] = carrier.Get(k)
 	}
 
 	return metadataModel

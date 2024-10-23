@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/anoideaopen/channel-transfer/pkg/model"
-	"google.golang.org/grpc/metadata"
+	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
 )
 
 func (h *Handler) appendTransferMetadataToContext(ctx context.Context, transferID model.ID) context.Context {
@@ -14,13 +14,10 @@ func (h *Handler) appendTransferMetadataToContext(ctx context.Context, transferI
 		return ctx
 	}
 
-	if len(md.TraceID) > 0 {
-		ctx = metadata.AppendToOutgoingContext(ctx, "trace_id", md.TraceID)
+	carrier := telemetry.NewCarrier()
+	for k, v := range md {
+		carrier.Set(k, v)
 	}
 
-	if len(md.SpanID) > 0 {
-		ctx = metadata.AppendToOutgoingContext(ctx, "span_id", md.SpanID)
-	}
-
-	return ctx
+	return telemetry.AppendCarrierToContext(ctx, carrier)
 }

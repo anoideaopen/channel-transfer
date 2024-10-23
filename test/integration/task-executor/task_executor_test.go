@@ -13,7 +13,6 @@ import (
 	"github.com/hyperledger/fabric/integration"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -88,12 +87,6 @@ var _ = Describe("Channel transfer with task executor tests", func() {
 		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
 
 		var err error
-
-		newTraceID, _ := trace.TraceIDFromHex("4f92f5c8b5a43a25a891c94b0c0f5a42")
-		newSpanID, _ := trace.SpanIDFromHex("1e39285f6c1b41f4")
-
-		clientCtx = metadata.AppendToOutgoingContext(clientCtx, "trace_id", newTraceID.String())
-		clientCtx = metadata.AppendToOutgoingContext(clientCtx, "span_id", newSpanID.String())
 
 		conn, err = grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(transportCredentials))
 		Expect(err).NotTo(HaveOccurred())

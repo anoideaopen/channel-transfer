@@ -12,8 +12,8 @@ import (
 func TestMetadata(t *testing.T) {
 	var (
 		m = &Metadata{
-			TraceID: "0123456789",
-			SpanID:  "9876543210",
+			"traceId": "0123456789",
+			"spanId":  "9876543210",
 		}
 
 		db  = inmem.NewStorage()

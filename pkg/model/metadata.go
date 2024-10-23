@@ -6,10 +6,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/data"
 )
 
-type Metadata struct {
-	TraceID string
-	SpanID  string
-}
+type Metadata map[string]string
 
 func (md *Metadata) MarshalBinary() (data []byte, err error) {
 	return json.Marshal(md)
