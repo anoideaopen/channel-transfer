@@ -64,7 +64,7 @@ func NewAPIServer(
 }
 
 func metadataFromContext(ctx context.Context) model.Metadata {
-	var metadataModel = model.Metadata{}
+	metadataModel := model.Metadata{}
 
 	carrier := telemetry.CarrierFromContext(ctx)
 	for _, k := range carrier.Keys() {
