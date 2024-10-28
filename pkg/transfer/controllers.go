@@ -38,12 +38,3 @@ type CheckpointController interface {
 	// CheckpointLoad retrieves the checkpoint of the processed data of the ledger channel.
 	CheckpointLoad(context.Context, model.ID) (model.Checkpoint, error)
 }
-
-//go:generate mockgen -source controllers.go -destination mock/controllers.go -package mock -mock_names MetadataController=MockMetadataController
-type MetadataController interface {
-	// MetadataSave save transfer metadata
-	MetadataSave(context.Context, model.Metadata, model.ID) error
-
-	// MetadataLoad retrieves a transfer metadata
-	MetadataLoad(context.Context, model.ID) (model.Metadata, error)
-}

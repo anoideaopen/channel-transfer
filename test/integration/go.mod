@@ -156,12 +156,12 @@ require (
 	go.etcd.io/etcd/raft/v3 v3.5.14 // indirect
 	go.etcd.io/etcd/server/v3 v3.5.14 // indirect
 	go.mongodb.org/mongo-driver v1.16.1 // indirect
-	go.opentelemetry.io/otel v1.30.0 // indirect
+	go.opentelemetry.io/otel v1.31.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.28.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.28.0 // indirect
-	go.opentelemetry.io/otel/metric v1.30.0 // indirect
+	go.opentelemetry.io/otel/metric v1.31.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.28.0 // indirect
-	go.opentelemetry.io/otel/trace v1.30.0 // indirect
+	go.opentelemetry.io/otel/trace v1.31.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect

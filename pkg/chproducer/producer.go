@@ -51,7 +51,6 @@ type Handler struct {
 	activeTransfers uint
 	blockStorage    *transfer.LedgerBlock
 	requestStorage  *transfer.Request
-	metadataStorage *transfer.Metadata
 	log             glog.Logger
 	m               metrics.Metrics
 	poolController  PoolController
@@ -83,7 +82,6 @@ func NewHandler(
 		poolController:  poolController,
 		blockStorage:    transfer.NewLedgerBlock(storage),
 		requestStorage:  transfer.NewRequest(storage),
-		metadataStorage: transfer.NewMetadata(storage),
 		log:             log,
 		m:               m,
 		newest:          newest,

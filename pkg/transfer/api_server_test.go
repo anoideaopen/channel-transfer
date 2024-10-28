@@ -21,8 +21,7 @@ func TestAPIServerTransfer(t *testing.T) {
 		ctx      = context.Background()
 		ctrl     = gomock.NewController(t)
 		mc       = mock.NewMockRequestController(ctrl)
-		mdc      = mock.NewMockMetadataController(ctrl)
-		srv      = NewAPIServer(ctx, requests, mc, mdc, channels)
+		srv      = NewAPIServer(ctx, requests, mc, channels)
 	)
 
 	var (
@@ -59,6 +58,7 @@ func TestAPIServerTransfer(t *testing.T) {
 			TransferResult: model.TransferResult{
 				Status: "STATUS_IN_PROCESS",
 			},
+			Metadata: make(model.TransferMetadata),
 		}
 
 		outCustomer = &dto.TransferStatusResponse{
@@ -100,9 +100,8 @@ func TestAPIServerTransfer(t *testing.T) {
 			TransferResult: model.TransferResult{
 				Status: "STATUS_IN_PROCESS",
 			},
+			Metadata: make(model.TransferMetadata),
 		}
-
-		mdlMetadata = model.Metadata{}
 
 		outAdmin = &dto.TransferStatusResponse{
 			IdTransfer: inAdmin.IdTransfer,
@@ -112,9 +111,7 @@ func TestAPIServerTransfer(t *testing.T) {
 
 	gomock.InOrder(
 		mc.EXPECT().TransferKeep(ctx, mdlCustomer).Return(nil),
-		mdc.EXPECT().MetadataSave(ctx, mdlMetadata, mdlCustomer.Transfer).Return(nil),
 		mc.EXPECT().TransferKeep(ctx, mdlAdmin).Return(nil),
-		mdc.EXPECT().MetadataSave(ctx, mdlMetadata, mdlAdmin.Transfer).Return(nil),
 	)
 
 	resp, err := srv.TransferByCustomer(ctx, inCustomer)
@@ -143,8 +140,7 @@ func TestAPIServerTransferStatus(t *testing.T) {
 		ctx  = context.Background()
 		ctrl = gomock.NewController(t)
 		mc   = mock.NewMockRequestController(ctrl)
-		mdc  = mock.NewMockMetadataController(ctrl)
-		srv  = NewAPIServer(ctx, requests, mc, mdc, nil)
+		srv  = NewAPIServer(ctx, requests, mc, nil)
 	)
 
 	var (
@@ -190,8 +186,7 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 		ctx      = context.Background()
 		ctrl     = gomock.NewController(t)
 		mc       = mock.NewMockRequestController(ctrl)
-		mdc      = mock.NewMockMetadataController(ctrl)
-		srv      = NewAPIServer(ctx, requests, mc, mdc, channels)
+		srv      = NewAPIServer(ctx, requests, mc, channels)
 	)
 
 	var (
@@ -244,6 +239,7 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 			TransferResult: model.TransferResult{
 				Status: "STATUS_IN_PROCESS",
 			},
+			Metadata: make(model.TransferMetadata),
 		}
 
 		outCustomer = &dto.TransferStatusResponse{
@@ -301,9 +297,8 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 			TransferResult: model.TransferResult{
 				Status: "STATUS_IN_PROCESS",
 			},
+			Metadata: make(model.TransferMetadata),
 		}
-
-		mdlMetadata = model.Metadata{}
 
 		outAdmin = &dto.TransferStatusResponse{
 			IdTransfer: inAdmin.IdTransfer,
@@ -313,9 +308,7 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 
 	gomock.InOrder(
 		mc.EXPECT().TransferKeep(ctx, mdlCustomer).Return(nil),
-		mdc.EXPECT().MetadataSave(ctx, mdlMetadata, mdlCustomer.Transfer).Return(nil),
 		mc.EXPECT().TransferKeep(ctx, mdlAdmin).Return(nil),
-		mdc.EXPECT().MetadataSave(ctx, mdlMetadata, mdlAdmin.Transfer).Return(nil),
 	)
 
 	resp, err := srv.MultiTransferByCustomer(ctx, inCustomer)

@@ -22,6 +22,8 @@ type TransferItem struct {
 	Amount string `json:"amount"`
 }
 
+type TransferMetadata map[string]string
+
 // TransferRequest contains the internal representation of a request to transfer
 // funds from one channel to another. This structure is filled from the request
 // and enters the queue for processing.
@@ -41,6 +43,7 @@ type TransferRequest struct {
 	Token     string
 	Amount    string
 	Items     []TransferItem
+	Metadata  TransferMetadata
 }
 
 func (tr *TransferRequest) MarshalBinary() (data []byte, err error) {

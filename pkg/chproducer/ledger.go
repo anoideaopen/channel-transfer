@@ -79,7 +79,7 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
 	}
 
-	ctx = h.appendTransferMetadataToContext(ctx, request.Transfer)
+	ctx = h.appendTransferMetadataToContext(ctx, request.Metadata)
 
 	args := [][]byte{
 		[]byte(request.Request),
@@ -141,7 +141,7 @@ func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.Tra
 		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
 	}
 
-	ctx = h.appendTransferMetadataToContext(ctx, request.Transfer)
+	ctx = h.appendTransferMetadataToContext(ctx, request.Metadata)
 
 	items, err := json.Marshal(request.Items)
 	if err != nil {
@@ -291,7 +291,12 @@ func (h *Handler) invoke(ctx context.Context, channelName string, chaincodeID st
 		return errors.Errorf("executor: %w", err)
 	}
 
-	ctx = h.appendTransferMetadataToContext(ctx, model.ID(transferID))
+	request, err := h.requestStorage.TransferFetch(ctx, model.ID(transferID))
+	if err != nil {
+		h.log.Warningf("failed fetching transfer request from storage: %w", err)
+	}
+
+	ctx = h.appendTransferMetadataToContext(ctx, request.Metadata)
 
 	_, err = doer.Invoke(
 		ctx,
@@ -317,7 +322,12 @@ func (h *Handler) queryChannelTransferTo(ctx context.Context, channelName string
 
 	h.log.Debugf("query channel transfer to, channel %s, id %s", channelName, transferID)
 
-	ctx = h.appendTransferMetadataToContext(ctx, model.ID(transferID))
+	request, err := h.requestStorage.TransferFetch(ctx, model.ID(transferID))
+	if err != nil {
+		h.log.Warningf("failed fetching transfer request from storage: %w", err)
+	}
+
+	ctx = h.appendTransferMetadataToContext(ctx, request.Metadata)
 
 	_, err = executor.Query(
 		ctx,
@@ -346,8 +356,6 @@ func (h *Handler) queryChannelTransferFrom(ctx context.Context, channelName stri
 	}
 
 	h.log.Debugf("query channel transfer from, channel %s, id %s", channelName, transferID)
-
-	ctx = h.appendTransferMetadataToContext(ctx, model.ID(transferID))
 
 	_, err = executor.Query(
 		ctx,
