@@ -12,16 +12,11 @@ type metadataCarrier struct {
 	MD metadata.MD
 }
 
-func NewCarrier() propagation.TextMapCarrier {
-	return &metadataCarrier{MD: metadata.New(nil)}
-}
-
-func CarrierFromMetadata(md metadata.MD) propagation.TextMapCarrier {
+func carrierFromMetadata(md metadata.MD) propagation.TextMapCarrier {
 	return &metadataCarrier{MD: md}
 }
 
-// CarrierFromContext extracts telemetry metadata from context
-func CarrierFromContext(ctx context.Context) propagation.TextMapCarrier {
+func carrierFromContext(ctx context.Context) propagation.TextMapCarrier {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return &metadataCarrier{MD: metadata.New(nil)}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/anoideaopen/channel-transfer/pkg/metrics"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
+	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
 	"github.com/anoideaopen/foundation/core/cctransfer"
 	fpb "github.com/anoideaopen/foundation/proto"
 	"github.com/go-errors/errors"
@@ -79,7 +80,7 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
 	}
 
-	ctx = h.appendTransferMetadataToContext(ctx, request.Metadata)
+	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 
 	args := [][]byte{
 		[]byte(request.Request),
@@ -141,7 +142,7 @@ func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.Tra
 		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
 	}
 
-	ctx = h.appendTransferMetadataToContext(ctx, request.Metadata)
+	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 
 	items, err := json.Marshal(request.Items)
 	if err != nil {
@@ -296,7 +297,7 @@ func (h *Handler) invoke(ctx context.Context, channelName string, chaincodeID st
 		h.log.Warningf("failed fetching transfer request from storage: %w", err)
 	}
 
-	ctx = h.appendTransferMetadataToContext(ctx, request.Metadata)
+	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 
 	_, err = doer.Invoke(
 		ctx,
@@ -327,7 +328,7 @@ func (h *Handler) queryChannelTransferTo(ctx context.Context, channelName string
 		h.log.Warningf("failed fetching transfer request from storage: %w", err)
 	}
 
-	ctx = h.appendTransferMetadataToContext(ctx, request.Metadata)
+	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 
 	_, err = executor.Query(
 		ctx,

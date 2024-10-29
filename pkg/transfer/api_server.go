@@ -60,17 +60,6 @@ func NewAPIServer(
 	return server
 }
 
-func metadataFromContext(ctx context.Context) model.TransferMetadata {
-	metadataModel := model.TransferMetadata{}
-
-	carrier := telemetry.CarrierFromContext(ctx)
-	for _, k := range carrier.Keys() {
-		metadataModel[k] = carrier.Get(k)
-	}
-
-	return metadataModel
-}
-
 // TransferByCustomer registers a new transfer from one channel to another on
 // behalf of the contract administrator, using business logic and maps the
 // result to DTO request objects.
@@ -103,7 +92,7 @@ func (api *APIServer) TransferByCustomer(
 			)
 	}
 
-	tr.Metadata = metadataFromContext(ctx)
+	tr.Metadata = telemetry.TransferMetadataFromContext(ctx)
 
 	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
 		return nil, fmt.Errorf(
@@ -152,7 +141,7 @@ func (api *APIServer) TransferByAdmin(
 			)
 	}
 
-	tr.Metadata = metadataFromContext(ctx)
+	tr.Metadata = telemetry.TransferMetadataFromContext(ctx)
 
 	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
 		return nil, fmt.Errorf(
@@ -201,7 +190,7 @@ func (api *APIServer) MultiTransferByCustomer(
 			)
 	}
 
-	tr.Metadata = metadataFromContext(ctx)
+	tr.Metadata = telemetry.TransferMetadataFromContext(ctx)
 
 	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
 		return nil, fmt.Errorf(
@@ -250,7 +239,7 @@ func (api *APIServer) MultiTransferByAdmin(
 			)
 	}
 
-	tr.Metadata = metadataFromContext(ctx)
+	tr.Metadata = telemetry.TransferMetadataFromContext(ctx)
 
 	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
 		return nil, fmt.Errorf(
