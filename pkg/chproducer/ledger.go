@@ -8,6 +8,7 @@ import (
 
 	"github.com/anoideaopen/channel-transfer/pkg/metrics"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
+	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
 	"github.com/anoideaopen/foundation/core/cctransfer"
 	fpb "github.com/anoideaopen/foundation/proto"
 	"github.com/go-errors/errors"
@@ -79,6 +80,8 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
 	}
 
+	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
+
 	args := [][]byte{
 		[]byte(request.Request),
 		[]byte(h.channel),
@@ -138,6 +141,8 @@ func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.Tra
 	if err != nil {
 		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
 	}
+
+	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 
 	items, err := json.Marshal(request.Items)
 	if err != nil {
@@ -287,6 +292,13 @@ func (h *Handler) invoke(ctx context.Context, channelName string, chaincodeID st
 		return errors.Errorf("executor: %w", err)
 	}
 
+	request, err := h.requestStorage.TransferFetch(ctx, model.ID(transferID))
+	if err != nil {
+		h.log.Warningf("failed fetching transfer request from storage: %w", err)
+	}
+
+	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
+
 	_, err = doer.Invoke(
 		ctx,
 		channel.Request{
@@ -310,6 +322,14 @@ func (h *Handler) queryChannelTransferTo(ctx context.Context, channelName string
 	}
 
 	h.log.Debugf("query channel transfer to, channel %s, id %s", channelName, transferID)
+
+	request, err := h.requestStorage.TransferFetch(ctx, model.ID(transferID))
+	if err != nil {
+		h.log.Warningf("failed fetching transfer request from storage: %w", err)
+	}
+
+	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
+
 	_, err = executor.Query(
 		ctx,
 		channel.Request{
@@ -337,6 +357,7 @@ func (h *Handler) queryChannelTransferFrom(ctx context.Context, channelName stri
 	}
 
 	h.log.Debugf("query channel transfer from, channel %s, id %s", channelName, transferID)
+
 	_, err = executor.Query(
 		ctx,
 		channel.Request{

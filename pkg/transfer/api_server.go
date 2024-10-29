@@ -7,6 +7,7 @@ import (
 
 	"github.com/anoideaopen/channel-transfer/pkg/data"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
+	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
 	dto "github.com/anoideaopen/channel-transfer/proto"
 	"github.com/anoideaopen/glog"
 	"github.com/go-errors/errors"
@@ -41,7 +42,12 @@ type APIServer struct {
 
 // NewAPIServer creates a new instance of the structure with the specified
 // controller.
-func NewAPIServer(ctx context.Context, output chan<- model.TransferRequest, ctrl RequestController, actualChannels []string) *APIServer {
+func NewAPIServer(
+	ctx context.Context,
+	output chan<- model.TransferRequest,
+	ctrl RequestController,
+	actualChannels []string,
+) *APIServer {
 	server := &APIServer{
 		ctrl:           ctrl,
 		output:         output,
@@ -85,6 +91,8 @@ func (api *APIServer) TransferByCustomer(
 				err.Error(),
 			)
 	}
+
+	tr.Metadata = telemetry.TransferMetadataFromContext(ctx)
 
 	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
 		return nil, fmt.Errorf(
@@ -133,6 +141,8 @@ func (api *APIServer) TransferByAdmin(
 			)
 	}
 
+	tr.Metadata = telemetry.TransferMetadataFromContext(ctx)
+
 	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
 		return nil, fmt.Errorf(
 			"[APIServer] failed to save transfer request: %w",
@@ -180,6 +190,8 @@ func (api *APIServer) MultiTransferByCustomer(
 			)
 	}
 
+	tr.Metadata = telemetry.TransferMetadataFromContext(ctx)
+
 	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
 		return nil, fmt.Errorf(
 			"[APIServer] failed to save transfer request: %w",
@@ -226,6 +238,8 @@ func (api *APIServer) MultiTransferByAdmin(
 				err.Error(),
 			)
 	}
+
+	tr.Metadata = telemetry.TransferMetadataFromContext(ctx)
 
 	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
 		return nil, fmt.Errorf(

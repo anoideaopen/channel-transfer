@@ -21,7 +21,7 @@ type gRPCExecutor struct {
 func (ex *gRPCExecutor) invoke(ctx context.Context, req channel.Request, _ []channel.RequestOption) (channel.Response, error) {
 	adaptor := proto.NewTaskExecutorAdapterClient(ex.Client)
 
-	ctx = metadata.NewOutgoingContext(ctx, metadata.Pairs("requestID", uuid.New().String()))
+	ctx = metadata.AppendToOutgoingContext(ctx, "requestID", uuid.New().String())
 
 	request := &proto.TaskExecutorRequest{
 		Channel:   ex.Channel,

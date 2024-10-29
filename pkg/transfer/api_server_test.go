@@ -58,6 +58,7 @@ func TestAPIServerTransfer(t *testing.T) {
 			TransferResult: model.TransferResult{
 				Status: "STATUS_IN_PROCESS",
 			},
+			Metadata: make(model.TransferMetadata),
 		}
 
 		outCustomer = &dto.TransferStatusResponse{
@@ -99,6 +100,7 @@ func TestAPIServerTransfer(t *testing.T) {
 			TransferResult: model.TransferResult{
 				Status: "STATUS_IN_PROCESS",
 			},
+			Metadata: make(model.TransferMetadata),
 		}
 
 		outAdmin = &dto.TransferStatusResponse{
@@ -237,6 +239,7 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 			TransferResult: model.TransferResult{
 				Status: "STATUS_IN_PROCESS",
 			},
+			Metadata: make(model.TransferMetadata),
 		}
 
 		outCustomer = &dto.TransferStatusResponse{
@@ -294,6 +297,7 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 			TransferResult: model.TransferResult{
 				Status: "STATUS_IN_PROCESS",
 			},
+			Metadata: make(model.TransferMetadata),
 		}
 
 		outAdmin = &dto.TransferStatusResponse{

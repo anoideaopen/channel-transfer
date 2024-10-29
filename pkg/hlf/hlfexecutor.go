@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
 	"github.com/go-errors/errors"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
@@ -53,6 +54,8 @@ func (he *hlfExecutor) invoke(ctx context.Context, request channel.Request, opti
 		),
 	)
 
+	request.TransientMap = telemetry.TransientMapFromContext(ctx)
+
 	return he.chClient.InvokeHandler(h, request, options...)
 }
 
@@ -70,6 +73,8 @@ func (he *hlfExecutor) query(ctx context.Context, request channel.Request, optio
 		channel.WithTargetFilter(
 			filter.NewEndpointFilter(
 				he.chCtx, filter.EndorsingPeer)))
+
+	request.TransientMap = telemetry.TransientMapFromContext(ctx)
 
 	return he.chClient.Query(request, options...)
 }
