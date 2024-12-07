@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	cligrpc "github.com/anoideaopen/channel-transfer/proto"
+	"github.com/anoideaopen/foundation/mocks"
 	pbfound "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
@@ -26,7 +27,7 @@ import (
 
 var _ = Describe("Channel multi transfer GRPC tests", func() {
 	var (
-		ts client.TestSuite
+		ts *client.FoundationTestSuite
 	)
 
 	BeforeEach(func() {
@@ -37,8 +38,8 @@ var _ = Describe("Channel multi transfer GRPC tests", func() {
 	})
 
 	var (
-		channels = []string{cmn.ChannelAcl, cmn.ChannelCC, cmn.ChannelIndustrial}
-		user     *client.UserFoundation
+		channels = []string{cmn.ChannelACL, cmn.ChannelCC, cmn.ChannelIndustrial}
+		user     *mocks.UserFoundation
 
 		network      *nwo.Network
 		networkFound *cmn.NetworkFoundation
@@ -62,8 +63,8 @@ var _ = Describe("Channel multi transfer GRPC tests", func() {
 		)
 		ts.DeployChaincodes()
 
-		network = ts.Network()
-		networkFound = ts.NetworkFound()
+		network = ts.Network
+		networkFound = ts.NetworkFound
 	})
 	BeforeEach(func() {
 		By("start robot")
@@ -86,7 +87,7 @@ var _ = Describe("Channel multi transfer GRPC tests", func() {
 
 		By("add user to acl")
 		var err error
-		user, err = client.NewUserFoundation(pbfound.KeyType_ed25519)
+		user, err = mocks.NewUserFoundation(pbfound.KeyType_ed25519)
 		Expect(err).NotTo(HaveOccurred())
 
 		ts.AddUser(user)

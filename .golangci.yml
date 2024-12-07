@@ -66,6 +66,8 @@ linters:
     - spancheck
     - intrange
     - copyloopvar
+    - recvcheck
+    - iface
   disable:
     - godot
     - wsl
@@ -86,8 +88,6 @@ linters:
     - zerologlint
     - dupl
     - funlen
-    - gomnd
-    - execinquery
     - interfacebloat
 linters-settings:
   gosec:

@@ -10,6 +10,7 @@ import (
 	clihttp "github.com/anoideaopen/channel-transfer/test/integration/clihttp/client"
 	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/client/transfer"
 	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/models"
+	"github.com/anoideaopen/foundation/mocks"
 	pbfound "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
@@ -45,7 +46,7 @@ const (
 
 var _ = Describe("Channel transfer HTTP tests", func() {
 	var (
-		ts client.TestSuite
+		ts *client.FoundationTestSuite
 	)
 
 	BeforeEach(func() {
@@ -57,8 +58,8 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 	})
 
 	var (
-		channels = []string{cmn.ChannelAcl, cmn.ChannelCC, cmn.ChannelFiat, cmn.ChannelIndustrial}
-		user     *client.UserFoundation
+		channels = []string{cmn.ChannelACL, cmn.ChannelCC, cmn.ChannelFiat, cmn.ChannelIndustrial}
+		user     *mocks.UserFoundation
 
 		networkFound *cmn.NetworkFoundation
 
@@ -93,14 +94,14 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 	})
 
 	BeforeEach(func() {
-		networkFound = ts.NetworkFound()
+		networkFound = ts.NetworkFound
 
 		By("add admin to acl")
 		ts.AddAdminToACL()
 
 		By("add user to acl")
 		var err error
-		user, err = client.NewUserFoundation(pbfound.KeyType_ed25519)
+		user, err = mocks.NewUserFoundation(pbfound.KeyType_ed25519)
 		Expect(err).NotTo(HaveOccurred())
 
 		ts.AddUser(user)
@@ -117,7 +118,7 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		By("creating http connection")
 		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
-		httpAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.HttpPort]), 10)
+		httpAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.HTTPPort]), 10)
 		transport := httptransport.New(httpAddress, "", nil)
 		transferCli = clihttp.New(transport, strfmt.Default)
 
@@ -372,8 +373,8 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 			Generals: &models.ChannelTransferGeneralParams{
 				MethodName: fnChannelTransferByAdmin,
 				RequestID:  requestID,
-				Chaincode:  cmn.ChannelAcl,
-				Channel:    cmn.ChannelAcl,
+				Chaincode:  cmn.ChannelACL,
+				Channel:    cmn.ChannelACL,
 				Nonce:      nonce,
 				PublicKey:  publicKey,
 				Sign:       base58.Encode(sign),
@@ -419,8 +420,8 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 			Generals: &models.ChannelTransferGeneralParams{
 				MethodName: fnChannelTransferByCustomer,
 				RequestID:  requestID,
-				Chaincode:  cmn.ChannelAcl,
-				Channel:    cmn.ChannelAcl,
+				Chaincode:  cmn.ChannelACL,
+				Channel:    cmn.ChannelACL,
 				Nonce:      nonce,
 				PublicKey:  publicKey,
 				Sign:       base58.Encode(sign),
@@ -452,7 +453,7 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		}
 
 		By("creating new user")
-		user1, err := client.NewUserFoundation(pbfound.KeyType_ed25519)
+		user1, err := mocks.NewUserFoundation(pbfound.KeyType_ed25519)
 		Expect(err).NotTo(HaveOccurred())
 
 		ts.AddUser(user1)
@@ -513,7 +514,7 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		}
 
 		By("creating new user")
-		user1, err := client.NewUserFoundation(pbfound.KeyType_ed25519)
+		user1, err := mocks.NewUserFoundation(pbfound.KeyType_ed25519)
 		Expect(err).NotTo(HaveOccurred())
 
 		ts.AddUser(user1)
