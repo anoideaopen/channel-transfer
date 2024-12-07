@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	cligrpc "github.com/anoideaopen/channel-transfer/proto"
+	"github.com/anoideaopen/foundation/mocks"
 	pbfound "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
@@ -20,14 +21,14 @@ import (
 
 var _ = Describe("Channel transfer with task executor tests", func() {
 	var (
-		channels     = []string{cmn.ChannelAcl, cmn.ChannelCC, cmn.ChannelFiat}
-		ts           client.TestSuite
+		channels     = []string{cmn.ChannelACL, cmn.ChannelCC, cmn.ChannelFiat}
+		ts           *client.FoundationTestSuite
 		taskExecutor *grpc.Server
 		networkFound *cmn.NetworkFoundation
 		clientCtx    context.Context
 		apiClient    cligrpc.APIClient
 		conn         *grpc.ClientConn
-		user         *client.UserFoundation
+		user         *mocks.UserFoundation
 	)
 
 	BeforeEach(func() {
@@ -55,12 +56,12 @@ var _ = Describe("Channel transfer with task executor tests", func() {
 
 		By("add user to acl")
 		var err error
-		user, err = client.NewUserFoundation(pbfound.KeyType_ed25519)
+		user, err = mocks.NewUserFoundation(pbfound.KeyType_ed25519)
 		Expect(err).NotTo(HaveOccurred())
 
 		ts.AddUser(user)
 
-		networkFound = ts.NetworkFound()
+		networkFound = ts.NetworkFound
 	})
 
 	BeforeEach(func() {
