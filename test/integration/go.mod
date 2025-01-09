@@ -5,7 +5,7 @@ go 1.23.4
 require (
 	github.com/IBM/idemix v0.0.2-0.20231011101252-a4feda90f3f7
 	github.com/anoideaopen/acl v0.0.9-alpha.1.0.20241207132016-4a3c9d4e6496
-	github.com/anoideaopen/channel-transfer v0.0.6-0.20240924163837-6a354e9667a6
+	github.com/anoideaopen/channel-transfer v0.0.9-0.20241207211837-4682020acb20
 	github.com/anoideaopen/foundation v0.0.10-0.20241207123530-42e2c2174305
 	github.com/anoideaopen/foundation/test/integration v0.0.0-20241207123530-42e2c2174305
 	github.com/anoideaopen/robot v0.0.4-0.20241207173807-5302dd6333e0

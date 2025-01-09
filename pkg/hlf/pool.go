@@ -369,9 +369,12 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 	transferBlocks := transfer.LedgerBlockToTransferBlock(string(key), block)
 
 	for transferID, transferBlock := range transferBlocks {
-		ttl := redis.TTLNotTakenInto
-		canBeStored := false
-		isSendEvent := false
+		var (
+			ttl            = redis.TTLNotTakenInto
+			canBeStored    = false
+			isSendEvent    = false
+			isExecutorTask = false
+		)
 
 		for _, transaction := range transferBlock.Transactions {
 			isCreateMethod := methods.IsTransferFromMethod(transaction.FuncName)
@@ -380,7 +383,7 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 				pool.sendEvent(string(key))
 			}
 
-			if transaction.BatchResponse != nil {
+			if transaction.BatchResponse != nil && !transaction.IsExecutorTask {
 				continue
 			}
 
@@ -396,6 +399,7 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 			}
 
 			canBeStored = isCreateMethod
+			isExecutorTask = transaction.IsExecutorTask
 		}
 
 		if transferID == "" {
@@ -416,6 +420,12 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 		)
 		if err := pool.blocKStorage.BlockSave(pool.gCtx, *transferBlock, ttl); err != nil {
 			return err
+		}
+
+		if isExecutorTask {
+			if err := pool.updateBatchResponse(key, block.Txs); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
