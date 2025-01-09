@@ -2,7 +2,6 @@ package parser
 
 import (
 	"encoding/hex"
-	"time"
 
 	"github.com/anoideaopen/channel-transfer/pkg/helpers/nerrors"
 	"github.com/anoideaopen/channel-transfer/pkg/logger"
@@ -143,7 +142,7 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 									TxID:           task.GetId(),
 									FuncName:       tsResponse.GetMethod(),
 									Args:           argsFromTask(task),
-									TimeNs:         uint64(time.Unix(channelHeader.GetTimestamp().GetSeconds(), int64(channelHeader.GetTimestamp().GetNanos())).UnixNano()),
+									TimeNs:         uint64(channelHeader.GetTimestamp().AsTime().UnixNano()),
 									ValidationCode: tx.validationCode,
 									IsExecutorTask: true,
 									BatchResponse:  tsResponse,
@@ -164,7 +163,7 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 					TxID:           channelHeader.GetTxId(),
 					FuncName:       method,
 					Args:           args,
-					TimeNs:         uint64(time.Unix(channelHeader.GetTimestamp().GetSeconds(), int64(channelHeader.GetTimestamp().GetNanos())).UnixNano()),
+					TimeNs:         uint64(channelHeader.GetTimestamp().AsTime().UnixNano()),
 					ValidationCode: tx.validationCode,
 					BatchResponse:  nil,
 					Response:       chaincodeAction.GetResponse(),

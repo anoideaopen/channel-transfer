@@ -402,32 +402,54 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 			isExecutorTask = transaction.IsExecutorTask
 		}
 
-		if transferID == "" {
-			if err := pool.updateBatchResponse(key, block.Txs); err != nil {
-				return err
-			}
-			continue
-		}
-
-		if canBeStored {
-			if err := pool.syncTransferRequest(*transferBlock, ttl); err != nil {
-				return fmt.Errorf("sync transfer request: %w", err)
-			}
-		}
-
-		pool.log.Debugf("block save in storeTransfer %s, channel %s",
-			transferBlock.Transfer, transferBlock.Channel,
-		)
-		if err := pool.blocKStorage.BlockSave(pool.gCtx, *transferBlock, ttl); err != nil {
+		if err := pool.storeTransferBlock(
+			transferBlock,
+			transferID,
+			block.Txs,
+			key,
+			ttl,
+			isExecutorTask,
+			canBeStored,
+		); err != nil {
 			return err
 		}
+	}
+	return nil
+}
 
-		if isExecutorTask {
-			if err := pool.updateBatchResponse(key, block.Txs); err != nil {
-				return err
-			}
+func (pool *Pool) storeTransferBlock(
+	transferBlock *model.TransferBlock,
+	transferID model.ID,
+	txs []model.Transaction,
+	key channelKey,
+	ttl time.Duration,
+	isExecutorTask bool,
+	canBeStored bool,
+) error {
+	if transferID == "" {
+		if err := pool.updateBatchResponse(key, txs); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	if canBeStored {
+		if err := pool.syncTransferRequest(*transferBlock, ttl); err != nil {
+			return fmt.Errorf("sync transfer request: %w", err)
 		}
 	}
+
+	pool.log.Debugf("block save in storeTransfer %s, channel %s",
+		transferBlock.Transfer, transferBlock.Channel,
+	)
+	if err := pool.blocKStorage.BlockSave(pool.gCtx, *transferBlock, ttl); err != nil {
+		return err
+	}
+
+	if isExecutorTask {
+		return pool.updateBatchResponse(key, txs)
+	}
+
 	return nil
 }
 
