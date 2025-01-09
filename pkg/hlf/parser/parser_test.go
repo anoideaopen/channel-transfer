@@ -2,8 +2,6 @@ package parser_test
 
 import (
 	"context"
-	"testing"
-
 	"github.com/anoideaopen/channel-transfer/pkg/hlf/parser"
 	"github.com/anoideaopen/channel-transfer/test/builder/batcher"
 	"github.com/anoideaopen/channel-transfer/test/builder/chaincode"
@@ -13,9 +11,10 @@ import (
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"testing"
 )
 
-func newBlock(channel, txId string, txMethod string, args []string) *common.Block {
+func newBlock(channel, txId string, blockTime *timestamppb.Timestamp, txMethod string, args []string) *common.Block {
 	task := batcher.NewTaskBuilder().
 		SetID(txId).
 		SetMethod(txMethod).
@@ -78,7 +77,7 @@ func newBlock(channel, txId string, txMethod string, args []string) *common.Bloc
 		SetChannelHeader(&common.ChannelHeader{
 			Type:      int32(common.HeaderType_ENDORSER_TRANSACTION),
 			Version:   1,
-			Timestamp: timestamppb.Now(),
+			Timestamp: blockTime,
 			ChannelId: channel,
 			TxId:      "12345",
 		}).
@@ -115,16 +114,19 @@ func newBlock(channel, txId string, txMethod string, args []string) *common.Bloc
 func TestExtractData_ExecuteTasksMethod(t *testing.T) {
 	var (
 		channel               = "test-channel"
-		blockNum       uint64 = 1
 		txId                  = "unique-task-id"
 		funcName              = "deleteCCTransferTo"
 		args                  = []string{"arg1", "arg2"}
+		blockNum       uint64 = 1
 		timeNs         uint64 = 0
 		validationCode int32  = 0
 		response       *peer.Response
 	)
 
-	block := newBlock(channel, txId, funcName, args)
+	blockTime := timestamppb.Now()
+	timeNs = uint64(blockTime.AsTime().UnixNano())
+
+	block := newBlock(channel, txId, blockTime, funcName, args)
 
 	ctx := context.Background()
 
