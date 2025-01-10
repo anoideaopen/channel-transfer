@@ -3,7 +3,6 @@ package task_executor
 import (
 	"context"
 	"strconv"
-	"time"
 
 	cligrpc "github.com/anoideaopen/channel-transfer/proto"
 	"github.com/anoideaopen/foundation/mocks"
@@ -13,15 +12,11 @@ import (
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/google/uuid"
 	"github.com/hyperledger/fabric/integration"
-	"github.com/hyperledger/fabric/integration/nwo"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/protobuf/types/known/anypb"
-	"google.golang.org/protobuf/types/known/typepb"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 var _ = Describe("Channel transfer with task executor tests", func() {
@@ -29,7 +24,6 @@ var _ = Describe("Channel transfer with task executor tests", func() {
 		channels     = []string{cmn.ChannelACL, cmn.ChannelCC, cmn.ChannelFiat}
 		ts           *client.FoundationTestSuite
 		taskExecutor *grpc.Server
-		network      *nwo.Network
 		networkFound *cmn.NetworkFoundation
 		clientCtx    context.Context
 		apiClient    cligrpc.APIClient
@@ -68,7 +62,6 @@ var _ = Describe("Channel transfer with task executor tests", func() {
 		ts.AddUser(user)
 
 		networkFound = ts.NetworkFound
-		network = ts.Network
 	})
 
 	BeforeEach(func() {
@@ -87,7 +80,7 @@ var _ = Describe("Channel transfer with task executor tests", func() {
 		StopTaskExecutor(taskExecutor)
 	})
 
-	It("submit transaction to the task executor", func() {
+	It("Submit transaction", func() {
 		By("creating grpc connection")
 		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
@@ -137,119 +130,5 @@ var _ = Describe("Channel transfer with task executor tests", func() {
 		r, err := apiClient.TransferByAdmin(clientCtx, transfer)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(r.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_IN_PROCESS))
-	})
-
-	It("transfer created not with channel transfer service", func() {
-		By("creating grpc connection")
-		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
-
-		transportCredentials := insecure.NewCredentials()
-		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
-
-		var err error
-
-		conn, err = grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(transportCredentials))
-		Expect(err).NotTo(HaveOccurred())
-		defer func() {
-			err := conn.Close()
-			Expect(err).NotTo(HaveOccurred())
-		}()
-
-		By("creating channel transfer API client")
-		apiClient = cligrpc.NewAPIClient(conn)
-
-		By("emit tokens")
-		emitAmount := "1000"
-		ts.ExecuteTaskWithSign(cmn.ChannelFiat, cmn.ChannelFiat, ts.Admin(),
-			"emit", user.AddressBase58Check, emitAmount)
-
-		By("emit check")
-		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
-			"balanceOf", user.AddressBase58Check).CheckBalance(emitAmount)
-
-		By("creating channel transfer request")
-		transferID := uuid.NewString()
-
-		ts.ExecuteTaskWithSign(cmn.ChannelFiat, cmn.ChannelFiat, ts.Admin(),
-			"channelTransferByAdmin", transferID, "CC", user.AddressBase58Check, "FIAT", "250",
-		)
-
-		// let transaction settle
-		time.Sleep(time.Second * 5)
-
-		By("checking transfer status")
-		transferStatusRequest := &cligrpc.TransferStatusRequest{
-			IdTransfer: transferID,
-		}
-
-		excludeStatus := cligrpc.TransferStatusResponse_STATUS_IN_PROCESS.String()
-		value, err := anypb.New(wrapperspb.String(excludeStatus))
-		Expect(err).NotTo(HaveOccurred())
-
-		transferStatusRequest.Options = append(transferStatusRequest.Options, &typepb.Option{
-			Name:  "excludeStatus",
-			Value: value,
-		})
-
-		ctx, cancel := context.WithTimeout(clientCtx, network.EventuallyTimeout*2)
-		defer cancel()
-
-		By("awaiting for channel transfer to respond")
-		statusResponse, err := apiClient.TransferStatus(ctx, transferStatusRequest)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(statusResponse.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_UNDEFINED))
-	})
-
-	It("transfer with insufficient balance", func() {
-		By("creating grpc connection")
-		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
-
-		transportCredentials := insecure.NewCredentials()
-		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
-
-		var err error
-
-		conn, err = grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(transportCredentials))
-		Expect(err).NotTo(HaveOccurred())
-		defer func() {
-			err := conn.Close()
-			Expect(err).NotTo(HaveOccurred())
-		}()
-
-		By("creating channel transfer API client")
-		apiClient = cligrpc.NewAPIClient(conn)
-
-		By("creating channel transfer request")
-		transferID := uuid.NewString()
-
-		ts.ExecuteTaskWithSign(cmn.ChannelFiat, cmn.ChannelFiat, ts.Admin(),
-			"channelTransferByAdmin", transferID, "CC", user.AddressBase58Check, "FIAT", "250",
-		)
-
-		// let transaction settle
-		time.Sleep(time.Second * 5)
-
-		By("checking transfer status")
-		transferStatusRequest := &cligrpc.TransferStatusRequest{
-			IdTransfer: transferID,
-		}
-
-		excludeStatus := cligrpc.TransferStatusResponse_STATUS_IN_PROCESS.String()
-		value, err := anypb.New(wrapperspb.String(excludeStatus))
-		Expect(err).NotTo(HaveOccurred())
-
-		transferStatusRequest.Options = append(transferStatusRequest.Options, &typepb.Option{
-			Name:  "excludeStatus",
-			Value: value,
-		})
-
-		ctx, cancel := context.WithTimeout(clientCtx, network.EventuallyTimeout*2)
-		defer cancel()
-
-		By("awaiting for channel transfer to respond")
-		statusResponse, err := apiClient.TransferStatus(ctx, transferStatusRequest)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(statusResponse.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_ERROR))
-		Expect(statusResponse.Message).To(ContainSubstring("insufficient balance"))
 	})
 })

@@ -127,28 +127,34 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 				if err != nil {
 					return nil, errors.Errorf("failed to extract taskRequest from chaincodeAction response payload: %w", err)
 				}
+
+				batchResponse, err := p.extractBatchResponse(chaincodeAction.GetResponse().GetPayload())
+				if err != nil {
+					return nil, errors.Errorf("failed to extract batchResponse from chaincodeAction response payload: %w", err)
+				}
+
 				for _, task := range extractTaskRequest.GetTasks() {
-					batchResponse, err := p.extractBatchResponse(chaincodeAction.GetResponse().GetPayload())
-					if err != nil {
-						return nil, errors.Errorf("failed to extract batchResponse from chaincodeAction response payload: %w", err)
-					}
+					tOperations = append(
+						tOperations,
+						// add task as a separate operation
+						model.Transaction{
+							Channel:        p.channel,
+							BlockNum:       blockNum,
+							TxID:           task.GetId(),
+							FuncName:       task.GetMethod(),
+							Args:           argsFromTask(task),
+							TimeNs:         uint64(channelHeader.GetTimestamp().AsTime().UnixNano()),
+							ValidationCode: tx.validationCode,
+							BatchResponse:  nil,
+							Response:       chaincodeAction.GetResponse(),
+						},
+					)
+
 					for _, tsResponse := range batchResponse.GetTxResponses() {
 						if string(tsResponse.GetId()) == task.GetId() && new(model.TransactionKind).Is(tsResponse.GetMethod()) {
+							// add task response as a separate operation
 							tOperations = append(
 								tOperations,
-								// add task as a separate operation
-								model.Transaction{
-									Channel:        p.channel,
-									BlockNum:       blockNum,
-									TxID:           task.GetId(),
-									FuncName:       task.GetMethod(),
-									Args:           argsFromTask(task),
-									TimeNs:         uint64(channelHeader.GetTimestamp().AsTime().UnixNano()),
-									ValidationCode: tx.validationCode,
-									BatchResponse:  nil,
-									Response:       nil,
-								},
-								// add task response as a separate operation
 								model.Transaction{
 									Channel:        p.channel,
 									BlockNum:       blockNum,
