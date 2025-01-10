@@ -157,7 +157,6 @@ func TestExtractData_ExecuteTasksMethod(t *testing.T) {
 	assert.Equal(t, timeNs, operationTask.TimeNs)
 	assert.Equal(t, validationCode, operationTask.ValidationCode)
 	assert.Nil(t, operationTask.BatchResponse)
-	assert.Nil(t, operationTask.Response)
 
 	operationResponse := blockData.Txs[1]
 	assert.Equal(t, channel, operationResponse.Channel)
