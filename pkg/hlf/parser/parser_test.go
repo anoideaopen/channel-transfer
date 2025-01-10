@@ -2,6 +2,8 @@ package parser_test
 
 import (
 	"context"
+	"testing"
+
 	"github.com/anoideaopen/channel-transfer/pkg/hlf/parser"
 	"github.com/anoideaopen/channel-transfer/test/builder/batcher"
 	"github.com/anoideaopen/channel-transfer/test/builder/chaincode"
@@ -11,7 +13,6 @@ import (
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"testing"
 )
 
 func newBlock(channel, txId string, blockTime *timestamppb.Timestamp, txMethod string, args []string) *common.Block {
@@ -120,8 +121,12 @@ func TestExtractData_ExecuteTasksMethod(t *testing.T) {
 		blockNum       uint64 = 1
 		timeNs         uint64 = 0
 		validationCode int32  = 0
-		response       *peer.Response
 	)
+
+	expectedArgs := [][]byte{[]byte(funcName)}
+	for _, arg := range args {
+		expectedArgs = append(expectedArgs, []byte(arg))
+	}
 
 	blockTime := timestamppb.Now()
 	timeNs = uint64(blockTime.AsTime().UnixNano())
@@ -141,22 +146,28 @@ func TestExtractData_ExecuteTasksMethod(t *testing.T) {
 
 	assert.NotNil(t, blockData, "BlockData should not be nil")
 	assert.NotEmpty(t, blockData.Txs, "Transactions should not be empty")
-	assert.Len(t, blockData.Txs, 1)
+	assert.Len(t, blockData.Txs, 2)
 
-	tx := blockData.Txs[0]
-	assert.Equal(t, channel, tx.Channel)
-	assert.Equal(t, blockNum, tx.BlockNum)
-	assert.Equal(t, txId, tx.TxID)
-	assert.Equal(t, funcName, tx.FuncName)
+	operationTask := blockData.Txs[0]
+	assert.Equal(t, channel, operationTask.Channel)
+	assert.Equal(t, blockNum, operationTask.BlockNum)
+	assert.Equal(t, txId, operationTask.TxID)
+	assert.Equal(t, funcName, operationTask.FuncName)
+	assert.Equal(t, expectedArgs, operationTask.Args)
+	assert.Equal(t, timeNs, operationTask.TimeNs)
+	assert.Equal(t, validationCode, operationTask.ValidationCode)
+	assert.Nil(t, operationTask.BatchResponse)
+	assert.Nil(t, operationTask.Response)
 
-	expectedArgs := [][]byte{[]byte(funcName)}
-	for _, arg := range args {
-		expectedArgs = append(expectedArgs, []byte(arg))
-	}
-	assert.Equal(t, expectedArgs, tx.Args)
-	assert.Equal(t, timeNs, tx.TimeNs)
-	assert.Equal(t, validationCode, tx.ValidationCode)
-	assert.NotNil(t, tx.BatchResponse)
-	assert.Equal(t, "deleteCCTransferTo", tx.BatchResponse.Method)
-	assert.Equal(t, response, tx.Response)
+	operationResponse := blockData.Txs[1]
+	assert.Equal(t, channel, operationResponse.Channel)
+	assert.Equal(t, blockNum, operationResponse.BlockNum)
+	assert.Equal(t, txId, operationResponse.TxID)
+	assert.Equal(t, funcName, operationResponse.FuncName)
+	assert.Equal(t, validationCode, operationResponse.ValidationCode)
+	assert.NotNil(t, operationResponse.BatchResponse)
+	assert.Equal(t, funcName, operationResponse.BatchResponse.Method)
+	assert.Nil(t, operationResponse.Args)
+	assert.Nil(t, operationResponse.Response)
+	assert.Zero(t, operationResponse.TimeNs)
 }

@@ -20,7 +20,6 @@ type Transaction struct {
 	Args           [][]byte
 	TimeNs         uint64
 	ValidationCode int32
-	IsExecutorTask bool
 	BatchResponse  *proto.TxResponse
 	Response       *peer.Response
 }

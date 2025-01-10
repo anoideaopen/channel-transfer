@@ -182,7 +182,6 @@ func LedgerBlockToTransferBlock(channel string, block model.BlockData) map[model
 			Args:           tx.Args,
 			TimeNs:         tx.TimeNs,
 			ValidationCode: tx.ValidationCode,
-			IsExecutorTask: tx.IsExecutorTask,
 			BatchResponse:  tx.BatchResponse,
 			Response:       tx.Response,
 		})

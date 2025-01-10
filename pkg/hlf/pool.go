@@ -369,12 +369,9 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 	transferBlocks := transfer.LedgerBlockToTransferBlock(string(key), block)
 
 	for transferID, transferBlock := range transferBlocks {
-		var (
-			ttl            = redis.TTLNotTakenInto
-			canBeStored    = false
-			isSendEvent    = false
-			isExecutorTask = false
-		)
+		ttl := redis.TTLNotTakenInto
+		canBeStored := false
+		isSendEvent := false
 
 		for _, transaction := range transferBlock.Transactions {
 			isCreateMethod := methods.IsTransferFromMethod(transaction.FuncName)
@@ -383,7 +380,7 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 				pool.sendEvent(string(key))
 			}
 
-			if transaction.BatchResponse != nil && !transaction.IsExecutorTask {
+			if transaction.BatchResponse != nil {
 				continue
 			}
 
@@ -399,57 +396,28 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 			}
 
 			canBeStored = isCreateMethod
-			isExecutorTask = transaction.IsExecutorTask
 		}
 
-		if err := pool.storeTransferBlock(
-			transferBlock,
-			transferID,
-			block.Txs,
-			key,
-			ttl,
-			isExecutorTask,
-			canBeStored,
-		); err != nil {
+		if transferID == "" {
+			if err := pool.updateBatchResponse(key, block.Txs); err != nil {
+				return err
+			}
+			continue
+		}
+
+		if canBeStored {
+			if err := pool.syncTransferRequest(*transferBlock, ttl); err != nil {
+				return fmt.Errorf("sync transfer request: %w", err)
+			}
+		}
+
+		pool.log.Debugf("block save in storeTransfer %s, channel %s",
+			transferBlock.Transfer, transferBlock.Channel,
+		)
+		if err := pool.blocKStorage.BlockSave(pool.gCtx, *transferBlock, ttl); err != nil {
 			return err
 		}
 	}
-	return nil
-}
-
-func (pool *Pool) storeTransferBlock(
-	transferBlock *model.TransferBlock,
-	transferID model.ID,
-	txs []model.Transaction,
-	key channelKey,
-	ttl time.Duration,
-	isExecutorTask bool,
-	canBeStored bool,
-) error {
-	if transferID == "" {
-		if err := pool.updateBatchResponse(key, txs); err != nil {
-			return err
-		}
-		return nil
-	}
-
-	if canBeStored {
-		if err := pool.syncTransferRequest(*transferBlock, ttl); err != nil {
-			return fmt.Errorf("sync transfer request: %w", err)
-		}
-	}
-
-	pool.log.Debugf("block save in storeTransfer %s, channel %s",
-		transferBlock.Transfer, transferBlock.Channel,
-	)
-	if err := pool.blocKStorage.BlockSave(pool.gCtx, *transferBlock, ttl); err != nil {
-		return err
-	}
-
-	if isExecutorTask {
-		return pool.updateBatchResponse(key, txs)
-	}
-
 	return nil
 }
 
