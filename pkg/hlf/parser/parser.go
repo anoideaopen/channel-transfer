@@ -2,7 +2,6 @@ package parser
 
 import (
 	"encoding/hex"
-	"time"
 
 	"github.com/anoideaopen/channel-transfer/pkg/helpers/nerrors"
 	"github.com/anoideaopen/channel-transfer/pkg/logger"
@@ -128,28 +127,47 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 				if err != nil {
 					return nil, errors.Errorf("failed to extract taskRequest from chaincodeAction response payload: %w", err)
 				}
-				for _, task := range extractTaskRequest.GetTasks() {
-					batchResponse, err := p.extractBatchResponse(chaincodeAction.GetResponse().GetPayload())
-					if err != nil {
-						return nil, errors.Errorf("failed to extract batchResponse from chaincodeAction response payload: %w", err)
-					}
-					for _, tsResponse := range batchResponse.GetTxResponses() {
-						if string(tsResponse.GetId()) == task.GetId() && new(model.TransactionKind).Is(tsResponse.GetMethod()) {
-							tOperations = append(
-								tOperations,
-								model.Transaction{
-									Channel:        p.channel,
-									BlockNum:       blockNum,
-									TxID:           task.GetId(),
-									FuncName:       tsResponse.GetMethod(),
-									Args:           argsFromTask(task),
-									TimeNs:         0,
-									ValidationCode: tx.validationCode,
-									BatchResponse:  tsResponse,
-									Response:       nil,
-								},
-							)
-						}
+
+				batchResponse, err := p.extractBatchResponse(chaincodeAction.GetResponse().GetPayload())
+				if err != nil {
+					return nil, errors.Errorf("failed to extract batchResponse from chaincodeAction response payload: %w", err)
+				}
+
+				for i, task := range extractTaskRequest.GetTasks() {
+					if new(model.TransactionKind).Is(task.GetMethod()) {
+						tOperations = append(
+							tOperations,
+							// add task as a separate operation
+							model.Transaction{
+								Channel:        p.channel,
+								BlockNum:       blockNum,
+								TxID:           task.GetId(),
+								FuncName:       task.GetMethod(),
+								Args:           argsFromTask(task),
+								TimeNs:         uint64(channelHeader.GetTimestamp().AsTime().UnixNano()),
+								ValidationCode: tx.validationCode,
+								BatchResponse:  nil,
+								Response:       chaincodeAction.GetResponse(),
+							},
+						)
+
+						tsResponse := batchResponse.GetTxResponses()[i]
+
+						// add task response as a separate operation
+						tOperations = append(
+							tOperations,
+							model.Transaction{
+								Channel:        p.channel,
+								BlockNum:       blockNum,
+								TxID:           task.GetId(),
+								FuncName:       tsResponse.GetMethod(),
+								Args:           nil,
+								TimeNs:         0,
+								ValidationCode: tx.validationCode,
+								BatchResponse:  tsResponse,
+								Response:       nil,
+							},
+						)
 					}
 				}
 				continue
@@ -163,7 +181,7 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 					TxID:           channelHeader.GetTxId(),
 					FuncName:       method,
 					Args:           args,
-					TimeNs:         uint64(time.Unix(channelHeader.GetTimestamp().GetSeconds(), int64(channelHeader.GetTimestamp().GetNanos())).UnixNano()),
+					TimeNs:         uint64(channelHeader.GetTimestamp().AsTime().UnixNano()),
 					ValidationCode: tx.validationCode,
 					BatchResponse:  nil,
 					Response:       chaincodeAction.GetResponse(),
