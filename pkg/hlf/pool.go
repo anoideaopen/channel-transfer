@@ -361,6 +361,7 @@ func (pool *Pool) saveCheckPoint(oldCheckPoint model.Checkpoint, key channelKey,
 	return nCheckPoint
 }
 
+//nolint:gocognit
 func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 	if len(block.Txs) == 0 {
 		return nil
@@ -369,18 +370,23 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 	transferBlocks := transfer.LedgerBlockToTransferBlock(string(key), block)
 
 	for transferID, transferBlock := range transferBlocks {
-		ttl := redis.TTLNotTakenInto
-		canBeStored := false
-		isSendEvent := false
+		var (
+			ttl         = redis.TTLNotTakenInto
+			canBeStored = false
+			isSendEvent = false
+			isFullTx    = false
+		)
 
 		for _, transaction := range transferBlock.Transactions {
 			isCreateMethod := methods.IsTransferFromMethod(transaction.FuncName)
+			isFullTx = isFullTx || transaction.BatchResponse != nil && transaction.TimeNs != 0
+
 			if isCreateMethod && transaction.BatchResponse != nil && !isSendEvent {
 				isSendEvent = true
 				pool.sendEvent(string(key))
 			}
 
-			if transaction.BatchResponse != nil {
+			if transaction.BatchResponse != nil && !isFullTx {
 				continue
 			}
 
@@ -391,7 +397,7 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 
 			ttl = time.Until(upperBound)
 
-			if !pool.streams.transferID(key, transactionID(transaction.TxID), transferID) {
+			if !isFullTx && !pool.streams.transferID(key, transactionID(transaction.TxID), transferID) {
 				return fmt.Errorf("streams buffer : channel %s not found", string(key))
 			}
 
@@ -417,8 +423,47 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 		if err := pool.blocKStorage.BlockSave(pool.gCtx, *transferBlock, ttl); err != nil {
 			return err
 		}
+
+		if isFullTx {
+			pool.updateTransferResult(transferBlock)
+		}
 	}
 	return nil
+}
+
+func (pool *Pool) updateTransferResult(transferBlock *model.TransferBlock) {
+	for _, tx := range transferBlock.Transactions {
+		if !methods.IsTransferFromMethod(tx.FuncName) {
+			continue
+		}
+
+		response := tx.BatchResponse
+
+		if response.GetError() == nil {
+			if err := pool.requestStorage.TransferResultModify(
+				pool.gCtx,
+				transferBlock.Transfer,
+				model.TransferResult{
+					Status: proto2.TransferStatusResponse_STATUS_IN_PROCESS.String(),
+				},
+			); err != nil {
+				pool.log.Errorf("transfer result no updated : %s : %s", transferBlock.Transfer, err.Error())
+			}
+			continue
+		}
+
+		// the execution of the transaction ended with an error
+		if err := pool.requestStorage.TransferResultModify(
+			pool.gCtx,
+			transferBlock.Transfer,
+			model.TransferResult{
+				Status:  proto2.TransferStatusResponse_STATUS_ERROR.String(),
+				Message: response.GetError().GetError(),
+			},
+		); err != nil {
+			pool.log.Errorf("transfer result no updated : %s : %s", transferBlock.Transfer, err.Error())
+		}
+	}
 }
 
 //nolint:gocognit,funlen

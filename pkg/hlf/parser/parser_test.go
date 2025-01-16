@@ -146,7 +146,7 @@ func TestExtractData_ExecuteTasksMethod(t *testing.T) {
 
 	assert.NotNil(t, blockData, "BlockData should not be nil")
 	assert.NotEmpty(t, blockData.Txs, "Transactions should not be empty")
-	assert.Len(t, blockData.Txs, 2)
+	assert.Len(t, blockData.Txs, 1)
 
 	operationTask := blockData.Txs[0]
 	assert.Equal(t, channel, operationTask.Channel)
@@ -156,17 +156,5 @@ func TestExtractData_ExecuteTasksMethod(t *testing.T) {
 	assert.Equal(t, expectedArgs, operationTask.Args)
 	assert.Equal(t, timeNs, operationTask.TimeNs)
 	assert.Equal(t, validationCode, operationTask.ValidationCode)
-	assert.Nil(t, operationTask.BatchResponse)
-
-	operationResponse := blockData.Txs[1]
-	assert.Equal(t, channel, operationResponse.Channel)
-	assert.Equal(t, blockNum, operationResponse.BlockNum)
-	assert.Equal(t, txId, operationResponse.TxID)
-	assert.Equal(t, funcName, operationResponse.FuncName)
-	assert.Equal(t, validationCode, operationResponse.ValidationCode)
-	assert.NotNil(t, operationResponse.BatchResponse)
-	assert.Equal(t, funcName, operationResponse.BatchResponse.Method)
-	assert.Nil(t, operationResponse.Args)
-	assert.Nil(t, operationResponse.Response)
-	assert.Zero(t, operationResponse.TimeNs)
+	assert.NotNil(t, operationTask.Response)
 }
