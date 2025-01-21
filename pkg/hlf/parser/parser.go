@@ -135,9 +135,9 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 
 				for i, task := range extractTaskRequest.GetTasks() {
 					if new(model.TransactionKind).Is(task.GetMethod()) {
+						tsResponse := batchResponse.GetTxResponses()[i]
 						tOperations = append(
 							tOperations,
-							// add task as a separate operation
 							model.Transaction{
 								Channel:        p.channel,
 								BlockNum:       blockNum,
@@ -146,26 +146,8 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 								Args:           argsFromTask(task),
 								TimeNs:         uint64(channelHeader.GetTimestamp().AsTime().UnixNano()),
 								ValidationCode: tx.validationCode,
-								BatchResponse:  nil,
-								Response:       chaincodeAction.GetResponse(),
-							},
-						)
-
-						tsResponse := batchResponse.GetTxResponses()[i]
-
-						// add task response as a separate operation
-						tOperations = append(
-							tOperations,
-							model.Transaction{
-								Channel:        p.channel,
-								BlockNum:       blockNum,
-								TxID:           task.GetId(),
-								FuncName:       tsResponse.GetMethod(),
-								Args:           nil,
-								TimeNs:         0,
-								ValidationCode: tx.validationCode,
 								BatchResponse:  tsResponse,
-								Response:       nil,
+								Response:       chaincodeAction.GetResponse(),
 							},
 						)
 					}

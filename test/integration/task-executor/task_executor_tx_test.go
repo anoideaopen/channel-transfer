@@ -2,6 +2,7 @@ package task_executor
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -131,7 +132,7 @@ var _ = Describe("Channel transfer with task executor transaction tests", func()
 		)
 
 		// let transaction settle
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second)
 
 		By("checking transfer status")
 		transferStatusRequest := &cligrpc.TransferStatusRequest{
@@ -163,6 +164,107 @@ var _ = Describe("Channel transfer with task executor transaction tests", func()
 			"allowedBalanceOf", user.AddressBase58Check, "FIAT").CheckBalance("250")
 	})
 
+	It("several transfers in one batch", func() {
+		By("creating grpc connection")
+		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
+
+		transportCredentials := insecure.NewCredentials()
+		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
+
+		var err error
+
+		conn, err = grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(transportCredentials))
+		Expect(err).NotTo(HaveOccurred())
+		defer func() {
+			err := conn.Close()
+			Expect(err).NotTo(HaveOccurred())
+		}()
+
+		By("creating channel transfer API client")
+		apiClient = cligrpc.NewAPIClient(conn)
+
+		var (
+			emitAmount     = "1000"
+			transfersCount = 100
+			users          = make([]*mocks.UserFoundation, 0, transfersCount)
+			transferIDs    = make([]string, 0, transfersCount)
+			tasks          = make([]*pbfound.Task, 0, transfersCount)
+		)
+
+		for i := 0; i < transfersCount; i++ {
+			By("add user to acl")
+			user, err = mocks.NewUserFoundation(pbfound.KeyType_ed25519)
+			Expect(err).NotTo(HaveOccurred())
+
+			ts.AddUser(user)
+
+			users = append(users, user)
+
+			By("emit tokens")
+			ts.ExecuteTaskWithSign(cmn.ChannelFiat, cmn.ChannelFiat, ts.Admin(),
+				"emit", user.AddressBase58Check, emitAmount)
+
+			By("emit check")
+			ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
+				"balanceOf", user.AddressBase58Check).CheckBalance(emitAmount)
+
+			By("creating channel transfer request")
+			transferID := uuid.NewString()
+			transferIDs = append(transferIDs, transferID)
+
+			By("creating new transfer task")
+			task, err := client.CreateTaskWithSignArgs(
+				"channelTransferByAdmin",
+				cmn.ChannelFiat, cmn.ChannelFiat,
+				ts.Admin(),
+				transferID,
+				"CC",
+				user.AddressBase58Check,
+				"FIAT",
+				"250",
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			tasks = append(tasks, task)
+		}
+
+		ts.ExecuteTasks(cmn.ChannelFiat, cmn.ChannelFiat, tasks...)
+
+		// let transaction settle
+		time.Sleep(time.Second)
+
+		ctx, cancel := context.WithTimeout(clientCtx, network.EventuallyTimeout*2)
+		defer cancel()
+
+		for i, transferID := range transferIDs {
+			By(fmt.Sprintf("checking transfer status %d", i))
+			transferStatusRequest := &cligrpc.TransferStatusRequest{
+				IdTransfer: transferID,
+			}
+
+			excludeStatus := cligrpc.TransferStatusResponse_STATUS_IN_PROCESS.String()
+			value, err := anypb.New(wrapperspb.String(excludeStatus))
+			Expect(err).NotTo(HaveOccurred())
+
+			transferStatusRequest.Options = append(transferStatusRequest.Options, &typepb.Option{
+				Name:  "excludeStatus",
+				Value: value,
+			})
+
+			By("awaiting for channel transfer to respond")
+			statusResponse, err := apiClient.TransferStatus(ctx, transferStatusRequest)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(cligrpc.TransferStatusResponse_STATUS_COMPLETED).To(Equal(statusResponse.Status))
+
+			By("checking result balances")
+			ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
+				"balanceOf", users[i].AddressBase58Check).CheckBalance("750")
+
+			ts.Query(cmn.ChannelCC, cmn.ChannelCC,
+				"allowedBalanceOf", users[i].AddressBase58Check, "FIAT").CheckBalance("250")
+		}
+	})
+
 	It("transfer with insufficient balance", func() {
 		By("creating grpc connection")
 		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
@@ -190,7 +292,7 @@ var _ = Describe("Channel transfer with task executor transaction tests", func()
 		)
 
 		// let transaction settle
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second)
 
 		By("checking transfer status")
 		transferStatusRequest := &cligrpc.TransferStatusRequest{
