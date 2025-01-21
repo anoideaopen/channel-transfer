@@ -379,7 +379,7 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 
 		for _, transaction := range transferBlock.Transactions {
 			isCreateMethod := methods.IsTransferFromMethod(transaction.FuncName)
-			isFullTx = isFullTx || transaction.BatchResponse != nil && transaction.TimeNs != 0
+			isFullTx = isFullTx || (transaction.BatchResponse != nil && transaction.TimeNs != 0)
 
 			if isCreateMethod && transaction.BatchResponse != nil && !isSendEvent {
 				isSendEvent = true
