@@ -2,8 +2,8 @@ package batcher
 
 import (
 	"github.com/go-errors/errors"
-	"github.com/golang/protobuf/proto" //nolint:staticcheck
-	"github.com/hyperledger/fabric-protos-go/common"
+	"github.com/hyperledger/fabric-protos-go-apiv2/common"
+	"google.golang.org/protobuf/proto"
 )
 
 type BlockBuilder struct {
