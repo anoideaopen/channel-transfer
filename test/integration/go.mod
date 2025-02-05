@@ -4,11 +4,11 @@ go 1.23.5
 
 require (
 	github.com/IBM/idemix v0.0.2-0.20240913182345-72941a5f41cd
-	github.com/anoideaopen/acl v0.0.10-0.20250204124308-bf4d4024ba8e
-	github.com/anoideaopen/channel-transfer v0.0.9-0.20241207211837-4682020acb20
-	github.com/anoideaopen/foundation v0.0.11-0.20250204151201-2b4e0521de52
-	github.com/anoideaopen/foundation/test/integration v0.0.0-20250204151201-2b4e0521de52
-	github.com/anoideaopen/robot v0.0.5-0.20250204151905-18ba01a53439
+	github.com/anoideaopen/acl v0.0.10-0.20250205160856-971f8b18bd5c
+	github.com/anoideaopen/channel-transfer v0.0.12-0.20250205160920-0dafde18f9ea
+	github.com/anoideaopen/foundation v0.0.11-0.20250205160831-835209200134
+	github.com/anoideaopen/foundation/test/integration v0.0.0-20250205160831-835209200134
+	github.com/anoideaopen/robot v0.0.5-0.20250205160911-ea69adc0dc3f
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
 	github.com/go-openapi/errors v0.22.0
 	github.com/go-openapi/runtime v0.28.0
