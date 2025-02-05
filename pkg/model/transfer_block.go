@@ -5,7 +5,7 @@ import (
 
 	"github.com/anoideaopen/channel-transfer/pkg/data"
 	"github.com/anoideaopen/foundation/proto"
-	"github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/hyperledger/fabric-protos-go-apiv2/peer"
 )
 
 type CompositeKeysPrefixes struct {

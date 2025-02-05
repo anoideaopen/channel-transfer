@@ -9,8 +9,8 @@ import (
 	"github.com/anoideaopen/channel-transfer/test/builder/chaincode"
 	fpb "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/glog"
-	"github.com/hyperledger/fabric-protos-go/common"
-	"github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/hyperledger/fabric-protos-go-apiv2/common"
+	"github.com/hyperledger/fabric-protos-go-apiv2/peer"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
