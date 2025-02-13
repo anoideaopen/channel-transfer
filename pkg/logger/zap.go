@@ -182,7 +182,7 @@ func mapToArgs(fields map[string]interface{}) []interface{} {
 	}
 	sort.Strings(sortKeys)
 
-	args := make([]interface{}, 0, len(sortKeys)*2) //nolint:gomnd
+	args := make([]interface{}, 0, len(sortKeys)*2)
 	for _, k := range sortKeys {
 		args = append(args, k)
 		args = append(args, fields[k])

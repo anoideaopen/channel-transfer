@@ -190,7 +190,7 @@ func LedgerBlockToTransferBlock(channel string, block model.BlockData) map[model
 }
 
 func transferID(tx model.Transaction) model.ID {
-	if len(tx.Args) < 7 { //nolint:gomnd
+	if len(tx.Args) < 7 {
 		if tx.FuncName == model.TxCreateCCTransferTo.String() && len(tx.Args) > 1 {
 			ccTransfer := proto.CCTransfer{}
 			if err := json.Unmarshal(tx.Args[1], &ccTransfer); err != nil {
