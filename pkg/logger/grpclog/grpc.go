@@ -37,7 +37,7 @@ func UnaryServerInterceptor(l glog.Logger) grpc.UnaryServerInterceptor {
 			glog.Field{K: "grpc.code", V: status.Code(err).String()},
 			glog.Field{
 				K: "grpc.time_ms",
-				V: float32(time.Since(start).Nanoseconds()/1e3) / 1e3, //nolint:gomnd
+				V: float32(time.Since(start).Nanoseconds()/1e3) / 1e3,
 			},
 		)
 
@@ -82,7 +82,7 @@ func StreamServerInterceptor(l glog.Logger) grpc.StreamServerInterceptor {
 			glog.Field{K: "grpc.code", V: status.Code(err).String()},
 			glog.Field{
 				K: "grpc.time_ms",
-				V: float32(time.Since(start).Nanoseconds()/1e3) / 1e3, //nolint:gomnd
+				V: float32(time.Since(start).Nanoseconds()/1e3) / 1e3,
 			},
 		)
 

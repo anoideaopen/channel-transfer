@@ -262,7 +262,6 @@
         "options": {
           "type": "array",
           "items": {
-            "type": "object",
             "$ref": "#/definitions/protobufOption"
           }
         }
@@ -291,7 +290,6 @@
         "items": {
           "type": "array",
           "items": {
-            "type": "object",
             "$ref": "#/definitions/channel_transferTransferItem"
           },
           "title": "items to transfer"
@@ -299,7 +297,6 @@
         "options": {
           "type": "array",
           "items": {
-            "type": "object",
             "$ref": "#/definitions/protobufOption"
           }
         }
@@ -324,7 +321,6 @@
         "items": {
           "type": "array",
           "items": {
-            "type": "object",
             "$ref": "#/definitions/channel_transferTransferItem"
           },
           "title": "items to transfer"
@@ -332,7 +328,6 @@
         "options": {
           "type": "array",
           "items": {
-            "type": "object",
             "$ref": "#/definitions/protobufOption"
           }
         }
@@ -369,7 +364,6 @@
         "options": {
           "type": "array",
           "items": {
-            "type": "object",
             "$ref": "#/definitions/protobufOption"
           }
         }
@@ -402,7 +396,6 @@
         "options": {
           "type": "array",
           "items": {
-            "type": "object",
             "$ref": "#/definitions/protobufOption"
           }
         }
@@ -465,7 +458,6 @@
         "details": {
           "type": "array",
           "items": {
-            "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
         }
