@@ -256,8 +256,14 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("awaiting for channel transfer to respond")
-		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED, "")
-		Expect(err).NotTo(HaveOccurred())
+		waitForAnswerAndCheckStatus(
+			clientCtx,
+			transferCli,
+			transferID,
+			authOpts,
+			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
+			"",
+			networkFound.EventuallyTimeout*2)
 
 		By("checking result balances")
 		for i, expected := range expectedIndustrialBalances {
@@ -321,8 +327,15 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("awaiting for channel transfer to respond")
-		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED, "")
-		Expect(err).NotTo(HaveOccurred())
+		waitForAnswerAndCheckStatus(
+			clientCtx,
+			transferCli,
+			transferID,
+			authOpts,
+			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
+			"",
+			networkFound.EventuallyTimeout*2,
+		)
 
 		By("checking result balances")
 		for i, expected := range expectedIndustrialBalances {
