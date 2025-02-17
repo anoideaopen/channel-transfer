@@ -26,8 +26,6 @@ import (
 )
 
 const (
-	transferExecutionTimeout = 100
-
 	ccCCUpper         = "CC"
 	ccFiatUpper       = "FIAT"
 	ccACLUpper        = "ACL"
@@ -168,8 +166,14 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("awaiting for channel transfer to respond")
-		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED, "")
-		Expect(err).NotTo(HaveOccurred())
+		waitForAnswerAndCheckStatus(
+			clientCtx,
+			transferCli,
+			transferID,
+			authOpts,
+			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
+			"",
+			networkFound.EventuallyTimeout*2)
 
 		By("checking result balances")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
@@ -221,8 +225,15 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("awaiting for channel transfer to respond")
-		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED, "")
-		Expect(err).NotTo(HaveOccurred())
+		waitForAnswerAndCheckStatus(
+			clientCtx,
+			transferCli,
+			transferID,
+			authOpts,
+			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
+			"",
+			networkFound.EventuallyTimeout*2,
+		)
 
 		By("checking result balances")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
@@ -286,8 +297,15 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("awaiting for channel transfer to respond")
-		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSERROR, errWrongChannel)
-		Expect(err).NotTo(HaveOccurred())
+		waitForAnswerAndCheckStatus(
+			clientCtx,
+			transferCli,
+			transferID,
+			authOpts,
+			models.ChannelTransferTransferStatusResponseStatusSTATUSERROR,
+			errWrongChannel,
+			networkFound.EventuallyTimeout*2,
+		)
 
 		By("checking result balances")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
@@ -340,8 +358,15 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("awaiting for channel transfer to respond")
-		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSERROR, errWrongChannel)
-		Expect(err).NotTo(HaveOccurred())
+		waitForAnswerAndCheckStatus(
+			clientCtx,
+			transferCli,
+			transferID,
+			authOpts,
+			models.ChannelTransferTransferStatusResponseStatusSTATUSERROR,
+			errWrongChannel,
+			networkFound.EventuallyTimeout*2,
+		)
 
 		By("checking result balances")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
@@ -493,8 +518,15 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("awaiting for channel transfer to respond")
-		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSERROR, errInsufficientFunds)
-		Expect(err).NotTo(HaveOccurred())
+		waitForAnswerAndCheckStatus(
+			clientCtx,
+			transferCli,
+			transferID,
+			authOpts,
+			models.ChannelTransferTransferStatusResponseStatusSTATUSERROR,
+			errInsufficientFunds,
+			networkFound.EventuallyTimeout*2,
+		)
 
 		By("checking result balances")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
@@ -553,8 +585,14 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("awaiting for channel transfer to respond")
-		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSERROR, errInsufficientFunds)
-		Expect(err).NotTo(HaveOccurred())
+		waitForAnswerAndCheckStatus(
+			clientCtx,
+			transferCli,
+			transferID,
+			authOpts,
+			models.ChannelTransferTransferStatusResponseStatusSTATUSERROR,
+			errInsufficientFunds, networkFound.EventuallyTimeout*2,
+		)
 
 		By("checking result balances")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
@@ -607,8 +645,15 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("awaiting for channel transfer to respond")
-		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSERROR, errInsufficientFunds)
-		Expect(err).NotTo(HaveOccurred())
+		waitForAnswerAndCheckStatus(
+			clientCtx,
+			transferCli,
+			transferID,
+			authOpts,
+			models.ChannelTransferTransferStatusResponseStatusSTATUSERROR,
+			errInsufficientFunds,
+			networkFound.EventuallyTimeout*2,
+		)
 
 		By("checking result balances")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
@@ -660,8 +705,15 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("awaiting for channel transfer to respond")
-		err = waitForAnswerAndCheckStatus(clientCtx, transferCli, transferID, authOpts, models.ChannelTransferTransferStatusResponseStatusSTATUSERROR, errInsufficientFunds)
-		Expect(err).NotTo(HaveOccurred())
+		waitForAnswerAndCheckStatus(
+			clientCtx,
+			transferCli,
+			transferID,
+			authOpts,
+			models.ChannelTransferTransferStatusResponseStatusSTATUSERROR,
+			errInsufficientFunds,
+			networkFound.EventuallyTimeout*2,
+		)
 
 		By("checking result balances")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
@@ -792,25 +844,24 @@ func waitForAnswerAndCheckStatus(
 	authOpts func(c *runtime.ClientOperation),
 	expectedStatus models.ChannelTransferTransferStatusResponseStatus,
 	expectedError string,
-) error {
-	var (
-		response *transfer.TransferStatusOK
-		err      error
-	)
-	i := 0
-	for i < transferExecutionTimeout {
-		time.Sleep(time.Second * 1)
-		response, err = transferCli.Transfer.TransferStatus(&transfer.TransferStatusParams{IDTransfer: transferID, Context: clientCtx}, authOpts)
+	eventuallyTimeout time.Duration,
+) {
+	Eventually(func() error {
+		response, err := transferCli.Transfer.TransferStatus(&transfer.TransferStatusParams{
+			IDTransfer: transferID,
+			Context:    clientCtx,
+		}, authOpts)
 		if err != nil {
 			return err
 		}
-		if expectedStatus != models.ChannelTransferTransferStatusResponseStatusSTATUSERROR && *response.Payload.Status == models.ChannelTransferTransferStatusResponseStatusSTATUSERROR {
+		if expectedStatus != models.ChannelTransferTransferStatusResponseStatusSTATUSERROR &&
+			*response.Payload.Status == models.ChannelTransferTransferStatusResponseStatusSTATUSERROR {
 			return fmt.Errorf("error occured: %s", response.Payload.Message)
 		}
-		if err := checkResponseStatus(response.Payload, expectedStatus, expectedError); err == nil {
-			return nil
+		if err = checkResponseStatus(response.Payload, expectedStatus, expectedError); err != nil {
+			return err
 		}
-		i++
-	}
-	return fmt.Errorf("status %s was not received", string(expectedStatus))
+
+		return nil
+	}, eventuallyTimeout, time.Second).ShouldNot(HaveOccurred())
 }
