@@ -33,7 +33,7 @@ require (
 	github.com/hyperledger/fabric v1.4.0-rc1.0.20250212230350-0211a21efb5a
 	github.com/onsi/ginkgo/v2 v2.22.2
 	github.com/onsi/gomega v1.36.2
-	google.golang.org/grpc v1.70.0
+	google.golang.org/grpc v1.71.0
 	google.golang.org/protobuf v1.36.5
 )
 
@@ -111,14 +111,14 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
 	github.com/google/certificate-transparency-go v1.0.21 // indirect
-	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/pprof v0.0.0-20241210010833-40e02aabc2ad // indirect
 	github.com/gorilla/handlers v1.5.2 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus v1.0.1 // indirect
-	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.1.0 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.1 // indirect
+	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.1 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3 // indirect
 	github.com/holiman/uint256 v1.3.2 // indirect
 	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/hyperledger-labs/SmartBFT v0.0.0-20241013183757-134292d4208a // indirect
@@ -127,7 +127,7 @@ require (
 	github.com/hyperledger/fabric-chaincode-go/v2 v2.3.0 // indirect
 	github.com/hyperledger/fabric-config v0.3.0 // indirect
 	github.com/hyperledger/fabric-lib-go v1.1.3-0.20240523144151-25edd1eaf5f5 // indirect
-	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.6 // indirect
+	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.7 // indirect
 	github.com/hyperledger/fabric-sdk-go v1.0.1-0.20210927191040-3e3a3c6aeec9 // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -203,15 +203,15 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.35.0 // indirect
-	golang.org/x/mod v0.22.0 // indirect
-	golang.org/x/net v0.34.0 // indirect
-	golang.org/x/sync v0.11.0 // indirect
-	golang.org/x/sys v0.30.0 // indirect
-	golang.org/x/text v0.22.0 // indirect
-	golang.org/x/tools v0.29.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20250212204824-5a70512c5d8b // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250212204824-5a70512c5d8b // indirect
+	golang.org/x/crypto v0.36.0 // indirect
+	golang.org/x/mod v0.24.0 // indirect
+	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/sync v0.12.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
+	golang.org/x/tools v0.31.0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
