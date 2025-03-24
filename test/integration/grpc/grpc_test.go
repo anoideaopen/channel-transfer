@@ -25,9 +25,7 @@ import (
 )
 
 var _ = Describe("Channel transfer GRPC tests", func() {
-	var (
-		ts *client.FoundationTestSuite
-	)
+	var ts *client.FoundationTestSuite
 
 	BeforeEach(func() {
 		ts = client.NewTestSuite(components)
@@ -355,7 +353,6 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 		statusResponse, err := apiClient.TransferStatus(ctx, transferStatusRequest)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(statusResponse.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_COMPLETED))
-
 	})
 
 	It("transfer wrong STATUS_CANCELLED filter test", func() {
@@ -532,7 +529,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 
 		By("creating channel transfer API client")
 		apiClient = cligrpc.NewAPIClient(conn)
-		
+
 		By("creating channel transfer request")
 		transferID := uuid.NewString()
 

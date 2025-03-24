@@ -43,9 +43,7 @@ const (
 )
 
 var _ = Describe("Channel transfer HTTP tests", func() {
-	var (
-		ts *client.FoundationTestSuite
-	)
+	var ts *client.FoundationTestSuite
 
 	BeforeEach(func() {
 		ts = client.NewTestSuite(components)
@@ -534,7 +532,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 
 		ts.Query(cmn.ChannelCC, cmn.ChannelCC,
 			"allowedBalanceOf", user.AddressBase58Check, ccFiatUpper).CheckBalance(sendAmount)
-
 	})
 
 	It("customer transfer insufficient funds", func() {

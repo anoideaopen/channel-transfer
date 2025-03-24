@@ -256,17 +256,17 @@ func (h *Handler) syncAPIRequests(ctx context.Context) {
 
 		switch status {
 		case model.ToBatchNotFound, model.ErrorTransferTo, model.ErrorChannelToNotFound:
-			request.TransferResult.Status = proto.TransferStatusResponse_STATUS_ERROR.String()
+			request.Status = proto.TransferStatusResponse_STATUS_ERROR.String()
 			if err != nil {
-				request.TransferResult.Message = err.Error()
+				request.Message = err.Error()
 			}
 		case model.CompletedTransferTo:
-			request.TransferResult.Status = proto.TransferStatusResponse_STATUS_COMPLETED.String()
+			request.Status = proto.TransferStatusResponse_STATUS_COMPLETED.String()
 		case model.InternalErrorTransferStatus:
 			if !errors.Is(err, data.ErrObjectNotFound) {
 				continue
 			}
-			request.TransferResult.Status = proto.TransferStatusResponse_STATUS_CANCELED.String()
+			request.Status = proto.TransferStatusResponse_STATUS_CANCELED.String()
 		default:
 			continue
 		}
