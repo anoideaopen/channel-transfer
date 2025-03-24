@@ -33,9 +33,7 @@ const (
 )
 
 var _ = Describe("Channel multi transfer HTTP tests", func() {
-	var (
-		ts *client.FoundationTestSuite
-	)
+	var ts *client.FoundationTestSuite
 
 	BeforeEach(func() {
 		ts = client.NewTestSuite(components)
