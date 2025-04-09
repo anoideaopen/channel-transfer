@@ -36,7 +36,7 @@ const activeTransferCount = 1000
 func Run(ctx context.Context, cfg *config.Config, version string) error {
 	startTime := time.Now()
 
-	log, flush, err := createLoggerWithContext(ctx, cfg, version)
+	ctx, log, flush, err := createLoggerWithContext(ctx, cfg, version)
 	if err != nil {
 		panic(fmt.Sprintf("%+v", err))
 	}
@@ -84,6 +84,7 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 	)
 
 	storage, err := redis2.NewStorage(
+		ctx,
 		redis.NewUniversalClient(
 			&redis.UniversalOptions{
 				Addrs:     cfg.RedisStorage.Addr,
@@ -166,16 +167,16 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 	return nil
 }
 
-func createLoggerWithContext(ctx context.Context, cfg *config.Config, version string) (glog.Logger, logger.SyncLoggerMethod, error) {
+func createLoggerWithContext(ctx context.Context, cfg *config.Config, version string) (context.Context, glog.Logger, logger.SyncLoggerMethod, error) {
 	lggr, method, err := logger.CreateLogger(cfg.LogType, cfg.LogLevel)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	ctx = glog.NewContext(ctx, lggr)
 	log := lggr.With(logger.Labels{Version: version, Component: logger.ComponentMain}.Fields()...)
 
-	return log, method, nil
+	return ctx, log, method, nil
 }
 
 func getFabricSdkVersion(log glog.Logger) string {
