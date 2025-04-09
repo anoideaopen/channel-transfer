@@ -53,6 +53,7 @@ func TestInMemRedisStorage(t *testing.T) {
 	mredis := miniredis.RunT(t)
 
 	repo, err := NewStorage(
+		context.Background(),
 		redis.NewUniversalClient(
 			&redis.UniversalOptions{
 				Addrs: []string{mredis.Addr()},

@@ -26,11 +26,12 @@ type Storage struct {
 // NewStorage creates an instance of the Storage structure with Redis client
 // instance.
 func NewStorage(
+	ctx context.Context,
 	rdb redis.UniversalClient,
 	ttl time.Duration,
 	dbPrefix string,
 ) (*Storage, error) {
-	if err := rdb.Ping(context.TODO()).Err(); err != nil {
+	if err := rdb.Ping(ctx).Err(); err != nil {
 		return nil, err
 	}
 

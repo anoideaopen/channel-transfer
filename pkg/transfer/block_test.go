@@ -14,6 +14,7 @@ import (
 
 func TestBlock(t *testing.T) {
 	storage, err := redis.NewStorage(
+		context.Background(),
 		redis2.NewUniversalClient(&redis2.UniversalOptions{
 			Addrs: []string{miniredis.RunT(t).Addr()},
 		}),
