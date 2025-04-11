@@ -14,7 +14,6 @@ import (
 	redis2 "github.com/anoideaopen/channel-transfer/pkg/data/redis"
 	"github.com/anoideaopen/channel-transfer/pkg/demultiplexer"
 	"github.com/anoideaopen/channel-transfer/pkg/hlf"
-	"github.com/anoideaopen/channel-transfer/pkg/hlf/hlfprofile"
 	"github.com/anoideaopen/channel-transfer/pkg/logger"
 	"github.com/anoideaopen/channel-transfer/pkg/metrics"
 	"github.com/anoideaopen/channel-transfer/pkg/metrics/prometheus"
@@ -38,7 +37,7 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 
 	ctx, log, flush, err := createLoggerWithContext(ctx, cfg, version)
 	if err != nil {
-		panic(fmt.Sprintf("%+v", err))
+		return errors.Errorf("%+v", err)
 	}
 	defer func() {
 		if err = flush(); err != nil {
@@ -49,11 +48,6 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 	cfgForLog, _ := json.MarshalIndent(cfg.WithoutSensitiveData(), "", "\t")
 	log.Infof("version: %s", version)
 	log.Infof("config: \n%s\n", cfgForLog)
-
-	hlfProfile, err := hlfprofile.ParseProfile(cfg.ProfilePath)
-	if err != nil {
-		panic(fmt.Sprintf("hlf config: %+v", err))
-	}
 
 	hc := healthcheck.New()
 
@@ -73,7 +67,7 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 		version,
 	)
 	if err != nil {
-		panic(fmt.Sprintf("metrics: %+v", err))
+		return errors.Errorf("metrics: %+v", err)
 	}
 
 	httpSrv := service.New(
@@ -97,7 +91,7 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 		cfg.RedisStorage.DBPrefix,
 	)
 	if err != nil {
-		panic(fmt.Sprintf("redis: %+v", err))
+		return errors.Errorf("redis: %+v", err)
 	}
 
 	requests := make(chan model.TransferRequest, cfg.Options.NewestRequestStreamBufferSize)
@@ -105,12 +99,17 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 
 	dm, err := demultiplexer.NewDemultiplexer(ctx, requests, activeTransferCount)
 	if err != nil {
-		panic(fmt.Sprintf("demultiplexer: %+v", err))
+		return errors.Errorf("demultiplexer: %+v", err)
 	}
 
-	pool, err := hlf.NewPool(ctx, cfg.Channels, cfg.UserName, cfg.Options, cfg.ProfilePath, *hlfProfile, storage)
+	connectionProfile, err := hlf.NewConnectionProfile(cfg.ProfilePath, cfg.ProfileRaw)
 	if err != nil {
-		panic(fmt.Sprintf("pool: %+v", err))
+		return errors.Errorf("hlf config: %+v", err)
+	}
+
+	pool, err := hlf.NewPool(ctx, cfg.Channels, cfg.UserName, cfg.Options, connectionProfile, storage)
+	if err != nil {
+		return errors.Errorf("pool: %+v", err)
 	}
 
 	eGroup, eGroupCtx := errgroup.WithContext(ctx)
@@ -121,7 +120,7 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 
 	err = transfer.Execute(eGroupCtx, eGroup, cfg.ListenAPI, cfg.Channels, requests, storage, grpcMetrics)
 	if err != nil {
-		panic(fmt.Sprintf("%+v", err))
+		return errors.Errorf("%+v", err)
 	}
 
 	eGroup.Go(func() error {

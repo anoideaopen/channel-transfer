@@ -29,14 +29,18 @@ type ConnProfile struct {
 	} `yaml:"organizations"`
 }
 
-func ParseProfile(profilePath string) (*HlfProfile, error) {
+func ParseProfileFromFile(profilePath string) (*HlfProfile, error) {
 	b, err := os.ReadFile(profilePath)
 	if err != nil {
 		return nil, errors.Errorf("error read connection profile path: %w", err)
 	}
 
+	return ParseProfileBytes(b)
+}
+
+func ParseProfileBytes(profileBytes []byte) (*HlfProfile, error) {
 	cp := ConnProfile{}
-	if err = yaml.Unmarshal(b, &cp); err != nil {
+	if err := yaml.Unmarshal(profileBytes, &cp); err != nil {
 		return nil, errors.Errorf("error unmarshal connection profile: %w", err)
 	}
 
@@ -53,5 +57,5 @@ func ParseProfile(profilePath string) (*HlfProfile, error) {
 		CryptoStorePath:     cp.Client.CredentialStore.CryptoStore.Path,
 	}
 
-	return res, err
+	return res, nil
 }

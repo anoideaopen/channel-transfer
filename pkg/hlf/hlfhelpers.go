@@ -33,7 +33,20 @@ func IsConnectionFailedErr(err error) bool {
 	return ok && status.Code(s.Code) == status.ConnectionFailed
 }
 
-func createFabricSDK(
+func createFabricSDKFromRaw(connectionProfile []byte) (*fabsdk.FabricSDK, error) {
+	configBackends, err := config.FromRaw(connectionProfile, "yaml")()
+	if err != nil {
+		return nil, errors.Errorf("parse sdk config: %w", err)
+	}
+
+	fabSDK, err := fabsdk.New(configBackendsToProvider(configBackends))
+	if err != nil {
+		return nil, errors.New(err)
+	}
+	return fabSDK, nil
+}
+
+func createFabricSDKFromFile(
 	connectionProfile string,
 ) (*fabsdk.FabricSDK, error) {
 	configBackends, err := config.FromFile(connectionProfile)()

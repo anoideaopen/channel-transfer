@@ -29,7 +29,7 @@ func main() {
 	defer stop()
 
 	if err = app.Run(ctx, cfg, AppInfoVer); err != nil {
-		fmt.Printf("%+v\n", err)
+		fmt.Printf("channel transfer failed starting: %+v\n", err)
 		exitCode = 1
 	}
 }
