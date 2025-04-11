@@ -21,7 +21,8 @@ const (
 type Config struct {
 	LogLevel    string `mapstructure:"logLevel" validate:"required"`
 	LogType     string `mapstructure:"logType" validate:"required"`
-	ProfilePath string `mapstructure:"profilePath" validate:"required"`
+	ProfilePath string `mapstructure:"profilePath"  validate:"required_without=ProfileRaw"`
+	ProfileRaw  string `mapstructure:"profileRaw" validate:"required_without=ProfilePath"`
 	UserName    string `mapstructure:"userName" validate:"required"`
 
 	ListenAPI    *ListenAPI    `mapstructure:"listenAPI"`
@@ -267,10 +268,15 @@ func getConfigPathFromParams() (string, bool) {
 
 // WithoutSensitiveData returns copy of config with empty sensitive data. This config might be used for trace logging.
 func (c Config) WithoutSensitiveData() Config {
+	profileRaw := c.ProfileRaw
+	if profileRaw != "" {
+		profileRaw = sensitiveDataMask
+	}
 	return Config{
 		LogLevel:     c.LogLevel,
 		LogType:      c.LogType,
 		ProfilePath:  c.ProfilePath,
+		ProfileRaw:   profileRaw,
 		UserName:     c.UserName,
 		RedisStorage: c.RedisStorage.withoutSensitiveData(),
 		PromMetrics:  c.PromMetrics,

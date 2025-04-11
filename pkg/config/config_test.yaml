@@ -3,6 +3,7 @@ logLevel: info # values: error, warning, info, debug
 logType: console # values: console, json, gcp
 # Fabric
 profilePath: "profilePath" # path to Fabric connection profile
+profileRaw: "aGVsbG8=" # base64 encoded Fabric connection profile
 userName: "userName" # Fabric user
 
 # Listen section
