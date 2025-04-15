@@ -12,8 +12,8 @@
 - values: console, json, gcp
 #### CHANNEL_TRANSFER_PROFILEPATH
 - path to Fabric connection profile 
-#### CHANNEL_TRANSFER_PROFILERAW
-- base64 encoded Fabric connection profile
+#### CHANNEL_TRANSFER_HLF_CONNECTION_YAML
+- HLF connection profile in YAML format
 #### CHANNEL_TRANSFER_USERNAME
 - Fabric user
 #### CHANNEL_TRANSFER_USESMARTBFT
