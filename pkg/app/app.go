@@ -102,7 +102,7 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 		return errors.Errorf("demultiplexer: %+v", err)
 	}
 
-	connectionProfile, err := hlf.NewConnectionProfile(cfg.ProfilePath, cfg.ProfileRaw)
+	connectionProfile, err := hlf.NewConnectionProfile(cfg.ProfilePath)
 	if err != nil {
 		return errors.Errorf("hlf config: %+v", err)
 	}

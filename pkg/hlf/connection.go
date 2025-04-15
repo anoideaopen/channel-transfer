@@ -1,36 +1,42 @@
 package hlf
 
 import (
-	"encoding/base64"
+	"os"
 
+	"github.com/anoideaopen/channel-transfer/pkg/config"
 	"github.com/anoideaopen/channel-transfer/pkg/hlf/hlfprofile"
 	"github.com/go-errors/errors"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 )
 
+const ConnectionYamlEnvName = config.EnvPrefix + "_HLF_CONNECTION_YAML"
+
 type ConnectionProfile struct {
 	Path string
-	Raw  []byte
+	Raw  string
 }
 
-func NewConnectionProfile(path string, base64Encoded string) (ConnectionProfile, error) {
-	var raw []byte
-	if base64Encoded != "" {
-		var err error
-		raw, err = base64.StdEncoding.DecodeString(base64Encoded)
-		if err != nil {
-			return ConnectionProfile{}, err
-		}
+func NewConnectionProfile(path string) (ConnectionProfile, error) {
+	if path != "" {
+		return ConnectionProfile{
+			Path: path,
+			Raw:  "",
+		}, nil
 	}
-	return ConnectionProfile{
-		Path: path,
-		Raw:  raw,
-	}, nil
+
+	if raw, ok := os.LookupEnv(ConnectionYamlEnvName); ok {
+		return ConnectionProfile{
+			Path: "",
+			Raw:  raw,
+		}, nil
+	}
+
+	return ConnectionProfile{}, errors.Errorf("hlf connection profile not found")
 }
 
 func fabricSDKFromConnectionProfile(profile ConnectionProfile) (*fabsdk.FabricSDK, error) {
-	if profile.Raw != nil {
-		return createFabricSDKFromRaw(profile.Raw)
+	if profile.Raw != "" {
+		return createFabricSDKFromRaw([]byte(profile.Raw))
 	}
 	return createFabricSDKFromFile(profile.Path)
 }
@@ -40,8 +46,8 @@ func hlfProfileFromConnectionProfile(profile ConnectionProfile) (hlfprofile.HlfP
 		hlfProfile *hlfprofile.HlfProfile
 		err        error
 	)
-	if profile.Raw != nil {
-		hlfProfile, err = hlfprofile.ParseProfileBytes(profile.Raw)
+	if profile.Raw != "" {
+		hlfProfile, err = hlfprofile.ParseProfileBytes([]byte(profile.Raw))
 		if err != nil {
 			return hlfprofile.HlfProfile{}, errors.Errorf("failed parsing profile from raw: %w", err)
 		}
