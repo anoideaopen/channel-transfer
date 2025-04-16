@@ -33,7 +33,6 @@ import (
 
 type Pool struct {
 	userName       string
-	profilePath    string
 	hlfProfile     hlfprofile.HlfProfile
 	opts           config.Options
 	additiveToTTL  time.Duration
@@ -56,8 +55,7 @@ func NewPool(
 	channels []config.Channel,
 	userName string,
 	opts config.Options,
-	profilePath string,
-	profile hlfprofile.HlfProfile,
+	profile ConnectionProfile,
 	storage *redis.Storage,
 ) (*Pool, error) {
 	log := glog.FromContext(ctx).With(logger.Labels{Component: logger.ComponentHLFStreamsPool}.Fields()...)
@@ -65,10 +63,8 @@ func NewPool(
 	m := metrics.FromContext(ctx)
 
 	pool := &Pool{
-		profilePath:    profilePath,
 		userName:       userName,
 		opts:           opts,
-		hlfProfile:     profile,
 		blocKStorage:   transfer.NewLedgerBlock(storage),
 		checkPoint:     transfer.NewBlockCheckpoint(storage),
 		requestStorage: transfer.NewRequest(storage),
@@ -79,7 +75,16 @@ func NewPool(
 	}
 
 	var err error
-	pool.fabricSDK, err = createFabricSDK(profilePath)
+	pool.hlfProfile, err = hlfProfileFromConnectionProfile(profile)
+	if err != nil {
+		return nil, errorshlp.WrapWithDetails(
+			fmt.Errorf("parsing connection profile: %w", err),
+			nerrors.ErrTypeHlf,
+			nerrors.ComponentHLFStreamsPool,
+		)
+	}
+
+	pool.fabricSDK, err = fabricSDKFromConnectionProfile(profile)
 	if err != nil {
 		return nil, errorshlp.WrapWithDetails(
 			fmt.Errorf("create connection to fabric: %w", err),
@@ -96,9 +101,9 @@ func NewPool(
 	// map of gRPC clients for every gRPC address in channels config
 	gRPCClients := make(map[string]*grpc.ClientConn)
 	for _, channel := range channels {
-		channelProvider := createChannelProvider(channel.Name, userName, profile.OrgName, pool.fabricSDK)
+		channelProvider := createChannelProvider(channel.Name, userName, pool.hlfProfile.OrgName, pool.fabricSDK)
 
-		// if the channel has batcher options, create the client for it
+		// if the channel has task executor options, create the client for it
 		var gRPCClient *grpc.ClientConn = nil
 		if channel.TaskExecutor != nil {
 			var ok bool

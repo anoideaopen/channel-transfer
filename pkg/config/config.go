@@ -21,7 +21,7 @@ const (
 type Config struct {
 	LogLevel    string `mapstructure:"logLevel" validate:"required"`
 	LogType     string `mapstructure:"logType" validate:"required"`
-	ProfilePath string `mapstructure:"profilePath" validate:"required"`
+	ProfilePath string `mapstructure:"profilePath"`
 	UserName    string `mapstructure:"userName" validate:"required"`
 
 	ListenAPI    *ListenAPI    `mapstructure:"listenAPI"`
