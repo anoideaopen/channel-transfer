@@ -4,7 +4,7 @@ go 1.24.2
 
 require (
 	github.com/anoideaopen/common-component v0.0.6
-	github.com/anoideaopen/foundation v0.1.1
+	github.com/anoideaopen/foundation v0.1.2-0.20250505123125-7b3e829dbe12
 	github.com/anoideaopen/glog v0.0.3
 	github.com/avast/retry-go/v4 v4.6.0
 	github.com/felixge/httpsnoop v1.0.4
