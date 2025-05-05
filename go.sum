@@ -26,8 +26,8 @@ github.com/anoideaopen/common-component v0.0.6 h1:drRkPGoeIowzyUZn/YUdNa3GmD5j1p
 github.com/anoideaopen/common-component v0.0.6/go.mod h1:m1adEQdkVfAy4efFlY3+uqL73dAKXRSOiTsklHOzf3c=
 github.com/anoideaopen/fabric-sdk-go v0.1.0 h1:E4eDgq4sb0OCY4mPcXveVgywgWlzlw+wvFLxxmsvl84=
 github.com/anoideaopen/fabric-sdk-go v0.1.0/go.mod h1:5e4ziwaXJQmkUtQOIkb1oEwwP8KxptEN9o2vuk/pzJ0=
-github.com/anoideaopen/foundation v0.1.1 h1:lfyqDgPrq6VoCQBGwJ4U1ob2wIbwGvlYqiqa8PMP15I=
-github.com/anoideaopen/foundation v0.1.1/go.mod h1:evUZQt4R9LdRexgEWqLlSo6Mbjf5K4NmvdY8NlS6Ckw=
+github.com/anoideaopen/foundation v0.1.2-0.20250505123125-7b3e829dbe12 h1:ym9sBVqKdRv1Qmwmxx1pnbyxPm4C5/02MEDc4TR1yLY=
+github.com/anoideaopen/foundation v0.1.2-0.20250505123125-7b3e829dbe12/go.mod h1:I9ZyLQTmrJW9hMWF9FvXpkgwpYPxUcFADhcvFkuuzRA=
 github.com/anoideaopen/glog v0.0.3 h1:vsWM5QvHzTMbrDy3cydkNPFpfdWrxeC8ne02f//qNaA=
 github.com/anoideaopen/glog v0.0.3/go.mod h1:8J4509ClNmF/kvvPA8XFKZ7OX+860JaFH3+nXVD+R3k=
 github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
