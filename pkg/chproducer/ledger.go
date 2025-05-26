@@ -203,6 +203,12 @@ func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer
 		return status, err
 	}
 
+	request, err := h.requestStorage.TransferFetch(ctx, model.ID(transfer.GetId()))
+	if err != nil {
+		h.log.Warningf("failed fetching transfer request from storage: %w", err)
+	}
+	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
+
 	doer, err := h.poolController.Executor(channelName)
 	if err != nil {
 		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
