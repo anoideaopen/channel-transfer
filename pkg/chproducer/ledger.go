@@ -199,15 +199,15 @@ func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer
 	channelName := strings.ToLower(transfer.GetTo())
 	h.log.Debugf("create cc transfer to, channel %s, id %s", channelName, transfer.GetId())
 
-	if status, err := h.expandTO(ctx, channelName); err != nil {
-		return status, err
-	}
-
 	request, err := h.requestStorage.TransferFetch(ctx, model.ID(transfer.GetId()))
 	if err != nil {
 		h.log.Warningf("failed fetching transfer request from storage: %w", err)
 	}
 	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
+
+	if status, err := h.expandTO(ctx, channelName); err != nil {
+		return status, err
+	}
 
 	doer, err := h.poolController.Executor(channelName)
 	if err != nil {

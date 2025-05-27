@@ -26,6 +26,7 @@ import (
 	"github.com/go-errors/errors"
 	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	prometheus2 "github.com/prometheus/client_golang/prometheus"
+	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/sync/errgroup"
 )
@@ -77,21 +78,28 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 		serviceHandlers...,
 	)
 
+	rdb := redis.NewUniversalClient(
+		&redis.UniversalOptions{
+			Addrs:     cfg.RedisStorage.Addr,
+			Password:  cfg.RedisStorage.Password,
+			ReadOnly:  false,
+			TLSConfig: cfg.RedisStorage.TLSConfig(),
+		},
+	)
+
 	storage, err := redis2.NewStorage(
 		ctx,
-		redis.NewUniversalClient(
-			&redis.UniversalOptions{
-				Addrs:     cfg.RedisStorage.Addr,
-				Password:  cfg.RedisStorage.Password,
-				ReadOnly:  false,
-				TLSConfig: cfg.RedisStorage.TLSConfig(),
-			},
-		),
+		rdb,
 		*cfg.Options.TTL+*cfg.RedisStorage.AfterTransferTTL,
 		cfg.RedisStorage.DBPrefix,
 	)
 	if err != nil {
 		return errors.Errorf("redis: %+v", err)
+	}
+
+	// Enable tracing instrumentation.
+	if err := redisotel.InstrumentTracing(rdb); err != nil {
+		log.Warning(errors.New(err))
 	}
 
 	requests := make(chan model.TransferRequest, cfg.Options.NewestRequestStreamBufferSize)
