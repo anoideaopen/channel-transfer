@@ -104,7 +104,7 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 			if err != nil {
 				h.log.Warningf("failed fetching transfer request from storage: %w", err)
 			}
-			ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
+			ctx := telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 			switch status {
 			case model.InProgressTransferFrom:
 				if lastErr != nil {
