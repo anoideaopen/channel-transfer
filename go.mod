@@ -1,10 +1,10 @@
 module github.com/anoideaopen/channel-transfer
 
-go 1.24.2
+go 1.24.4
 
 require (
 	github.com/anoideaopen/common-component v0.0.6
-	github.com/anoideaopen/foundation v0.1.2-0.20250505123125-7b3e829dbe12
+	github.com/anoideaopen/foundation v0.1.2-0.20250612204904-44ff92d89759
 	github.com/anoideaopen/glog v0.0.3
 	github.com/avast/retry-go/v4 v4.6.0
 	github.com/felixge/httpsnoop v1.0.4
@@ -21,7 +21,7 @@ require (
 	github.com/slok/go-http-metrics v0.13.0
 	github.com/spf13/viper v1.20.0-alpha.6
 	github.com/stretchr/testify v1.10.0
-	go.opentelemetry.io/otel v1.34.0
+	go.opentelemetry.io/otel v1.35.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/sync v0.13.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20250313205543-e70fdf4c4cb4
@@ -81,7 +81,7 @@ require (
 	github.com/yuin/gopher-lua v1.1.0 // indirect
 	github.com/zmap/zcrypto v0.0.0-20190729165852-9051775e6a2e // indirect
 	github.com/zmap/zlint v0.0.0-20190806154020-fd021b4cfbeb // indirect
-	go.opentelemetry.io/otel/trace v1.34.0 // indirect
+	go.opentelemetry.io/otel/trace v1.35.0 // indirect
 	go.uber.org/atomic v1.11.0
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.37.0 // indirect
