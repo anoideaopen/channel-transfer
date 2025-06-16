@@ -432,7 +432,10 @@ func (h *Handler) responseWithAttempt(ctx context.Context, channel string, trans
 }
 
 func (h *Handler) expandTO(ctx context.Context, channelTO string) (model.StatusKind, error) {
+	const keyChannel = "channel"
+
 	if !h.poolController.Has(channelTO) {
+		ctx = context.WithValue(ctx, keyChannel, h.channel)
 		err := h.poolController.Expand(ctx, channelTO)
 		if err != nil {
 			if errMsg := re.FindString(err.Error()); errMsg != "" {

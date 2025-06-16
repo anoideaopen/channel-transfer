@@ -248,6 +248,27 @@ func (pool *Pool) Has(channel string) bool {
 	return pool.streams.exists(channelKey(channel))
 }
 
+func (pool *Pool) getGRPCClientByChannelFromCtx(ctx context.Context) *grpc.ClientConn {
+	const keyChannel = "channel"
+
+	channel, ok := ctx.Value(keyChannel).(string)
+	if !ok {
+		return nil
+	}
+
+	key := channelKey(channel)
+	stream, ok := pool.streams.load(key)
+	if !ok {
+		return nil
+	}
+
+	if stream.executor == nil && stream.executor.gRPCExecutor == nil {
+		return nil
+	}
+
+	return stream.executor.gRPCExecutor.Client
+}
+
 func (pool *Pool) Expand(ctx context.Context, channel string) error {
 	pool.mutex.Lock()
 	defer pool.mutex.Unlock()
@@ -260,7 +281,7 @@ func (pool *Pool) Expand(ctx context.Context, channel string) error {
 
 	channelProvider := createChannelProvider(channel, pool.userName, pool.hlfProfile.OrgName, pool.fabricSDK)
 
-	err := pool.createExecutor(ctx, channel, channelProvider, nil)
+	err := pool.createExecutor(ctx, channel, channelProvider, pool.getGRPCClientByChannelFromCtx(ctx))
 	if err != nil {
 		return errorshlp.WrapWithDetails(err, nerrors.ErrTypeHlf, nerrors.ComponentHLFStreamsPool)
 	}
