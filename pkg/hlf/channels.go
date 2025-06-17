@@ -52,7 +52,7 @@ func (info *channelsInfoProvider) getGRPCClientByChannelName(channel string) (*g
 	}
 
 	var (
-		gRPCClient *grpc.ClientConn = nil
+		gRPCClient *grpc.ClientConn
 		err        error
 	)
 	chParams := info.channelsParams[channel]
