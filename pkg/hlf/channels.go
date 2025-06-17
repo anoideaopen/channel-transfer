@@ -51,7 +51,7 @@ func (info *channelsInfoProvider) getGRPCClientByChannelName(channel string) (*g
 	chParams := info.channelsParams[channel]
 
 	if chParams.TaskExecutor == nil {
-		return nil, fmt.Errorf("no task executor for channel %s", channel)
+		return nil, nil
 	}
 
 	info.mutex.Lock()
