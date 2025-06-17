@@ -131,17 +131,16 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 		return pool.RunCollectors(eGroupCtx)
 	})
 
-	for _, channel := range cfg.Channels {
-		chName := channel.Name
+	for _, channel := range pool.Channels() {
 		eGroup.Go(func() error {
 			producer, err := chproducer.NewHandler(
 				ctx,
-				chName,
+				channel,
 				*cfg.Options.TTL,
 				cfg.Options.TransfersInHandleOnChannel,
 				storage,
 				pool,
-				dm.Stream(chName),
+				dm.Stream(channel),
 			)
 			if err != nil {
 				return err

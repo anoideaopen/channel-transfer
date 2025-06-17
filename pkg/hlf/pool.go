@@ -48,6 +48,8 @@ type Pool struct {
 	gCtx    context.Context
 	mutex   sync.RWMutex
 	events  map[string]chan struct{}
+
+	channelsInfo *channelsInfoProvider
 }
 
 func NewPool(
@@ -98,28 +100,15 @@ func NewPool(
 		return nil, errorshlp.WrapWithDetails(errors.New("upper bound of ttl is small, change ttl option"), nerrors.ErrTypeHlf, nerrors.ComponentHLFStreamsPool)
 	}
 
-	// map of gRPC clients for every gRPC address in channels config
-	gRPCClients := make(map[string]*grpc.ClientConn)
-	for _, channel := range channels {
-		channelProvider := createChannelProvider(channel.Name, userName, pool.hlfProfile.OrgName, pool.fabricSDK)
+	pool.channelsInfo, err = newChannelsInfoProvider(channels, opts.ServedChannels)
+	if err != nil {
+		return nil, errorshlp.WrapWithDetails(fmt.Errorf("failed creating servedChannels info data: %w", err), nerrors.ErrTypeHlf, nerrors.ComponentHLFStreamsPool)
+	}
 
-		// if the channel has task executor options, create the client for it
-		var gRPCClient *grpc.ClientConn = nil
-		if channel.TaskExecutor != nil {
-			var ok bool
-			// check if a client for the gRPC address already created
-			gRPCClient, ok = gRPCClients[channel.TaskExecutor.AddressGRPC]
-			if !ok {
-				// if not, create the new one
-				gRPCClient, err = createGRPCClient(channel.TaskExecutor)
-				if err != nil {
-					return nil, errorshlp.WrapWithDetails(fmt.Errorf("create gRPC client: %w", err), nerrors.ErrTypeHlf, nerrors.ComponentHLFStreamsPool)
-				}
-				gRPCClients[channel.TaskExecutor.AddressGRPC] = gRPCClient
-			}
-		}
+	for _, channel := range pool.Channels() {
+		channelProvider := createChannelProvider(channel, userName, pool.hlfProfile.OrgName, pool.fabricSDK)
 
-		err = pool.createExecutor(ctx, channel.Name, channelProvider, gRPCClient)
+		err = pool.createExecutor(ctx, channel, channelProvider)
 		if err != nil {
 			return nil, errorshlp.WrapWithDetails(
 				fmt.Errorf("create executor: %w", err),
@@ -128,7 +117,7 @@ func NewPool(
 			)
 		}
 
-		pool.events[channel.Name] = make(chan struct{}, 1)
+		pool.events[channel] = make(chan struct{}, 1)
 	}
 
 	return pool, nil
@@ -202,7 +191,6 @@ func (pool *Pool) createExecutor(
 	ctx context.Context,
 	channel string,
 	channelProvider hlfcontext.ChannelProvider,
-	gRPCClient *grpc.ClientConn,
 ) error {
 	if pool.streams.exists(channelKey(channel)) {
 		return ErrExecutorAlreadyExists
@@ -224,6 +212,10 @@ func (pool *Pool) createExecutor(
 		return fmt.Errorf("start executor: %w", err)
 	}
 
+	gRPCClient, err := pool.channelsInfo.getGRPCClientByChannelName(channel)
+	if err != nil {
+		return fmt.Errorf("get gRPC client by channel %s: %w", channel, err)
+	}
 	if gRPCClient != nil {
 		executor.gRPCExecutor = &gRPCExecutor{
 			Channel: channel,
@@ -260,7 +252,7 @@ func (pool *Pool) Expand(ctx context.Context, channel string) error {
 
 	channelProvider := createChannelProvider(channel, pool.userName, pool.hlfProfile.OrgName, pool.fabricSDK)
 
-	err := pool.createExecutor(ctx, channel, channelProvider, nil)
+	err := pool.createExecutor(ctx, channel, channelProvider)
 	if err != nil {
 		return errorshlp.WrapWithDetails(err, nerrors.ErrTypeHlf, nerrors.ComponentHLFStreamsPool)
 	}
@@ -575,6 +567,13 @@ func (pool *Pool) sendEvent(channel string) {
 	case ev <- struct{}{}:
 	default:
 	}
+}
+
+func (pool *Pool) Channels() []string {
+	if pool.channelsInfo == nil {
+		return []string{}
+	}
+	return pool.channelsInfo.ServedChannels()
 }
 
 func createGRPCClient(options *config.TaskExecutor) (*grpc.ClientConn, error) {
