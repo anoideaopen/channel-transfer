@@ -30,8 +30,11 @@ options:
   ttl: 10800s # time to live of transfer
   transfersInHandleOnChannel: 50 # the number of transfers currently being processed in the channel
   newestRequestStreamBufferSize: 50 # size of the request buffer of creating transfers
+  servedChannels: # list of channels (from the full list of channels) served by the channel transfer.
+    - ch1
+    - ch3
 
-# channels for transfer
+# full list of channels available for transfers
 channels:
   - name: ch1
     taskExecutor:

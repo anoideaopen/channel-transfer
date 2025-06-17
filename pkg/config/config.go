@@ -74,6 +74,7 @@ type Options struct {
 	TTL                           *time.Duration `mapstructure:"ttl"`
 	TransfersInHandleOnChannel    uint           `mapstructure:"transfersInHandleOnChannel" validate:"required"`
 	NewestRequestStreamBufferSize uint           `mapstructure:"newestRequestStreamBufferSize" validate:"required"`
+	ServedChannels                []string       `mapstructure:"servedChannels"`
 }
 
 func (eo Options) EffTTL(defOpts Options) (time.Duration, error) {
