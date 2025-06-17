@@ -11,7 +11,7 @@ import (
 // channelsInfoProvider stores and provides data about channels and
 // configuration of connection to them
 type channelsInfoProvider struct {
-	mutex                sync.RWMutex
+	mutex                sync.Mutex
 	servedChannels       []string                    // list of channel names the channel transfer serves
 	channelsParams       map[string]config.Channel   // channel connection info mapped to channel names
 	gRPCClientsByAddress map[string]*grpc.ClientConn // grpc clients mapped to grpc addresses
