@@ -11,7 +11,7 @@ import (
 // channelsInfoProvider stores and provides data about channels and
 // configuration of connection to them
 type channelsInfoProvider struct {
-	mutex                sync.Mutex
+	mutex                sync.RWMutex
 	servedChannels       []string                    // list of channel names the channel transfer serves
 	channelsParams       map[string]config.Channel   // channel connection info mapped to channel names
 	gRPCClientsByAddress map[string]*grpc.ClientConn // grpc clients mapped to grpc addresses
@@ -48,10 +48,14 @@ func newChannelsInfoProvider(allChannels []config.Channel, servedChannels []stri
 }
 
 func (info *channelsInfoProvider) getGRPCClientByChannelName(channel string) (*grpc.ClientConn, error) {
-	chParams := info.channelsParams[channel]
+	var (
+		gRPCClient *grpc.ClientConn
+		err        error
+	)
 
+	chParams := info.channelsParams[channel]
 	if chParams.TaskExecutor == nil {
-		return nil, nil
+		return gRPCClient, nil
 	}
 
 	info.mutex.Lock()
@@ -61,11 +65,6 @@ func (info *channelsInfoProvider) getGRPCClientByChannelName(channel string) (*g
 	if ok {
 		return client, nil
 	}
-
-	var (
-		gRPCClient *grpc.ClientConn
-		err        error
-	)
 
 	// check if a client for the gRPC address already created
 	gRPCClient, ok = info.gRPCClientsByAddress[chParams.TaskExecutor.AddressGRPC]
