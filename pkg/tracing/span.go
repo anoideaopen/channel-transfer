@@ -46,7 +46,7 @@ type MultiTransferDataGetter struct {
 }
 
 func (m *MultiTransferDataGetter) GetToken() string {
-	var itemList = make([]string, 0, len(m.GetItems()))
+	itemList := make([]string, 0, len(m.GetItems()))
 	for _, item := range m.GetItems() {
 		itemList = append(itemList, item.GetToken())
 	}
@@ -54,7 +54,7 @@ func (m *MultiTransferDataGetter) GetToken() string {
 }
 
 func (m *MultiTransferDataGetter) GetAmount() string {
-	var itemList = make([]string, 0, len(m.GetItems()))
+	itemList := make([]string, 0, len(m.GetItems()))
 	for _, item := range m.GetItems() {
 		itemList = append(itemList, item.GetAmount())
 	}
