@@ -14,7 +14,6 @@ import (
 
 // InitTracing creates and registers globally a new TracerProvider.
 func InitTracing(ctx context.Context, tracingCollectorEndpoint string, tracingCollectorBasicAuthToken string, serviceName string) error {
-
 	// Set up propagator.
 	prop := newPropagator()
 	otel.SetTextMapPropagator(prop)
@@ -42,7 +41,7 @@ func newOtlpTracerExporter(ctx context.Context, tracingCollectorEndpoint string,
 
 	if tracingCollectorBasicAuthToken != "" {
 		headers := map[string]string{
-			"Authorization": fmt.Sprintf("Basic %s", tracingCollectorBasicAuthToken),
+			"Authorization": "Basic " + tracingCollectorBasicAuthToken,
 		}
 		options = append(options, otlptracegrpc.WithHeaders(headers))
 	}

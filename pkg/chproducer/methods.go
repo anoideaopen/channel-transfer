@@ -45,7 +45,6 @@ var re = regexp.MustCompile(`no channel peers configured for channel \[`)
 
 //nolint:funlen,gocognit,gocyclo
 func (h *Handler) transferProcessing(ctx context.Context, initStatus model.StatusKind, transfer *fpb.CCTransfer, lastErr error) error {
-
 	var err error
 
 	ctx, span := tracer.Start(ctx,
@@ -290,7 +289,6 @@ func (h *Handler) cancelTransfer(ctx context.Context, transferID string, lastErr
 }
 
 func (h *Handler) resolveStatus(ctx context.Context, transfer *fpb.CCTransfer) (model.StatusKind, error) {
-
 	var (
 		err     error
 		request model.TransferRequest
