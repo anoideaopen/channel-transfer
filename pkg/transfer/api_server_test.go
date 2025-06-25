@@ -8,8 +8,8 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/channel-transfer/pkg/transfer/mock"
 	dto "github.com/anoideaopen/channel-transfer/proto"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
 )
 
 func TestAPIServerTransfer(t *testing.T) {
