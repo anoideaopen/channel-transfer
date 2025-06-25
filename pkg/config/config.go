@@ -62,8 +62,7 @@ func (api *ListenAPI) TLSConfig() *tls.Config {
 }
 
 type PromMetrics struct {
-	PrefixForMetrics    string `mapstructure:"prefix"`
-	EnabledMetricsRedis bool   `mapstructure:"enabledMetricsRedis"`
+	PrefixForMetrics string `mapstructure:"prefix"`
 }
 
 type Options struct {
