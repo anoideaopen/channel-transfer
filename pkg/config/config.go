@@ -28,6 +28,7 @@ type Config struct {
 	RedisStorage *RedisStorage `mapstructure:"redisStorage" validate:"required"`
 	Service      *Service      `mapstructure:"service" validate:"required"`
 	PromMetrics  *PromMetrics  `mapstructure:"promMetrics"`
+	Tracing      *Tracing      `mapstructure:"tracing"`
 
 	Channels []Channel `mapstructure:"channels" validate:"required,dive,required"`
 
@@ -61,7 +62,8 @@ func (api *ListenAPI) TLSConfig() *tls.Config {
 }
 
 type PromMetrics struct {
-	PrefixForMetrics string `mapstructure:"prefix"`
+	PrefixForMetrics    string `mapstructure:"prefix"`
+	EnabledMetricsRedis bool   `mapstructure:"enabledMetricsRedis"`
 }
 
 type Options struct {
@@ -127,6 +129,13 @@ func (eo Options) EffRetryExecuteDelay(defOpts Options) (time.Duration, error) {
 		return 0, errors.New("retryExecuteDelay is not specified")
 	}
 	return *val, nil
+}
+
+type Tracing struct {
+	EnabledTracing          bool   `mapstructure:"enabledTracing"`
+	EnabledTracingRedis     bool   `mapstructure:"enabledTracingRedis"`
+	CollectorEndpoint       string `mapstructure:"tracingCollectorEndpoint"`
+	CollectorBasicAuthToken string `mapstructure:"tracingCollectorBasicAuthToken"`
 }
 
 type RedisStorage struct {
@@ -305,6 +314,7 @@ func (rs *RedisStorage) withoutSensitiveData() *RedisStorage {
 }
 
 type Service struct {
+	Name    string `mapstructure:"name"`
 	Address string `mapstructure:"address" validate:"required"`
 
 	tlsConfig *tls.Config `mapstructure:"-"`

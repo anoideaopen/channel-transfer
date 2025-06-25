@@ -14,6 +14,8 @@ import (
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	grpcrecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -48,6 +50,15 @@ func runGRPC(ctx context.Context, transferServer *APIServer, tlsConfig *tls.Conf
 		)
 		unaryInterceptors = append(unaryInterceptors, grpcMetrics.UnaryServerInterceptor())
 	}
+
+	serverOptions = append(
+		serverOptions,
+		grpc.StatsHandler(otelgrpc.NewServerHandler(
+			otelgrpc.WithPropagators(otel.GetTextMapPropagator()),
+			otelgrpc.WithTracerProvider(otel.GetTracerProvider()),
+		),
+		),
+	)
 
 	serverOptions = append(
 		serverOptions,
