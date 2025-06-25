@@ -46,7 +46,7 @@ type MultiTransferDataGetter struct {
 }
 
 func (m *MultiTransferDataGetter) GetToken() string {
-	var itemList []string
+	var itemList = make([]string, 0, len(m.GetItems()))
 	for _, item := range m.GetItems() {
 		itemList = append(itemList, item.GetToken())
 	}
@@ -54,7 +54,7 @@ func (m *MultiTransferDataGetter) GetToken() string {
 }
 
 func (m *MultiTransferDataGetter) GetAmount() string {
-	var itemList []string
+	var itemList = make([]string, 0, len(m.GetItems()))
 	for _, item := range m.GetItems() {
 		itemList = append(itemList, item.GetAmount())
 	}
@@ -77,7 +77,7 @@ func StartSpan(
 		attribute.String("token", req.GetToken()),
 		attribute.String("amount", req.GetAmount()),
 	)
-	return tracer.Start(ctx, // nolint:spancheck
+	return tracer.Start(ctx, //nolint:spancheck
 		spanName,
 		trace.WithAttributes(
 			attributes...,
@@ -126,7 +126,7 @@ func (t *TraceableRequest) GetChannelTo() string {
 
 func (t *TraceableRequest) GetToken() string {
 	if len(t.Items) > 0 {
-		var itemList = make([]string, 0, len(t.Items))
+		itemList := make([]string, 0, len(t.Items))
 		for _, item := range t.Items {
 			itemList = append(itemList, item.Token)
 		}
@@ -137,7 +137,7 @@ func (t *TraceableRequest) GetToken() string {
 
 func (t *TraceableRequest) GetAmount() string {
 	if len(t.Items) > 0 {
-		var itemList = make([]string, 0, len(t.Items))
+		itemList := make([]string, 0, len(t.Items))
 		for _, item := range t.Items {
 			itemList = append(itemList, item.Amount)
 		}

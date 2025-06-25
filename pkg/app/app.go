@@ -211,7 +211,6 @@ func getFabricSdkVersion(log glog.Logger) string {
 
 // Initialize tracer
 func initTracer(ctx context.Context, log glog.Logger, cfg *config.Config, rdb redis.UniversalClient) error {
-
 	if cfg.Tracing == nil && !cfg.Tracing.EnabledTracing {
 		log.Debug("server: tracing disabled")
 		return nil

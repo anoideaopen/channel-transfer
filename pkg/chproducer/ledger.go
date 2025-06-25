@@ -1,3 +1,4 @@
+//nolint:spancheck
 package chproducer
 
 import (
@@ -231,7 +232,7 @@ func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer
 	ctx, span := tracer.Start(ctx,
 		"ledger: createTransferTo",
 		trace.WithAttributes(
-			attribute.String("id", string(transfer.Id)),
+			attribute.String("id", transfer.GetId()),
 		),
 	)
 	defer func() {
@@ -287,7 +288,7 @@ func (h *Handler) cancelTransferFrom(ctx context.Context, transferID string) (mo
 	ctx, span := tracer.Start(ctx,
 		"ledger: cancelTransferFrom",
 		trace.WithAttributes(
-			attribute.String("id", string(transferID)),
+			attribute.String("id", transferID),
 		),
 	)
 	defer func() {
@@ -344,7 +345,7 @@ func (h *Handler) deleteTransferFrom(ctx context.Context, transferID string) (mo
 	ctx, span := tracer.Start(ctx,
 		"ledger: commitTransferFrom",
 		trace.WithAttributes(
-			attribute.String("id", string(transferID)),
+			attribute.String("id", transferID),
 		),
 	)
 	defer func() {
@@ -374,7 +375,7 @@ func (h *Handler) deleteTransferTo(ctx context.Context, channelName string, tran
 	ctx, span := tracer.Start(ctx,
 		"ledger: deleteTransferTo",
 		trace.WithAttributes(
-			attribute.String("id", string(transferID)),
+			attribute.String("id", transferID),
 		),
 	)
 	defer func() {
@@ -400,7 +401,7 @@ func (h *Handler) invoke(ctx context.Context, channelName string, chaincodeID st
 	ctx, span := tracer.Start(ctx,
 		"ledger: invoke",
 		trace.WithAttributes(
-			attribute.String("id", string(transferID)),
+			attribute.String("id", transferID),
 		),
 	)
 	defer func() {
@@ -433,7 +434,7 @@ func (h *Handler) queryChannelTransferTo(ctx context.Context, channelName string
 	ctx, span := tracer.Start(ctx,
 		"ledger: queryChannelTransferTo",
 		trace.WithAttributes(
-			attribute.String("id", string(transferID)),
+			attribute.String("id", transferID),
 		),
 	)
 	defer func() {
@@ -476,7 +477,7 @@ func (h *Handler) queryChannelTransferFrom(ctx context.Context, channelName stri
 	ctx, span := tracer.Start(ctx,
 		"ledger: queryChannelTransferFrom",
 		trace.WithAttributes(
-			attribute.String("id", string(transferID)),
+			attribute.String("id", transferID),
 		),
 	)
 	defer func() {
