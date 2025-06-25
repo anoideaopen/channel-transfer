@@ -2,6 +2,7 @@ package hlf
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -92,6 +93,7 @@ func (cc *chCollector) loopProxy(ctx context.Context, channelProvider hlfcontext
 
 		delayOrCancel(ctx, cc.delayAfterSrcError)
 	}
+	fmt.Println("ctx err:", ctx.Err())
 }
 
 func (cc *chCollector) loopProxyByEvents(ctx context.Context, startedFrom uint64, events <-chan *fab.BlockEvent) *uint64 {

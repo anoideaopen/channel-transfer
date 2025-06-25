@@ -20,12 +20,14 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/channel-transfer/pkg/service"
 	"github.com/anoideaopen/channel-transfer/pkg/service/healthcheck"
+	"github.com/anoideaopen/channel-transfer/pkg/tracing"
 	"github.com/anoideaopen/channel-transfer/pkg/transfer"
 	"github.com/anoideaopen/common-component/basemetrics/baseprometheus"
 	"github.com/anoideaopen/glog"
 	"github.com/go-errors/errors"
 	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	prometheus2 "github.com/prometheus/client_golang/prometheus"
+	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/sync/errgroup"
 )
@@ -56,6 +58,18 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 		serviceHandlers []service.HTTPHandler
 	)
 
+	rdb := redis.NewUniversalClient(
+		&redis.UniversalOptions{
+			Addrs:     cfg.RedisStorage.Addr,
+			Password:  cfg.RedisStorage.Password,
+			ReadOnly:  false,
+			TLSConfig: cfg.RedisStorage.TLSConfig(),
+		},
+	)
+
+	if err = initTracer(ctx, log, cfg, rdb); err != nil {
+		log.Warning(fmt.Errorf("failed to initialize tracer: %w", err))
+	}
 	ctx, grpcMetrics, serviceHandlers, err = initMetrics(
 		ctx,
 		cfg,
@@ -65,6 +79,7 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 		},
 		log,
 		version,
+		rdb,
 	)
 	if err != nil {
 		return errors.Errorf("metrics: %+v", err)
@@ -79,14 +94,7 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 
 	storage, err := redis2.NewStorage(
 		ctx,
-		redis.NewUniversalClient(
-			&redis.UniversalOptions{
-				Addrs:     cfg.RedisStorage.Addr,
-				Password:  cfg.RedisStorage.Password,
-				ReadOnly:  false,
-				TLSConfig: cfg.RedisStorage.TLSConfig(),
-			},
-		),
+		rdb,
 		*cfg.Options.TTL+*cfg.RedisStorage.AfterTransferTTL,
 		cfg.RedisStorage.DBPrefix,
 	)
@@ -202,12 +210,39 @@ func getFabricSdkVersion(log glog.Logger) string {
 	return ""
 }
 
+// Initialize tracer
+func initTracer(ctx context.Context, log glog.Logger, cfg *config.Config, rdb redis.UniversalClient) error {
+	if cfg.Tracing != nil && cfg.Tracing.EnabledTracing {
+		log.Debug("server: tracing enabled")
+		if err := tracing.InitTracing(
+			ctx,
+			cfg.Tracing.CollectorEndpoint,
+			cfg.Tracing.CollectorBasicAuthToken,
+			cfg.Service.Name,
+		); err != nil {
+			return fmt.Errorf("failed to initialize tracer: %w", err)
+		}
+		if cfg.Tracing.EnabledTracingRedis {
+			if err := redisotel.InstrumentTracing(rdb); err != nil {
+				log.Warning("redisotel tracing enabling failed", errors.New(err))
+			}
+		} else {
+			log.Debug("server: redis tracing disabled")
+		}
+	} else {
+		log.Debug("server: tracing disabled")
+	}
+
+	return nil
+}
+
 func initMetrics(
 	ctx context.Context,
 	cfg *config.Config,
 	handlers []service.HTTPHandler,
 	log glog.Logger,
 	version string,
+	rdb redis.UniversalClient,
 ) (context.Context, *grpcprom.ServerMetrics, []service.HTTPHandler, error) {
 	if cfg.PromMetrics == nil {
 		return ctx, nil, nil, nil

@@ -8,9 +8,13 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/data"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
+	"github.com/anoideaopen/channel-transfer/pkg/tracing"
 	dto "github.com/anoideaopen/channel-transfer/proto"
 	"github.com/anoideaopen/glog"
 	"github.com/go-errors/errors"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -28,6 +32,7 @@ var (
 	ErrMethod            = errors.New("method name undefined")
 	ErrUnknownMethod     = errors.New("unknown method name")
 	ErrSign              = errors.New("sign undefined")
+	tracer               = otel.Tracer("pkg/transfer")
 )
 
 // APIServer implements the logic for processing user requests and serves as
@@ -67,6 +72,12 @@ func (api *APIServer) TransferByCustomer(
 	ctx context.Context,
 	req *dto.TransferBeginCustomerRequest,
 ) (*dto.TransferStatusResponse, error) {
+
+	var (
+		err error
+		tr  model.TransferRequest
+	)
+
 	if req == nil {
 		return nil, ErrBadRequest
 	}
@@ -78,8 +89,21 @@ func (api *APIServer) TransferByCustomer(
 		glog.Field{K: "transfer.to", V: req.GetChannelTo()},
 		glog.Field{K: "transfer.token", V: req.GetToken()},
 	)
-
-	tr, err := dtoBeginCustomerToModelTransferRequest(req, api.actualChannels)
+	md := telemetry.TransferMetadataFromContext(ctx)
+	ctx, span := tracing.StartSpan(
+		ctx,
+		tracer,
+		"api_server: TransferByCustomer",
+		req,
+	)
+	defer func() {
+		tracing.FinishSpan(span, err)
+	}()
+	log.Set(
+		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
+	)
+	log.Debug("transferByCustomer request received")
+	tr, err = dtoBeginCustomerToModelTransferRequest(req, api.actualChannels)
 	if err != nil {
 		err = errors.Errorf("parse transfer request: %w", err)
 		return &dto.TransferStatusResponse{
@@ -91,8 +115,7 @@ func (api *APIServer) TransferByCustomer(
 				err.Error(),
 			)
 	}
-
-	tr.Metadata = telemetry.TransferMetadataFromContext(ctx)
+	tr.Metadata = md
 
 	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
 		return nil, fmt.Errorf(
@@ -116,6 +139,9 @@ func (api *APIServer) TransferByAdmin(
 	ctx context.Context,
 	req *dto.TransferBeginAdminRequest,
 ) (*dto.TransferStatusResponse, error) {
+
+	var err error
+
 	if req == nil {
 		return nil, ErrBadRequest
 	}
@@ -127,7 +153,20 @@ func (api *APIServer) TransferByAdmin(
 		glog.Field{K: "transfer.to", V: req.GetChannelTo()},
 		glog.Field{K: "transfer.token", V: req.GetToken()},
 	)
-
+	md := telemetry.TransferMetadataFromContext(ctx)
+	ctx, span := tracing.StartSpan(
+		ctx,
+		tracer,
+		"api_server: TransferByAdmin",
+		req,
+	)
+	defer func() {
+		tracing.FinishSpan(span, err)
+	}()
+	log.Set(
+		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
+	)
+	log.Debug("transferByAdmin request received")
 	tr, err := dtoBeginAdminToModelTransferRequest(req, api.actualChannels)
 	if err != nil {
 		err = errors.Errorf("parse transfer request: %w", err)
@@ -140,8 +179,7 @@ func (api *APIServer) TransferByAdmin(
 				err.Error(),
 			)
 	}
-
-	tr.Metadata = telemetry.TransferMetadataFromContext(ctx)
+	tr.Metadata = md
 
 	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
 		return nil, fmt.Errorf(
@@ -165,6 +203,9 @@ func (api *APIServer) MultiTransferByCustomer(
 	ctx context.Context,
 	req *dto.MultiTransferBeginCustomerRequest,
 ) (*dto.TransferStatusResponse, error) {
+
+	var err error
+
 	if req == nil {
 		return nil, ErrBadRequest
 	}
@@ -177,6 +218,23 @@ func (api *APIServer) MultiTransferByCustomer(
 		glog.Field{K: "transfer.items", V: req.GetItems()},
 	)
 
+	md := telemetry.TransferMetadataFromContext(ctx)
+	ctx, span := tracing.StartSpan(
+		ctx,
+		tracer,
+		"api_server: MultiTransferByCustomer",
+		&tracing.MultiTransferDataGetter{
+			ItemDataGetter:          req,
+			BasicTransferDataGetter: req,
+		},
+	)
+	defer func() {
+		tracing.FinishSpan(span, err)
+	}()
+	log.Set(
+		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
+	)
+	log.Debug("multiTransferByCustomer request received")
 	tr, err := dtoBeginCustomerToModelMultiTransferRequest(req, api.actualChannels)
 	if err != nil {
 		err = errors.Errorf("parse transfer request: %w", err)
@@ -189,8 +247,7 @@ func (api *APIServer) MultiTransferByCustomer(
 				err.Error(),
 			)
 	}
-
-	tr.Metadata = telemetry.TransferMetadataFromContext(ctx)
+	tr.Metadata = md
 
 	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
 		return nil, fmt.Errorf(
@@ -214,6 +271,7 @@ func (api *APIServer) MultiTransferByAdmin(
 	ctx context.Context,
 	req *dto.MultiTransferBeginAdminRequest,
 ) (*dto.TransferStatusResponse, error) {
+	var err error
 	if req == nil {
 		return nil, ErrBadRequest
 	}
@@ -226,6 +284,23 @@ func (api *APIServer) MultiTransferByAdmin(
 		glog.Field{K: "transfer.items", V: req.GetItems()},
 	)
 
+	md := telemetry.TransferMetadataFromContext(ctx)
+	ctx, span := tracing.StartSpan(
+		ctx,
+		tracer,
+		"api_server: MultiTransferByAdmin",
+		&tracing.MultiTransferDataGetter{
+			ItemDataGetter:          req,
+			BasicTransferDataGetter: req,
+		},
+	)
+	defer func() {
+		tracing.FinishSpan(span, err)
+	}()
+	log.Set(
+		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
+	)
+	log.Debug("multiTransferByAdmin request received")
 	tr, err := dtoBeginAdminToModelMultiTransferRequest(req, api.actualChannels)
 	if err != nil {
 		err = errors.Errorf("parse transfer request: %w", err)
@@ -238,8 +313,7 @@ func (api *APIServer) MultiTransferByAdmin(
 				err.Error(),
 			)
 	}
-
-	tr.Metadata = telemetry.TransferMetadataFromContext(ctx)
+	tr.Metadata = md
 
 	if err = api.ctrl.TransferKeep(ctx, tr); err != nil {
 		return nil, fmt.Errorf(
@@ -302,7 +376,23 @@ func (api *APIServer) TransferStatus(
 }
 
 func (api *APIServer) transferStatus(ctx context.Context, transferID string) (*dto.TransferStatusResponse, error) {
-	tr, err := api.ctrl.TransferFetch(ctx, model.ID(transferID))
+	var (
+		tr  model.TransferRequest
+		err error
+	)
+
+	ctx, span := tracer.Start(ctx,
+		"api_server: transferStatus",
+		trace.WithAttributes(
+			attribute.String("id", string(transferID)),
+		),
+	)
+	defer func() {
+		tracing.FinishSpan(span, err)
+	}()
+	api.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
+	api.log.Debug("updated span context")
+	tr, err = api.ctrl.TransferFetch(ctx, model.ID(transferID))
 	if err != nil {
 		if strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
 			return nil,
@@ -313,6 +403,7 @@ func (api *APIServer) transferStatus(ctx context.Context, transferID string) (*d
 		}
 		return nil, errors.Errorf("fetch transfer request: %w", ErrInvalidStatusCode)
 	}
+	api.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
 
 	code, ok := dto.TransferStatusResponse_Status_value[tr.Status]
 	if !ok {

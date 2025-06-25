@@ -9,15 +9,23 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/metrics"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
+	"github.com/anoideaopen/channel-transfer/pkg/tracing"
 	"github.com/anoideaopen/foundation/core/cctransfer"
 	fpb "github.com/anoideaopen/foundation/proto"
+	"github.com/anoideaopen/glog"
 	"github.com/go-errors/errors"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const paginationPageSize = "10"
 
-var errTransferNotFound = ": " + cctransfer.ErrNotFound.Error()
+var (
+	errTransferNotFound = ": " + cctransfer.ErrNotFound.Error()
+	tracer              = otel.Tracer("pkg/chproducer")
+)
 
 func (h *Handler) queryChannelTransfers(ctx context.Context) ([]*fpb.CCTransfer, error) {
 	executor, err := h.poolController.Executor(h.channel)
@@ -65,6 +73,18 @@ func (h *Handler) queryChannelTransfers(ctx context.Context) ([]*fpb.CCTransfer,
 }
 
 func (h *Handler) createTransferFrom(ctx context.Context, request model.TransferRequest) (model.StatusKind, error) {
+	var err error
+	ctxFromSpan, span := tracing.StartSpan(
+		ctx,
+		tracer,
+		"ledger: createTransferFrom",
+		tracing.NewTraceableRequest(&request),
+	)
+	defer func() {
+		tracing.FinishSpan(span, err)
+	}()
+	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
+
 	if request.Token == "" {
 		return model.InternalErrorTransferStatus, errors.New("executor: token is not specified")
 	}
@@ -79,8 +99,6 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 	if err != nil {
 		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
 	}
-
-	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 
 	args := [][]byte{
 		[]byte(request.Request),
@@ -107,7 +125,7 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 
 	h.log.Debugf("transfer request arguments: %+v", tArgs)
 	_, err = doer.Invoke(
-		ctx,
+		ctxFromSpan,
 		channel.Request{
 			ChaincodeID: h.chaincodeID,
 			Fcn:         request.Method,
@@ -130,6 +148,21 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 }
 
 func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.TransferRequest) (model.StatusKind, error) {
+
+	var err error
+	ctxFromSpan, span := tracing.StartSpan(
+		ctx,
+		tracer,
+		"ledger: createMultiTransferFrom",
+		tracing.NewTraceableRequest(&request),
+	)
+	defer func() {
+		tracing.FinishSpan(span, err)
+	}()
+	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
+	h.log.Set(glog.Field{K: "transfer.id", V: request.Transfer})
+	h.log.Set(glog.Field{K: "transfer.method", V: request.Method})
+
 	if len(request.Items) == 0 {
 		return model.InternalErrorTransferStatus, errors.New("executor: items is empty")
 	}
@@ -141,8 +174,6 @@ func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.Tra
 	if err != nil {
 		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
 	}
-
-	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 
 	items, err := json.Marshal(request.Items)
 	if err != nil {
@@ -173,7 +204,7 @@ func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.Tra
 
 	h.log.Debugf("transfer request arguments: %+v", tArgs)
 	_, err = doer.Invoke(
-		ctx,
+		ctxFromSpan,
 		channel.Request{
 			ChaincodeID: h.chaincodeID,
 			Fcn:         request.Method,
@@ -196,18 +227,35 @@ func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.Tra
 }
 
 func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer) (model.StatusKind, error) {
+
+	var err error
+
+	ctx, span := tracer.Start(ctx,
+		"ledger: createTransferTo",
+		trace.WithAttributes(
+			attribute.String("id", string(transfer.Id)),
+		),
+	)
+	defer func() {
+		tracing.FinishSpan(span, err)
+	}()
+	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
+	h.log.Set(glog.Field{K: "transfer.id", V: transfer.Id})
+
 	channelName := strings.ToLower(transfer.GetTo())
 	h.log.Debugf("create cc transfer to, channel %s, id %s", channelName, transfer.GetId())
-
-	if status, err := h.expandTO(ctx, channelName); err != nil {
-		return status, err
-	}
 
 	request, err := h.requestStorage.TransferFetch(ctx, model.ID(transfer.GetId()))
 	if err != nil {
 		h.log.Warningf("failed fetching transfer request from storage: %w", err)
 	}
+	tracing.SetAttributes(span, tracing.NewTraceableRequest(&request))
 	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
+	h.log.Set(glog.Field{K: "transfer.method", V: request.Method})
+
+	if status, err := h.expandTO(ctx, channelName); err != nil {
+		return status, err
+	}
 
 	doer, err := h.poolController.Executor(channelName)
 	if err != nil {
@@ -236,9 +284,24 @@ func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer
 }
 
 func (h *Handler) cancelTransferFrom(ctx context.Context, transferID string) (model.StatusKind, error) {
+
+	var err error
+
+	ctx, span := tracer.Start(ctx,
+		"ledger: cancelTransferFrom",
+		trace.WithAttributes(
+			attribute.String("id", string(transferID)),
+		),
+	)
+	defer func() {
+		tracing.FinishSpan(span, err)
+	}()
+	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
+	h.log.Set(glog.Field{K: "transfer.id", V: transferID})
+
 	h.log.Debugf("cancel cc transfer from, channel %s, id %s", h.channel, transferID)
 
-	if err := h.invoke(ctx, h.channel, h.chaincodeID, model.TxCancelCCTransferFrom, transferID); err != nil {
+	if err = h.invoke(ctx, h.channel, h.chaincodeID, model.TxCancelCCTransferFrom, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
 			h.log.Error(errors.Errorf("cancel transfer: %w", err))
 			return model.Canceled, nil
@@ -251,9 +314,24 @@ func (h *Handler) cancelTransferFrom(ctx context.Context, transferID string) (mo
 }
 
 func (h *Handler) commitTransferFrom(ctx context.Context, transferID string) (model.StatusKind, error) {
+
+	var err error
+
+	ctx, span := tracer.Start(ctx,
+		"ledger: commitTransferFrom",
+		trace.WithAttributes(
+			attribute.String("id", string(transferID)),
+		),
+	)
+	defer func() {
+		tracing.FinishSpan(span, err)
+	}()
+	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
+	h.log.Set(glog.Field{K: "transfer.id", V: transferID})
+
 	h.log.Debugf("commit cc transfer from, channel %s, id %s", h.channel, transferID)
 
-	if err := h.invoke(ctx, h.channel, h.chaincodeID, model.NbTxCommitCCTransferFrom, transferID); err != nil {
+	if err = h.invoke(ctx, h.channel, h.chaincodeID, model.NbTxCommitCCTransferFrom, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
 			h.log.Error(errors.Errorf("commit transfer: %w", err))
 			return model.Canceled, nil
@@ -265,9 +343,24 @@ func (h *Handler) commitTransferFrom(ctx context.Context, transferID string) (mo
 }
 
 func (h *Handler) deleteTransferFrom(ctx context.Context, transferID string) (model.StatusKind, error) {
+
+	var err error
+
+	ctx, span := tracer.Start(ctx,
+		"ledger: commitTransferFrom",
+		trace.WithAttributes(
+			attribute.String("id", string(transferID)),
+		),
+	)
+	defer func() {
+		tracing.FinishSpan(span, err)
+	}()
+	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
+	h.log.Set(glog.Field{K: "transfer.id", V: transferID})
+
 	h.log.Debugf("delete cc transfer from, channel %s, id %s", h.channel, transferID)
 
-	if err := h.invoke(ctx, h.channel, h.chaincodeID, model.NbTxDeleteCCTransferFrom, transferID); err != nil {
+	if err = h.invoke(ctx, h.channel, h.chaincodeID, model.NbTxDeleteCCTransferFrom, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
 			h.log.Error(errors.Errorf("delete transfer: %w", err))
 			return model.CompletedTransferFromDelete, nil
@@ -279,9 +372,24 @@ func (h *Handler) deleteTransferFrom(ctx context.Context, transferID string) (mo
 }
 
 func (h *Handler) deleteTransferTo(ctx context.Context, channelName string, transferID string) (model.StatusKind, error) {
+
+	var err error
+
 	h.log.Debugf("delete cc transfer to, channel %s, id %s", channelName, transferID)
 
-	if err := h.invoke(ctx, channelName, channelName, model.NbTxDeleteCCTransferTo, transferID); err != nil {
+	ctx, span := tracer.Start(ctx,
+		"ledger: deleteTransferTo",
+		trace.WithAttributes(
+			attribute.String("id", string(transferID)),
+		),
+	)
+	defer func() {
+		tracing.FinishSpan(span, err)
+	}()
+	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
+	h.log.Set(glog.Field{K: "transfer.id", V: transferID})
+
+	if err = h.invoke(ctx, channelName, channelName, model.NbTxDeleteCCTransferTo, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
 			h.log.Error(errors.Errorf("delete transfer: %w", err))
 			return model.CompletedTransferToDelete, nil
@@ -293,18 +401,23 @@ func (h *Handler) deleteTransferTo(ctx context.Context, channelName string, tran
 }
 
 func (h *Handler) invoke(ctx context.Context, channelName string, chaincodeID string, method model.TransactionKind, transferID string) error {
+
+	var err error
+
+	ctx, span := tracer.Start(ctx,
+		"ledger: invoke",
+		trace.WithAttributes(
+			attribute.String("id", string(transferID)),
+		),
+	)
+	defer func() {
+		tracing.FinishSpan(span, err)
+	}()
+
 	doer, err := h.poolController.Executor(channelName)
 	if err != nil {
 		return errors.Errorf("executor: %w", err)
 	}
-
-	request, err := h.requestStorage.TransferFetch(ctx, model.ID(transferID))
-	if err != nil {
-		h.log.Warningf("failed fetching transfer request from storage: %w", err)
-	}
-
-	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
-
 	_, err = doer.Invoke(
 		ctx,
 		channel.Request{
@@ -322,19 +435,28 @@ func (h *Handler) invoke(ctx context.Context, channelName string, chaincodeID st
 }
 
 func (h *Handler) queryChannelTransferTo(ctx context.Context, channelName string, transferID string) (bool, error) {
+
+	var err error
+
+	ctx, span := tracer.Start(ctx,
+		"ledger: queryChannelTransferTo",
+		trace.WithAttributes(
+			attribute.String("id", string(transferID)),
+		),
+	)
+	defer func() {
+		tracing.FinishSpan(span, err)
+	}()
+	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
+	h.log.Set(glog.Field{K: "transfer.id", V: transferID})
+
 	executor, err := h.poolController.Executor(channelName)
 	if err != nil {
 		return false, errors.Errorf("expand: %w", err)
 	}
 
+	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
 	h.log.Debugf("query channel transfer to, channel %s, id %s", channelName, transferID)
-
-	request, err := h.requestStorage.TransferFetch(ctx, model.ID(transferID))
-	if err != nil {
-		h.log.Warningf("failed fetching transfer request from storage: %w", err)
-	}
-
-	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 
 	_, err = executor.Query(
 		ctx,
@@ -357,6 +479,21 @@ func (h *Handler) queryChannelTransferTo(ctx context.Context, channelName string
 }
 
 func (h *Handler) queryChannelTransferFrom(ctx context.Context, channelName string, transferID string) (bool, error) {
+
+	var err error
+
+	ctx, span := tracer.Start(ctx,
+		"ledger: queryChannelTransferFrom",
+		trace.WithAttributes(
+			attribute.String("id", string(transferID)),
+		),
+	)
+	defer func() {
+		tracing.FinishSpan(span, err)
+	}()
+	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
+	h.log.Set(glog.Field{K: "transfer.id", V: transferID})
+
 	executor, err := h.poolController.Executor(channelName)
 	if err != nil {
 		return false, errors.Errorf("expand: %w", err)

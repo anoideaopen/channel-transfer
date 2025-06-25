@@ -8,8 +8,8 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/channel-transfer/pkg/transfer/mock"
 	dto "github.com/anoideaopen/channel-transfer/proto"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 func TestAPIServerTransfer(t *testing.T) {
@@ -17,11 +17,12 @@ func TestAPIServerTransfer(t *testing.T) {
 	defer close(requests)
 
 	var (
-		channels = []string{"ch1", "ch2"}
-		ctx      = context.Background()
-		ctrl     = gomock.NewController(t)
-		mc       = mock.NewMockRequestController(ctrl)
-		srv      = NewAPIServer(ctx, requests, mc, channels)
+		channels      = []string{"ch1", "ch2"}
+		ctx           = context.Background()
+		tracingCtx, _ = tracer.Start(ctx, "fake span for tracing context generation")
+		ctrl          = gomock.NewController(t)
+		mc            = mock.NewMockRequestController(ctrl)
+		srv           = NewAPIServer(ctx, requests, mc, channels)
 	)
 
 	var (
@@ -110,8 +111,8 @@ func TestAPIServerTransfer(t *testing.T) {
 	)
 
 	gomock.InOrder(
-		mc.EXPECT().TransferKeep(ctx, mdlCustomer).Return(nil),
-		mc.EXPECT().TransferKeep(ctx, mdlAdmin).Return(nil),
+		mc.EXPECT().TransferKeep(tracingCtx, mdlCustomer).Return(nil),
+		mc.EXPECT().TransferKeep(tracingCtx, mdlAdmin).Return(nil),
 	)
 
 	resp, err := srv.TransferByCustomer(ctx, inCustomer)
@@ -137,10 +138,11 @@ func TestAPIServerTransferStatus(t *testing.T) {
 	defer close(requests)
 
 	var (
-		ctx  = context.Background()
-		ctrl = gomock.NewController(t)
-		mc   = mock.NewMockRequestController(ctrl)
-		srv  = NewAPIServer(ctx, requests, mc, nil)
+		ctx           = context.Background()
+		tracingCtx, _ = tracer.Start(ctx, "fake span for tracing context generation")
+		ctrl          = gomock.NewController(t)
+		mc            = mock.NewMockRequestController(ctrl)
+		srv           = NewAPIServer(ctx, requests, mc, nil)
 	)
 
 	var (
@@ -163,8 +165,8 @@ func TestAPIServerTransferStatus(t *testing.T) {
 	)
 
 	gomock.InOrder(
-		mc.EXPECT().TransferFetch(ctx, mdl.Request).Return(mdl, nil),
-		mc.EXPECT().TransferFetch(ctx, mdl.Request).Return(model.TransferRequest{}, data.ErrObjectNotFound),
+		mc.EXPECT().TransferFetch(tracingCtx, mdl.Request).Return(mdl, nil),
+		mc.EXPECT().TransferFetch(tracingCtx, mdl.Request).Return(model.TransferRequest{}, data.ErrObjectNotFound),
 	)
 
 	resp, err := srv.TransferStatus(ctx, in)
@@ -182,11 +184,12 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 	defer close(requests)
 
 	var (
-		channels = []string{"ch1", "ch2"}
-		ctx      = context.Background()
-		ctrl     = gomock.NewController(t)
-		mc       = mock.NewMockRequestController(ctrl)
-		srv      = NewAPIServer(ctx, requests, mc, channels)
+		channels      = []string{"ch1", "ch2"}
+		ctx           = context.Background()
+		tracingCtx, _ = tracer.Start(ctx, "fake span for tracing context generation")
+		ctrl          = gomock.NewController(t)
+		mc            = mock.NewMockRequestController(ctrl)
+		srv           = NewAPIServer(ctx, requests, mc, channels)
 	)
 
 	var (
@@ -307,8 +310,8 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 	)
 
 	gomock.InOrder(
-		mc.EXPECT().TransferKeep(ctx, mdlCustomer).Return(nil),
-		mc.EXPECT().TransferKeep(ctx, mdlAdmin).Return(nil),
+		mc.EXPECT().TransferKeep(tracingCtx, mdlCustomer).Return(nil),
+		mc.EXPECT().TransferKeep(tracingCtx, mdlAdmin).Return(nil),
 	)
 
 	resp, err := srv.MultiTransferByCustomer(ctx, inCustomer)

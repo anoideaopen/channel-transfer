@@ -13,11 +13,15 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/logger"
 	"github.com/anoideaopen/channel-transfer/pkg/metrics"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
+	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
+	"github.com/anoideaopen/channel-transfer/pkg/tracing"
 	"github.com/anoideaopen/channel-transfer/pkg/transfer"
 	"github.com/anoideaopen/channel-transfer/proto"
 	"github.com/anoideaopen/common-component/errorshlp"
 	"github.com/anoideaopen/glog"
 	"github.com/go-errors/errors"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 	"go.uber.org/atomic"
 	"golang.org/x/sync/errgroup"
 )
@@ -161,14 +165,32 @@ func (h *Handler) launcher(ctx context.Context, group *errgroup.Group) {
 		if group.TryGo(
 			func() error {
 				defer h.inUsed.Delete(localTransfer.GetId())
+				request, err := h.requestStorage.TransferFetch(ctx, model.ID(localTransfer.GetId()))
+				if err != nil {
+					h.log.Warningf("failed fetching transfer request from storage: %w", err)
+				}
+				ctxWithMetadata := telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
+				ctxWithTraceID := otel.GetTextMapPropagator().Extract(ctxWithMetadata, propagation.MapCarrier(request.Metadata))
 
-				status, err := h.resolveStatus(ctx, localTransfer)
+				ctxWithSpan, span := tracing.StartSpan(
+					ctxWithTraceID,
+					tracer,
+					"chproducer: launcher: TryGo",
+					tracing.NewTraceableRequest(&request),
+				)
+				defer func() {
+					tracing.FinishSpan(span, err)
+				}()
+				h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
+				h.log.Set(glog.Field{K: "transfer.id", V: localTransfer.GetId()})
+
+				status, err := h.resolveStatus(ctxWithSpan, localTransfer)
 				if err != nil {
 					h.log.Error(errors.Errorf("resolve transfer status %s: %w", localTransfer.GetId(), err))
 				}
-				h.restoreCompletedStatus(ctx, status, model.ID(localTransfer.GetId()))
+				h.restoreCompletedStatus(ctxWithSpan, status, model.ID(localTransfer.GetId()))
 
-				err = h.transferProcessing(ctx, status, localTransfer, err)
+				err = h.transferProcessing(ctxWithSpan, status, localTransfer, err)
 				if err != nil {
 					h.log.Error(errors.Errorf("transfer processing %s: %w", localTransfer.GetId(), err))
 				}
@@ -190,10 +212,24 @@ func (h *Handler) launcher(ctx context.Context, group *errgroup.Group) {
 func (h *Handler) createTransfer(ctx context.Context, request model.TransferRequest) {
 	var status model.StatusKind
 	var err error
+	ctxWithMetadata := telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
+	ctxWithTraceID := otel.GetTextMapPropagator().Extract(ctxWithMetadata, propagation.MapCarrier(request.Metadata))
+	ctxFromSpan, span := tracing.StartSpan(
+		ctxWithTraceID,
+		tracer,
+		"chproducer: createTransfer",
+		tracing.NewTraceableRequest(&request),
+	)
+	defer func() {
+		tracing.FinishSpan(span, err)
+	}()
+	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
+	h.log.Set(glog.Field{K: "transfer.id", V: request.Transfer})
+	h.log.Set(glog.Field{K: "transfer.method", V: request.Method})
 	if len(request.Items) > 0 {
-		status, err = h.createMultiTransferFrom(ctx, request)
+		status, err = h.createMultiTransferFrom(ctxFromSpan, request)
 	} else {
-		status, err = h.createTransferFrom(ctx, request)
+		status, err = h.createTransferFrom(ctxFromSpan, request)
 	}
 	if err != nil {
 		err = errors.Errorf("create transfer: %w", err)
@@ -212,7 +248,7 @@ func (h *Handler) createTransfer(ctx context.Context, request model.TransferRequ
 
 	h.log.Debugf("transfer modify: %s", request.Transfer)
 	if err = h.requestStorage.TransferResultModify(
-		ctx,
+		ctxFromSpan,
 		request.Transfer,
 		request.TransferResult,
 	); err != nil {
@@ -251,7 +287,8 @@ func (h *Handler) syncAPIRequests(ctx context.Context) {
 		}
 
 		if status == model.ExistsChannelTo {
-			status, err = h.toBatchResponse(ctx, channelTO, string(request.Transfer))
+			ctxWithMetadata := otel.GetTextMapPropagator().Extract(ctx, propagation.MapCarrier(request.Metadata))
+			status, err = h.toBatchResponse(ctxWithMetadata, channelTO, string(request.Transfer))
 		}
 
 		switch status {

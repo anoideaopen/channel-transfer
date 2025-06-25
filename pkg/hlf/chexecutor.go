@@ -90,11 +90,11 @@ func (che *ChExecutor) initExecutor(chProvider hlfcontext.ChannelProvider, execO
 }
 
 func (che *ChExecutor) Invoke(ctx context.Context, req channel.Request, options []channel.RequestOption) (channel.Response, error) {
-	return che.executeWithRetry(ctx, func() (channel.Response, error) {
+	return che.executeWithRetry(ctx, func(glog.Logger) (channel.Response, error) {
 		// if this is a batch method (starts with Tx) and we have gRPC executor for the channel,
 		// we use the executor to send the request to external task executor
 		if methods.IsBatchMethod(req.Fcn) && che.gRPCExecutor != nil {
-			return che.gRPCExecutor.invoke(ctx, req, options)
+			return che.gRPCExecutor.invoke(ctx, che.log, req, options)
 		}
 		// otherwise we use hlf executor and send the request to HLF
 		return che.executor.invoke(ctx, req, options)
@@ -102,7 +102,7 @@ func (che *ChExecutor) Invoke(ctx context.Context, req channel.Request, options 
 }
 
 func (che *ChExecutor) Query(ctx context.Context, req channel.Request, options []channel.RequestOption) (channel.Response, error) {
-	return che.executeWithRetry(ctx, func() (channel.Response, error) {
+	return che.executeWithRetry(ctx, func(glog.Logger) (channel.Response, error) {
 		return che.executor.query(ctx, req, options)
 	})
 }
@@ -116,10 +116,10 @@ func (che *ChExecutor) Close() {
 	che.executor = nil
 }
 
-func (che *ChExecutor) executeWithRetry(ctx context.Context, f func() (channel.Response, error)) (channel.Response, error) {
+func (che *ChExecutor) executeWithRetry(ctx context.Context, f func(glog.Logger) (channel.Response, error)) (channel.Response, error) {
 	var resp channel.Response
 	err := retry.Do(func() error {
-		r, err := f()
+		r, err := f(che.log)
 		if err != nil {
 			return err
 		}
