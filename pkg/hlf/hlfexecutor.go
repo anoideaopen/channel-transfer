@@ -38,7 +38,6 @@ type hlfExecutor struct {
 }
 
 func (he *hlfExecutor) invoke(ctx context.Context, request channel.Request, options []channel.RequestOption) (channel.Response, error) {
-
 	var (
 		err  error
 		resp channel.Response
@@ -94,7 +93,6 @@ func (he *hlfExecutor) invoke(ctx context.Context, request channel.Request, opti
 }
 
 func (he *hlfExecutor) query(ctx context.Context, request channel.Request, options []channel.RequestOption) (channel.Response, error) {
-
 	var (
 		err  error
 		resp channel.Response

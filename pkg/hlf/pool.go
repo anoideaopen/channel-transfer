@@ -283,7 +283,6 @@ func (pool *Pool) blockchainHeight(key channelKey) (*uint64, error) {
 	return nil, ErrExecutorUndefined
 }
 
-//nolint:funlen
 func (pool *Pool) blockKeeper(key channelKey, provider hlfcontext.ChannelProvider) error {
 	var blockNumber uint64
 

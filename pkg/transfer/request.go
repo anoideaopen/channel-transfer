@@ -1,3 +1,4 @@
+//nolint:spancheck
 package transfer
 
 import (
@@ -33,7 +34,7 @@ func (r *Request) TransferKeep(ctx context.Context, transferRequest model.Transf
 		tracer,
 		"transfer: TransferKeep",
 		tracebleRequest,
-		attribute.String("method", string(transferRequest.Method)),
+		attribute.String("method", transferRequest.Method),
 	)
 	defer func() {
 		tracing.FinishSpan(span, err)
@@ -150,7 +151,7 @@ func (r *Request) TransferResultModify(ctx context.Context, transferID model.ID,
 	var err error
 	ctx, span := tracer.Start(
 		ctx,
-		"transfer: TransferResultModify", //request: TransferFetch
+		"transfer: TransferResultModify", // request: TransferFetch
 		trace.WithAttributes(
 			attribute.String("id", string(transferID)),
 			attribute.String("new.status", result.Status),

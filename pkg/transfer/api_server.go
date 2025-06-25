@@ -1,3 +1,4 @@
+//nolint:spancheck
 package transfer
 
 import (
@@ -72,7 +73,6 @@ func (api *APIServer) TransferByCustomer(
 	ctx context.Context,
 	req *dto.TransferBeginCustomerRequest,
 ) (*dto.TransferStatusResponse, error) {
-
 	var (
 		err error
 		tr  model.TransferRequest
@@ -139,7 +139,6 @@ func (api *APIServer) TransferByAdmin(
 	ctx context.Context,
 	req *dto.TransferBeginAdminRequest,
 ) (*dto.TransferStatusResponse, error) {
-
 	var err error
 
 	if req == nil {
@@ -203,7 +202,6 @@ func (api *APIServer) MultiTransferByCustomer(
 	ctx context.Context,
 	req *dto.MultiTransferBeginCustomerRequest,
 ) (*dto.TransferStatusResponse, error) {
-
 	var err error
 
 	if req == nil {
@@ -384,7 +382,7 @@ func (api *APIServer) transferStatus(ctx context.Context, transferID string) (*d
 	ctx, span := tracer.Start(ctx,
 		"api_server: transferStatus",
 		trace.WithAttributes(
-			attribute.String("id", string(transferID)),
+			attribute.String("id", transferID),
 		),
 	)
 	defer func() {

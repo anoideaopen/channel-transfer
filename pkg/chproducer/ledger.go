@@ -148,7 +148,6 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 }
 
 func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.TransferRequest) (model.StatusKind, error) {
-
 	var err error
 	ctxFromSpan, span := tracing.StartSpan(
 		ctx,
@@ -227,7 +226,6 @@ func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.Tra
 }
 
 func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer) (model.StatusKind, error) {
-
 	var err error
 
 	ctx, span := tracer.Start(ctx,
@@ -240,7 +238,7 @@ func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer
 		tracing.FinishSpan(span, err)
 	}()
 	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
-	h.log.Set(glog.Field{K: "transfer.id", V: transfer.Id})
+	h.log.Set(glog.Field{K: "transfer.id", V: transfer.GetId()})
 
 	channelName := strings.ToLower(transfer.GetTo())
 	h.log.Debugf("create cc transfer to, channel %s, id %s", channelName, transfer.GetId())
@@ -284,7 +282,6 @@ func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer
 }
 
 func (h *Handler) cancelTransferFrom(ctx context.Context, transferID string) (model.StatusKind, error) {
-
 	var err error
 
 	ctx, span := tracer.Start(ctx,
@@ -314,13 +311,12 @@ func (h *Handler) cancelTransferFrom(ctx context.Context, transferID string) (mo
 }
 
 func (h *Handler) commitTransferFrom(ctx context.Context, transferID string) (model.StatusKind, error) {
-
 	var err error
 
 	ctx, span := tracer.Start(ctx,
 		"ledger: commitTransferFrom",
 		trace.WithAttributes(
-			attribute.String("id", string(transferID)),
+			attribute.String("id", transferID),
 		),
 	)
 	defer func() {
@@ -343,7 +339,6 @@ func (h *Handler) commitTransferFrom(ctx context.Context, transferID string) (mo
 }
 
 func (h *Handler) deleteTransferFrom(ctx context.Context, transferID string) (model.StatusKind, error) {
-
 	var err error
 
 	ctx, span := tracer.Start(ctx,
@@ -372,7 +367,6 @@ func (h *Handler) deleteTransferFrom(ctx context.Context, transferID string) (mo
 }
 
 func (h *Handler) deleteTransferTo(ctx context.Context, channelName string, transferID string) (model.StatusKind, error) {
-
 	var err error
 
 	h.log.Debugf("delete cc transfer to, channel %s, id %s", channelName, transferID)
@@ -401,7 +395,6 @@ func (h *Handler) deleteTransferTo(ctx context.Context, channelName string, tran
 }
 
 func (h *Handler) invoke(ctx context.Context, channelName string, chaincodeID string, method model.TransactionKind, transferID string) error {
-
 	var err error
 
 	ctx, span := tracer.Start(ctx,
@@ -435,7 +428,6 @@ func (h *Handler) invoke(ctx context.Context, channelName string, chaincodeID st
 }
 
 func (h *Handler) queryChannelTransferTo(ctx context.Context, channelName string, transferID string) (bool, error) {
-
 	var err error
 
 	ctx, span := tracer.Start(ctx,
@@ -479,7 +471,6 @@ func (h *Handler) queryChannelTransferTo(ctx context.Context, channelName string
 }
 
 func (h *Handler) queryChannelTransferFrom(ctx context.Context, channelName string, transferID string) (bool, error) {
-
 	var err error
 
 	ctx, span := tracer.Start(ctx,

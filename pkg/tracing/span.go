@@ -61,6 +61,8 @@ func (m *MultiTransferDataGetter) GetAmount() string {
 	return fmt.Sprintf("%+v", itemList)
 }
 
+// StartSpan creates a new span with the provided context and tracer.
+// It is a client responsibility to call FinishSpan when the span is no longer needed.
 func StartSpan(
 	ctx context.Context,
 	tracer trace.Tracer,
@@ -75,7 +77,7 @@ func StartSpan(
 		attribute.String("token", req.GetToken()),
 		attribute.String("amount", req.GetAmount()),
 	)
-	return tracer.Start(ctx,
+	return tracer.Start(ctx, // nolint:spancheck
 		spanName,
 		trace.WithAttributes(
 			attributes...,
@@ -105,6 +107,7 @@ type TraceableRequest struct {
 func (t *TraceableRequest) GetIdTransfer() string {
 	return string(t.Transfer)
 }
+
 func (t *TraceableRequest) GetGenerals() *proto.GeneralParams {
 	return &proto.GeneralParams{
 		RequestId:  string(t.Request),
@@ -116,13 +119,14 @@ func (t *TraceableRequest) GetGenerals() *proto.GeneralParams {
 		Sign:       t.Sign,
 	}
 }
+
 func (t *TraceableRequest) GetChannelTo() string {
 	return t.To
 }
 
 func (t *TraceableRequest) GetToken() string {
 	if len(t.Items) > 0 {
-		var itemList []string
+		var itemList = make([]string, 0, len(t.Items))
 		for _, item := range t.Items {
 			itemList = append(itemList, item.Token)
 		}
@@ -133,7 +137,7 @@ func (t *TraceableRequest) GetToken() string {
 
 func (t *TraceableRequest) GetAmount() string {
 	if len(t.Items) > 0 {
-		var itemList []string
+		var itemList = make([]string, 0, len(t.Items))
 		for _, item := range t.Items {
 			itemList = append(itemList, item.Amount)
 		}
