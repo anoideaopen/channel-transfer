@@ -1,3 +1,4 @@
+//nolint:spancheck
 package chproducer
 
 import (
@@ -50,7 +51,7 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 	ctx, span := tracer.Start(ctx,
 		"chproducer: transferProcessing",
 		trace.WithAttributes(
-			attribute.String("id", string(transfer.Id)),
+			attribute.String("id", transfer.GetId()),
 		),
 	)
 	defer func() {
@@ -297,7 +298,7 @@ func (h *Handler) resolveStatus(ctx context.Context, transfer *fpb.CCTransfer) (
 	ctx, span := tracer.Start(ctx,
 		"chproducer: resolveStatus",
 		trace.WithAttributes(
-			attribute.String("id", string(transfer.Id)),
+			attribute.String("id", transfer.GetId()),
 		),
 	)
 	defer func() {
