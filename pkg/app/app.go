@@ -220,7 +220,7 @@ func initTracer(ctx context.Context, log glog.Logger, cfg *config.Config, rdb re
 		ctx,
 		cfg.Tracing.CollectorEndpoint,
 		cfg.Tracing.CollectorBasicAuthToken,
-		cfg.Service.Name,
+		strings.ToLower(config.EnvPrefix),
 	); err != nil {
 		return fmt.Errorf("failed to initialize tracer: %w", err)
 	}

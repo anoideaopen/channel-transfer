@@ -313,7 +313,6 @@ func (rs *RedisStorage) withoutSensitiveData() *RedisStorage {
 }
 
 type Service struct {
-	Name    string `mapstructure:"name"`
 	Address string `mapstructure:"address" validate:"required"`
 
 	tlsConfig *tls.Config `mapstructure:"-"`
