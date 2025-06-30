@@ -53,11 +53,6 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 
 	hc := healthcheck.New()
 
-	var (
-		grpcMetrics     *grpcprom.ServerMetrics
-		serviceHandlers []service.HTTPHandler
-	)
-
 	rdb := redis.NewUniversalClient(
 		&redis.UniversalOptions{
 			Addrs:     cfg.RedisStorage.Addr,
@@ -71,7 +66,7 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 	if err = initTracer(ctxWithLogger, cfg, rdb); err != nil {
 		log.Error(fmt.Errorf("failed to initialize tracer: %w", err))
 	}
-	ctx, grpcMetrics, serviceHandlers, err = initMetrics(
+	ctx, grpcMetrics, serviceHandlers, err := initMetrics(
 		ctx,
 		cfg,
 		[]service.HTTPHandler{

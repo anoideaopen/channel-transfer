@@ -19,7 +19,6 @@ import (
 
 // InitTracing creates and registers globally a new TracerProvider.
 func InitTracing(ctx context.Context, tracingCollector *config.Collector, serviceName string) error {
-
 	if tracingCollector == nil {
 		return fmt.Errorf("tracing collector configuration is nil")
 	}
@@ -44,7 +43,6 @@ func InitTracing(ctx context.Context, tracingCollector *config.Collector, servic
 
 // newOtlpTraceExporter create and start new OTLP trace exporter
 func newOtlpTracerExporter(ctx context.Context, tracingCollector *config.Collector) (sdktrace.SpanExporter, error) {
-
 	var (
 		safetyOption = otlptracehttp.WithInsecure()
 		headers      = map[string]string{}
