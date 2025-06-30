@@ -20,7 +20,7 @@ import (
 // InitTracing creates and registers globally a new TracerProvider.
 func InitTracing(ctx context.Context, tracingCollector *config.Collector, serviceName string) error {
 	if tracingCollector == nil {
-		return fmt.Errorf("tracing collector configuration is nil")
+		return errors.New("tracing collector configuration is nil")
 	}
 
 	// Set up propagator.

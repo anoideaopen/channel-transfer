@@ -210,7 +210,7 @@ func initTracer(ctx context.Context, cfg *config.Config, rdb redis.UniversalClie
 	log := glog.FromContext(ctx)
 	if cfg.Tracing == nil ||
 		cfg.Tracing.Collector == nil ||
-		cfg.Tracing.Collector.Endpoint == "" {
+		cfg.Tracing.Endpoint == "" {
 		log.Debug("server: tracing disabled")
 		return nil
 	}
