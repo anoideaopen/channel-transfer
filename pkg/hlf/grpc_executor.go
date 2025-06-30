@@ -21,12 +21,13 @@ type gRPCExecutor struct {
 }
 
 // invoke sends a transaction request to an external batcher service instead of HLF
-func (ex *gRPCExecutor) invoke(ctx context.Context, log glog.Logger, req channel.Request, _ []channel.RequestOption) (channel.Response, error) {
+func (ex *gRPCExecutor) invoke(ctx context.Context, req channel.Request, _ []channel.RequestOption) (channel.Response, error) {
 	var err error
 	ctx, span := tracer.Start(ctx, "hlfexecutor: invoke gRPC")
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
+	log := glog.FromContext(ctx)
 	log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
 	var argsListForTracing string
 	for _, arg := range req.Args {

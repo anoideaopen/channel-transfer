@@ -67,8 +67,9 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 		},
 	)
 
-	if err = initTracer(ctx, log, cfg, rdb); err != nil {
-		log.Warning(fmt.Errorf("failed to initialize tracer: %w", err))
+	ctxWithLogger := glog.NewContext(ctx, log)
+	if err = initTracer(ctxWithLogger, cfg, rdb); err != nil {
+		log.Error(fmt.Errorf("failed to initialize tracer: %w", err))
 	}
 	ctx, grpcMetrics, serviceHandlers, err = initMetrics(
 		ctx,
@@ -210,16 +211,18 @@ func getFabricSdkVersion(log glog.Logger) string {
 }
 
 // Initialize tracer
-func initTracer(ctx context.Context, log glog.Logger, cfg *config.Config, rdb redis.UniversalClient) error {
-	if cfg.Tracing == nil && !cfg.Tracing.EnabledTracing {
+func initTracer(ctx context.Context, cfg *config.Config, rdb redis.UniversalClient) error {
+	log := glog.FromContext(ctx)
+	if cfg.Tracing == nil ||
+		cfg.Tracing.Collector == nil ||
+		cfg.Tracing.Collector.Endpoint == "" {
 		log.Debug("server: tracing disabled")
 		return nil
 	}
 	log.Debug("server: tracing enabled")
 	if err := tracing.InitTracing(
 		ctx,
-		cfg.Tracing.CollectorEndpoint,
-		cfg.Tracing.CollectorBasicAuthToken,
+		cfg.Tracing.Collector,
 		strings.ToLower(config.EnvPrefix),
 	); err != nil {
 		return fmt.Errorf("failed to initialize tracer: %w", err)
