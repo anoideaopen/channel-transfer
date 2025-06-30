@@ -131,10 +131,15 @@ func (eo Options) EffRetryExecuteDelay(defOpts Options) (time.Duration, error) {
 }
 
 type Tracing struct {
-	EnabledTracing          bool   `mapstructure:"enabledTracing"`
-	EnabledTracingRedis     bool   `mapstructure:"enabledTracingRedis"`
-	CollectorEndpoint       string `mapstructure:"tracingCollectorEndpoint"`
-	CollectorBasicAuthToken string `mapstructure:"tracingCollectorBasicAuthToken"`
+	EnabledTracingRedis bool `mapstructure:"enabledTracingRedis"`
+	*Collector          `mapstructure:"collector"`
+}
+
+type Collector struct {
+	Endpoint                 string `mapstructure:"endpoint" validate:"required"`
+	AuthorizationHeaderKey   string `mapstructure:"authorizationHeaderKey"`
+	AuthorizationHeaderValue string `mapstructure:"authorizationHeaderValue"`
+	TLSCA                    string `mapstructure:"tlsCA,omitempty"`
 }
 
 type RedisStorage struct {

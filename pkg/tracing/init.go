@@ -2,23 +2,33 @@ package tracing
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/base64"
+	"errors"
 	"fmt"
 
+	"github.com/anoideaopen/channel-transfer/pkg/config"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.34.0"
 )
 
 // InitTracing creates and registers globally a new TracerProvider.
-func InitTracing(ctx context.Context, tracingCollectorEndpoint string, tracingCollectorBasicAuthToken string, serviceName string) error {
+func InitTracing(ctx context.Context, tracingCollector *config.Collector, serviceName string) error {
+
+	if tracingCollector == nil {
+		return fmt.Errorf("tracing collector configuration is nil")
+	}
+
 	// Set up propagator.
 	prop := newPropagator()
 	otel.SetTextMapPropagator(prop)
 
-	exporter, err := newOtlpTracerExporter(ctx, tracingCollectorEndpoint, tracingCollectorBasicAuthToken)
+	exporter, err := newOtlpTracerExporter(ctx, tracingCollector)
 	if err != nil {
 		return fmt.Errorf("initialize trace exporter: %w", err)
 	}
@@ -33,20 +43,39 @@ func InitTracing(ctx context.Context, tracingCollectorEndpoint string, tracingCo
 }
 
 // newOtlpTraceExporter create and start new OTLP trace exporter
-func newOtlpTracerExporter(ctx context.Context, tracingCollectorEndpoint string, tracingCollectorBasicAuthToken string) (sdktrace.SpanExporter, error) {
-	options := []otlptracegrpc.Option{
-		otlptracegrpc.WithInsecure(),
-		otlptracegrpc.WithEndpoint(tracingCollectorEndpoint),
+func newOtlpTracerExporter(ctx context.Context, tracingCollector *config.Collector) (sdktrace.SpanExporter, error) {
+
+	var (
+		safetyOption = otlptracehttp.WithInsecure()
+		headers      = map[string]string{}
+	)
+
+	options := []otlptracehttp.Option{
+		otlptracehttp.WithEndpoint(tracingCollector.Endpoint),
 	}
 
-	if tracingCollectorBasicAuthToken != "" {
-		headers := map[string]string{
-			"Authorization": "Basic " + tracingCollectorBasicAuthToken,
+	if tracingCollector.TLSCA != "" {
+		// If the header is not empty but there are no certificates, consider it an error
+		tlsCfg, err := getTLSConfig(tracingCollector.TLSCA)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get TLS config: %w", err)
 		}
-		options = append(options, otlptracegrpc.WithHeaders(headers))
+		safetyOption = otlptracehttp.WithTLSClientConfig(tlsCfg)
 	}
 
-	traceExporter, err := otlptracegrpc.New(ctx, options...)
+	if tracingCollector.AuthorizationHeaderKey != "" &&
+		tracingCollector.AuthorizationHeaderValue != "" {
+		if tracingCollector.TLSCA == "" {
+			return nil, errors.New("TLSCA must be set if authorization headers are provided")
+		}
+		headers = map[string]string{
+			tracingCollector.AuthorizationHeaderKey: tracingCollector.AuthorizationHeaderValue,
+		}
+	}
+
+	options = append(options, safetyOption, otlptracehttp.WithHeaders(headers))
+
+	traceExporter, err := otlptracehttp.New(ctx, options...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new OTLP trace exporter: %w", err)
 	}
@@ -76,4 +105,23 @@ func newPropagator() propagation.TextMapPropagator {
 		propagation.TraceContext{},
 		propagation.Baggage{},
 	)
+}
+
+func getTLSConfig(caCertsBase64 string) (*tls.Config, error) {
+	caCertsBytes, err := base64.StdEncoding.DecodeString(caCertsBase64)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode TLS configuration: %w", err)
+	}
+
+	caCertPool := x509.NewCertPool()
+	ok := caCertPool.AppendCertsFromPEM(caCertsBytes)
+	if !ok {
+		return nil, errors.New("failed to add CA certificates to CA cert pool")
+	}
+
+	tlsConfig := &tls.Config{
+		RootCAs: caCertPool,
+	}
+
+	return tlsConfig, nil
 }
