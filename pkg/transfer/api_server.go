@@ -221,7 +221,7 @@ func (api *APIServer) MultiTransferByCustomer(
 		ctx,
 		tracer,
 		"api_server: MultiTransferByCustomer",
-		&tracing.MultiTransferDataGetter{
+		&MultiTransferDataGetter{
 			ItemDataGetter:          req,
 			BasicTransferDataGetter: req,
 		},
@@ -287,7 +287,7 @@ func (api *APIServer) MultiTransferByAdmin(
 		ctx,
 		tracer,
 		"api_server: MultiTransferByAdmin",
-		&tracing.MultiTransferDataGetter{
+		&MultiTransferDataGetter{
 			ItemDataGetter:          req,
 			BasicTransferDataGetter: req,
 		},
@@ -413,4 +413,34 @@ func (api *APIServer) transferStatus(ctx context.Context, transferID string) (*d
 		Status:     dto.TransferStatusResponse_Status(code),
 		Message:    tr.Message,
 	}, nil
+}
+
+// ItemDataGetter defines the interface for accessing a list of transfer items.
+type ItemDataGetter interface {
+	GetItems() []*dto.TransferItem
+}
+
+// MultiTransferDataGetter is a struct that satisfies the [tracing.TransferDataGetter] interface.
+// It combines basic transfer data with item data.
+type MultiTransferDataGetter struct {
+	ItemDataGetter
+	tracing.BasicTransferDataGetter
+}
+
+// GetToken returns a string representation of the tokens from all items in the multi-transfer.
+func (m *MultiTransferDataGetter) GetToken() string {
+	itemList := make([]string, 0, len(m.GetItems()))
+	for _, item := range m.GetItems() {
+		itemList = append(itemList, item.GetToken())
+	}
+	return fmt.Sprintf("%+v", itemList)
+}
+
+// GetAmount returns a string representation of the amounts from all items in the multi-transfer.
+func (m *MultiTransferDataGetter) GetAmount() string {
+	itemList := make([]string, 0, len(m.GetItems()))
+	for _, item := range m.GetItems() {
+		itemList = append(itemList, item.GetAmount())
+	}
+	return fmt.Sprintf("%+v", itemList)
 }

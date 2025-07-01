@@ -24,45 +24,25 @@ var FinishSpan = func(span trace.Span, err error) {
 	span.End()
 }
 
+// BasicTransferDataGetter defines the interface for accessing basic transfer data
+// such as id, general parameters and channelTo.
 type BasicTransferDataGetter interface {
 	GetIdTransfer() string
 	GetGenerals() *proto.GeneralParams
 	GetChannelTo() string
 }
 
+// TransferDataGetter defines the interface for accessing detailed transfer data,
+// including token and amount information.
 type TransferDataGetter interface {
 	GetToken() string
 	GetAmount() string
 	BasicTransferDataGetter
 }
 
-type ItemDataGetter interface {
-	GetItems() []*proto.TransferItem
-}
-
-type MultiTransferDataGetter struct {
-	ItemDataGetter
-	BasicTransferDataGetter
-}
-
-func (m *MultiTransferDataGetter) GetToken() string {
-	itemList := make([]string, 0, len(m.GetItems()))
-	for _, item := range m.GetItems() {
-		itemList = append(itemList, item.GetToken())
-	}
-	return fmt.Sprintf("%+v", itemList)
-}
-
-func (m *MultiTransferDataGetter) GetAmount() string {
-	itemList := make([]string, 0, len(m.GetItems()))
-	for _, item := range m.GetItems() {
-		itemList = append(itemList, item.GetAmount())
-	}
-	return fmt.Sprintf("%+v", itemList)
-}
-
-// StartSpan creates a new span with the provided context and tracer.
-// It is a client responsibility to call FinishSpan when the span is no longer needed.
+// StartSpan creates a new span with the provided context, tracer and [TransferDataGetter].
+// [TransferDataGetter] is used to extract transfer-related attributes for the span.
+// It is a client responsibility to call [FinishSpan] when the span is no longer needed.
 func StartSpan(
 	ctx context.Context,
 	tracer trace.Tracer,
@@ -100,6 +80,8 @@ func SetAttributes(
 
 var _ TransferDataGetter = (*TraceableRequest)(nil)
 
+// TraceableRequest wraps a model.TransferRequest to make it compatible with the
+// TransferDataGetter interface for tracing purposes.
 type TraceableRequest struct {
 	*model.TransferRequest
 }
