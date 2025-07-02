@@ -84,7 +84,9 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
+
+	log := glog.FromContext(ctx)
+	log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
 
 	if request.Token == "" {
 		return model.InternalErrorTransferStatus, errors.New("executor: token is not specified")
@@ -95,7 +97,7 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 
 	startTime := time.Now()
 
-	h.log.Debugf("create cc transfer from, channel %s, id %s, method %s", h.chaincodeID, request.Transfer, request.Method)
+	log.Debugf("create cc transfer from, channel %s, id %s, method %s", h.chaincodeID, request.Transfer, request.Method)
 	doer, err := h.poolController.Executor(h.channel)
 	if err != nil {
 		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
@@ -124,7 +126,7 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 		tArgs = append(tArgs, string(arg))
 	}
 
-	h.log.Debugf("transfer request arguments: %+v", tArgs)
+	log.Debugf("transfer request arguments: %+v", tArgs)
 	_, err = doer.Invoke(
 		ctxFromSpan,
 		channel.Request{
@@ -159,9 +161,8 @@ func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.Tra
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
-	h.log.Set(glog.Field{K: "transfer.id", V: request.Transfer})
-	h.log.Set(glog.Field{K: "transfer.method", V: request.Method})
+	log := glog.FromContext(ctx)
+	log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
 
 	if len(request.Items) == 0 {
 		return model.InternalErrorTransferStatus, errors.New("executor: items is empty")
@@ -169,7 +170,7 @@ func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.Tra
 
 	startTime := time.Now()
 
-	h.log.Debugf("create cc transfer from, channel %s, id %s, method %s", h.chaincodeID, request.Transfer, request.Method)
+	log.Debugf("create cc transfer from, channel %s, id %s, method %s", h.chaincodeID, request.Transfer, request.Method)
 	doer, err := h.poolController.Executor(h.channel)
 	if err != nil {
 		return model.InternalErrorTransferStatus, errors.Errorf("executor: %w", err)
@@ -202,7 +203,7 @@ func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.Tra
 		tArgs = append(tArgs, string(arg))
 	}
 
-	h.log.Debugf("transfer request arguments: %+v", tArgs)
+	log.Debugf("transfer request arguments: %+v", tArgs)
 	_, err = doer.Invoke(
 		ctxFromSpan,
 		channel.Request{
@@ -238,19 +239,21 @@ func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
-	h.log.Set(glog.Field{K: "transfer.id", V: transfer.GetId()})
+	log := h.log.With(
+		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
+		glog.Field{K: "transfer.id", V: transfer.GetId()},
+	)
 
 	channelName := strings.ToLower(transfer.GetTo())
-	h.log.Debugf("create cc transfer to, channel %s, id %s", channelName, transfer.GetId())
+	log.Debugf("create cc transfer to, channel %s, id %s", channelName, transfer.GetId())
 
 	request, err := h.requestStorage.TransferFetch(ctx, model.ID(transfer.GetId()))
 	if err != nil {
-		h.log.Warningf("failed fetching transfer request from storage: %w", err)
+		log.Warningf("failed fetching transfer request from storage: %w", err)
 	}
 	tracing.SetAttributes(span, tracing.NewTraceableRequest(&request))
 	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
-	h.log.Set(glog.Field{K: "transfer.method", V: request.Method})
+	log.Set(glog.Field{K: "transfer.method", V: request.Method})
 
 	if status, err := h.expandTO(ctx, channelName); err != nil {
 		return status, err
@@ -294,14 +297,15 @@ func (h *Handler) cancelTransferFrom(ctx context.Context, transferID string) (mo
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
-	h.log.Set(glog.Field{K: "transfer.id", V: transferID})
-
-	h.log.Debugf("cancel cc transfer from, channel %s, id %s", h.channel, transferID)
+	log := h.log.With(
+		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
+		glog.Field{K: "transfer.id", V: transferID},
+	)
+	log.Debugf("cancel cc transfer from, channel %s, id %s", h.channel, transferID)
 
 	if err = h.invoke(ctx, h.channel, h.chaincodeID, model.TxCancelCCTransferFrom, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
-			h.log.Error(errors.Errorf("cancel transfer: %w", err))
+			log.Error(errors.Errorf("cancel transfer: %w", err))
 			return model.Canceled, nil
 		}
 
@@ -323,14 +327,16 @@ func (h *Handler) commitTransferFrom(ctx context.Context, transferID string) (mo
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
-	h.log.Set(glog.Field{K: "transfer.id", V: transferID})
+	log := h.log.With(
+		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
+		glog.Field{K: "transfer.id", V: transferID},
+	)
 
-	h.log.Debugf("commit cc transfer from, channel %s, id %s", h.channel, transferID)
+	log.Debugf("commit cc transfer from, channel %s, id %s", h.channel, transferID)
 
 	if err = h.invoke(ctx, h.channel, h.chaincodeID, model.NbTxCommitCCTransferFrom, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
-			h.log.Error(errors.Errorf("commit transfer: %w", err))
+			log.Error(errors.Errorf("commit transfer: %w", err))
 			return model.Canceled, nil
 		}
 		return model.InternalErrorTransferStatus, err
@@ -351,14 +357,16 @@ func (h *Handler) deleteTransferFrom(ctx context.Context, transferID string) (mo
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
-	h.log.Set(glog.Field{K: "transfer.id", V: transferID})
+	log := h.log.With(
+		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
+		glog.Field{K: "transfer.id", V: transferID},
+	)
 
-	h.log.Debugf("delete cc transfer from, channel %s, id %s", h.channel, transferID)
+	log.Debugf("delete cc transfer from, channel %s, id %s", h.channel, transferID)
 
 	if err = h.invoke(ctx, h.channel, h.chaincodeID, model.NbTxDeleteCCTransferFrom, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
-			h.log.Error(errors.Errorf("delete transfer: %w", err))
+			log.Error(errors.Errorf("delete transfer: %w", err))
 			return model.CompletedTransferFromDelete, nil
 		}
 		return model.InternalErrorTransferStatus, err
@@ -381,12 +389,14 @@ func (h *Handler) deleteTransferTo(ctx context.Context, channelName string, tran
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
-	h.log.Set(glog.Field{K: "transfer.id", V: transferID})
+	log := h.log.With(
+		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
+		glog.Field{K: "transfer.id", V: transferID},
+	)
 
 	if err = h.invoke(ctx, channelName, channelName, model.NbTxDeleteCCTransferTo, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
-			h.log.Error(errors.Errorf("delete transfer: %w", err))
+			log.Error(errors.Errorf("delete transfer: %w", err))
 			return model.CompletedTransferToDelete, nil
 		}
 		return model.InternalErrorTransferStatus, err
@@ -440,16 +450,16 @@ func (h *Handler) queryChannelTransferTo(ctx context.Context, channelName string
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
-	h.log.Set(glog.Field{K: "transfer.id", V: transferID})
+	log := glog.FromContext(ctx).With(
+		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
+	)
 
 	executor, err := h.poolController.Executor(channelName)
 	if err != nil {
 		return false, errors.Errorf("expand: %w", err)
 	}
 
-	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
-	h.log.Debugf("query channel transfer to, channel %s, id %s", channelName, transferID)
+	log.Debugf("query channel transfer to, channel %s, id %s", channelName, transferID)
 
 	_, err = executor.Query(
 		ctx,
@@ -483,15 +493,17 @@ func (h *Handler) queryChannelTransferFrom(ctx context.Context, channelName stri
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
-	h.log.Set(glog.Field{K: "transfer.id", V: transferID})
+	log := h.log.With(
+		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
+		glog.Field{K: "transfer.id", V: transferID},
+	)
 
 	executor, err := h.poolController.Executor(channelName)
 	if err != nil {
 		return false, errors.Errorf("expand: %w", err)
 	}
 
-	h.log.Debugf("query channel transfer from, channel %s, id %s", channelName, transferID)
+	log.Debugf("query channel transfer from, channel %s, id %s", channelName, transferID)
 
 	_, err = executor.Query(
 		ctx,

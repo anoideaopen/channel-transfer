@@ -388,8 +388,6 @@ func (api *APIServer) transferStatus(ctx context.Context, transferID string) (*d
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	api.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
-	api.log.Debug("updated span context")
 	tr, err = api.ctrl.TransferFetch(ctx, model.ID(transferID))
 	if err != nil {
 		if strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
@@ -401,7 +399,6 @@ func (api *APIServer) transferStatus(ctx context.Context, transferID string) (*d
 		}
 		return nil, errors.Errorf("fetch transfer request: %w", ErrInvalidStatusCode)
 	}
-	api.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
 
 	code, ok := dto.TransferStatusResponse_Status_value[tr.Status]
 	if !ok {
