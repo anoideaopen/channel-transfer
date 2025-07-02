@@ -18,6 +18,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/transfer"
 	"github.com/anoideaopen/channel-transfer/proto"
 	"github.com/anoideaopen/common-component/errorshlp"
+	fpb "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/glog"
 	"github.com/go-errors/errors"
 	"go.opentelemetry.io/otel"
@@ -155,15 +156,31 @@ func (h *Handler) launcher(ctx context.Context, group *errgroup.Group) {
 	}
 
 	counter := 0
+	mx := &sync.Mutex{}
 	for _, ccTransfer := range ccTransfers {
 		if _, ok := h.inUsed.Load(ccTransfer.GetId()); ok {
 			continue
 		}
 
-		localTransfer := ccTransfer
-		h.inUsed.Store(localTransfer.GetId(), struct{}{})
+		h.inUsed.Store(ccTransfer.GetId(), struct{}{})
 		if group.TryGo(
 			func() error {
+				mx.Lock()
+				// copy transfer to local variable to avoid fields concurrent access
+				// while processing several transfers in parallel
+				localTransfer := fpb.CCTransfer{
+					Id:               ccTransfer.GetId(),
+					From:             ccTransfer.GetFrom(),
+					To:               ccTransfer.GetTo(),
+					Token:            ccTransfer.GetToken(),
+					User:             ccTransfer.GetUser(),
+					Amount:           ccTransfer.GetAmount(),
+					ForwardDirection: ccTransfer.GetForwardDirection(),
+					IsCommit:         ccTransfer.GetIsCommit(),
+					TimeAsNanos:      ccTransfer.GetTimeAsNanos(),
+					Items:            ccTransfer.GetItems(),
+				}
+				mx.Unlock()
 				defer h.inUsed.Delete(localTransfer.GetId())
 				request, err := h.requestStorage.TransferFetch(ctx, model.ID(localTransfer.GetId()))
 				if err != nil {
@@ -181,18 +198,21 @@ func (h *Handler) launcher(ctx context.Context, group *errgroup.Group) {
 				defer func() {
 					tracing.FinishSpan(span, err)
 				}()
-				h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
-				h.log.Set(glog.Field{K: "transfer.id", V: localTransfer.GetId()})
+				log := h.log.With(
+					glog.Field{K: "transfer.span.context", V: span.SpanContext()},
+					glog.Field{K: "transfer.id", V: localTransfer.GetId()},
+				)
+				ctxWithLoggerAndSpan := glog.NewContext(ctxWithSpan, log)
 
-				status, err := h.resolveStatus(ctxWithSpan, localTransfer)
+				status, err := h.resolveStatus(ctxWithLoggerAndSpan, &localTransfer)
 				if err != nil {
-					h.log.Error(errors.Errorf("resolve transfer status %s: %w", localTransfer.GetId(), err))
+					log.Error(errors.Errorf("resolve transfer status %s: %w", localTransfer.GetId(), err))
 				}
-				h.restoreCompletedStatus(ctxWithSpan, status, model.ID(localTransfer.GetId()))
+				h.restoreCompletedStatus(ctxWithLoggerAndSpan, status, model.ID(localTransfer.GetId()))
 
-				err = h.transferProcessing(ctxWithSpan, status, localTransfer, err)
+				err = h.transferProcessing(ctxWithLoggerAndSpan, status, &localTransfer, err)
 				if err != nil {
-					h.log.Error(errors.Errorf("transfer processing %s: %w", localTransfer.GetId(), err))
+					log.Error(errors.Errorf("transfer processing %s: %w", localTransfer.GetId(), err))
 				}
 
 				return nil
@@ -200,7 +220,7 @@ func (h *Handler) launcher(ctx context.Context, group *errgroup.Group) {
 		) {
 			counter++
 		} else {
-			h.inUsed.Delete(localTransfer.GetId())
+			h.inUsed.Delete(ccTransfer.GetId())
 		}
 	}
 
@@ -223,18 +243,21 @@ func (h *Handler) createTransfer(ctx context.Context, request model.TransferRequ
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	h.log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
-	h.log.Set(glog.Field{K: "transfer.id", V: request.Transfer})
-	h.log.Set(glog.Field{K: "transfer.method", V: request.Method})
+	log := h.log.With(
+		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
+		glog.Field{K: "transfer.id", V: request.Transfer},
+		glog.Field{K: "transfer.method", V: request.Method},
+	)
+	ctxWithLoggerAndSpan := glog.NewContext(ctxFromSpan, log)
 	if len(request.Items) > 0 {
-		status, err = h.createMultiTransferFrom(ctxFromSpan, request)
+		status, err = h.createMultiTransferFrom(ctxWithLoggerAndSpan, request)
 	} else {
-		status, err = h.createTransferFrom(ctxFromSpan, request)
+		status, err = h.createTransferFrom(ctxWithLoggerAndSpan, request)
 	}
 	if err != nil {
 		err = errors.Errorf("create transfer: %w", err)
 		request.Message = err.Error()
-		h.log.Error(errorshlp.WrapWithDetails(err, nerrors.ErrTypeProducer, nerrors.ComponentProducer))
+		log.Error(errorshlp.WrapWithDetails(err, nerrors.ErrTypeProducer, nerrors.ComponentProducer))
 	}
 
 	switch status {
@@ -246,13 +269,13 @@ func (h *Handler) createTransfer(ctx context.Context, request model.TransferRequ
 		request.Status = proto.TransferStatusResponse_STATUS_UNDEFINED.String()
 	}
 
-	h.log.Debugf("transfer modify: %s", request.Transfer)
+	log.Debugf("transfer modify: %s", request.Transfer)
 	if err = h.requestStorage.TransferResultModify(
-		ctxFromSpan,
+		ctxWithLoggerAndSpan,
 		request.Transfer,
 		request.TransferResult,
 	); err != nil {
-		h.log.Errorf("transfer response status not saved : %s : %s", request.Transfer, err.Error())
+		log.Errorf("transfer response status not saved : %s : %s", request.Transfer, err.Error())
 	}
 }
 
