@@ -5,7 +5,6 @@ import (
 
 	"github.com/anoideaopen/channel-transfer/pkg/tracing"
 	"github.com/anoideaopen/channel-transfer/proto"
-	"github.com/anoideaopen/glog"
 	"github.com/google/uuid"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"go.opentelemetry.io/otel/attribute"
@@ -27,8 +26,6 @@ func (ex *gRPCExecutor) invoke(ctx context.Context, req channel.Request, _ []cha
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	log := glog.FromContext(ctx)
-	log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
 	var argsListForTracing string
 	for _, arg := range req.Args {
 		argsListForTracing += string(arg) + ", "
@@ -37,9 +34,6 @@ func (ex *gRPCExecutor) invoke(ctx context.Context, req channel.Request, _ []cha
 		attribute.String("invoke.args", argsListForTracing),
 		attribute.String("invoke.method", req.Fcn),
 	)
-	log.Set(glog.Field{K: "invoke.args", V: argsListForTracing})
-	log.Set(glog.Field{K: "invoke.method", V: req.Fcn})
-	log.Debug("invoke gRPC")
 
 	adaptor := proto.NewTaskExecutorAdapterClient(ex.Client)
 

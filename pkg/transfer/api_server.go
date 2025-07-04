@@ -4,6 +4,7 @@ package transfer
 import (
 	"context"
 	"fmt"
+	_ "net/http/pprof"
 	"strings"
 
 	"github.com/anoideaopen/channel-transfer/pkg/data"
@@ -99,9 +100,6 @@ func (api *APIServer) TransferByCustomer(
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	log.Set(
-		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
-	)
 	log.Debug("transferByCustomer request received")
 	tr, err = dtoBeginCustomerToModelTransferRequest(req, api.actualChannels)
 	if err != nil {
@@ -162,9 +160,6 @@ func (api *APIServer) TransferByAdmin(
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	log.Set(
-		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
-	)
 	log.Debug("transferByAdmin request received")
 	tr, err := dtoBeginAdminToModelTransferRequest(req, api.actualChannels)
 	if err != nil {
@@ -229,9 +224,6 @@ func (api *APIServer) MultiTransferByCustomer(
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	log.Set(
-		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
-	)
 	log.Debug("multiTransferByCustomer request received")
 	tr, err := dtoBeginCustomerToModelMultiTransferRequest(req, api.actualChannels)
 	if err != nil {
@@ -295,9 +287,6 @@ func (api *APIServer) MultiTransferByAdmin(
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	log.Set(
-		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
-	)
 	log.Debug("multiTransferByAdmin request received")
 	tr, err := dtoBeginAdminToModelMultiTransferRequest(req, api.actualChannels)
 	if err != nil {

@@ -71,7 +71,10 @@ func newOtlpTracerExporter(ctx context.Context, tracingCollector *config.Collect
 		}
 	}
 
-	options = append(options, safetyOption, otlptracehttp.WithHeaders(headers))
+	options = append(options,
+		safetyOption,
+		otlptracehttp.WithHeaders(headers),
+	)
 
 	traceExporter, err := otlptracehttp.New(ctx, options...)
 	if err != nil {
