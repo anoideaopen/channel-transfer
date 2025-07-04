@@ -16,7 +16,6 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/tracing"
 	"github.com/anoideaopen/channel-transfer/proto"
 	fpb "github.com/anoideaopen/foundation/proto"
-	"github.com/anoideaopen/glog"
 	"github.com/avast/retry-go/v4"
 	"github.com/go-errors/errors"
 	"go.opentelemetry.io/otel/attribute"
@@ -57,17 +56,13 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	log := glog.FromContext(ctx).With(
-		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
-		glog.Field{K: "transfer.id", V: transfer.GetId()},
-	)
 
 	state := make(chan model.StatusKind, 1)
 	defer close(state)
 
 	state <- initStatus
 
-	log.Infof("%s transfer processing started", transfer.GetId())
+	h.log.Infof("%s transfer processing started", transfer.GetId())
 
 	var (
 		failTag    failureTag
@@ -92,7 +87,7 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 	for {
 		select {
 		case <-ctx.Done():
-			log.Infof("%s transfer stopped", transfer.GetId())
+			h.log.Infof("%s transfer stopped", transfer.GetId())
 			return ctx.Err()
 		case status, ok := <-state:
 			if !ok {
@@ -118,21 +113,19 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 				failTag = expiredTransferTag
 			}
 
-			log.Debugf("event status %s, id %s, channel from %s, channel to %s",
+			h.log.Debugf("event status %s, id %s, channel from %s, channel to %s",
 				status.String(), transfer.GetId(), transfer.GetFrom(), transfer.GetTo(),
 			)
 			request, err := h.requestStorage.TransferFetch(ctx, model.ID(transfer.GetId()))
 			if err != nil {
-				log.Warningf("failed fetching transfer request from storage: %w", err)
+				h.log.Warningf("failed fetching transfer request from storage: %w", err)
 			}
 			ctx := telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 
-			log.Set(glog.Field{K: "transfer.span.context", V: span.SpanContext()})
-			log.Set(glog.Field{K: "transfer.id", V: transfer.GetId()})
 			switch status {
 			case model.InProgressTransferFrom:
 				if lastErr != nil {
-					log.Infof("%s transfer processing stopped with error : %s", transfer.GetId(), lastErr.Error())
+					h.log.Infof("%s transfer processing stopped with error : %s", transfer.GetId(), lastErr.Error())
 					return lastErr
 				}
 				status, lastErr = h.fromBatchResponse(ctx, transfer.GetId())
@@ -160,7 +153,7 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 						Status: proto.TransferStatusResponse_STATUS_COMPLETED.String(),
 					},
 				); err != nil {
-					log.Errorf("transfer response status not saved : %s : %s", transfer.GetId(), err.Error())
+					h.log.Errorf("transfer response status not saved : %s : %s", transfer.GetId(), err.Error())
 				}
 				status, lastErr = h.commitTransferFrom(ctx, transfer.GetId())
 				if lastErr != nil {
@@ -175,7 +168,7 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 						Message: message(lastErr),
 					},
 				); err != nil {
-					log.Errorf("transfer response status not saved : %s : %s", transfer.GetId(), err.Error())
+					h.log.Errorf("transfer response status not saved : %s : %s", transfer.GetId(), err.Error())
 				}
 				// cancel transfer
 				status, lastErr = h.cancelTransfer(ctx, transfer.GetId(), lastErr)
@@ -213,14 +206,14 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 						Message: message(lastErr),
 					},
 				); err != nil {
-					log.Errorf("transfer response status not saved : %s : %s", transfer.GetId(), err.Error())
+					h.log.Errorf("transfer response status not saved : %s : %s", transfer.GetId(), err.Error())
 				}
 				// cancel transfer
 				status, lastErr = h.cancelTransfer(ctx, transfer.GetId(), lastErr)
 				failTag = transferFromError
 			case model.Completed:
 				h.m.TotalSuccessTransfer().Inc(metrics.Labels().Channel.Create(h.channel))
-				log.Infof("%s transfer processing completed", transfer.GetId())
+				h.log.Infof("%s transfer processing completed", transfer.GetId())
 				return nil
 			case model.Canceled:
 				h.m.TotalFailureTransfer().Inc(metrics.Labels().Channel.Create(h.channel), metrics.Labels().FailTransferTag.Create(string(failTag)))
@@ -232,18 +225,18 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 						Message: message(lastErr),
 					},
 				); err != nil {
-					log.Errorf("transfer response status not saved : %s : %s", transfer.GetId(), err.Error())
+					h.log.Errorf("transfer response status not saved : %s : %s", transfer.GetId(), err.Error())
 				}
 				message := transfer.GetId() + " transfer processing canceled"
 				if lastErr != nil {
 					message = transfer.GetId() + " transfer processing canceled with error : " + lastErr.Error()
 				}
-				log.Info(message)
+				h.log.Info(message)
 				return nil
 			}
 
 			if lastErr != nil {
-				log.Error(lastErr)
+				h.log.Error(lastErr)
 			}
 
 			h.m.TransferStageExecutionTimeDuration().Observe(
@@ -306,12 +299,11 @@ func (h *Handler) resolveStatus(ctx context.Context, transfer *fpb.CCTransfer) (
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	log := glog.FromContext(ctx)
 
 	channelName := strings.ToLower(transfer.GetTo())
 	request, err = h.requestStorage.TransferFetch(ctx, model.ID(transfer.GetId()))
 	if err != nil {
-		log.Warningf("failed fetching transfer request from storage: %w", err)
+		h.log.Warningf("failed fetching transfer request from storage: %w", err)
 	}
 	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 
@@ -365,12 +357,9 @@ func (h *Handler) fromBatchResponse(ctx context.Context, transferID string) (mod
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	log := glog.FromContext(ctx).With(
-		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
-	)
 	err = retry.Do(func() error {
 		blocks, err := h.responseWithAttempt(ctx, h.channel, transferID)
-		log.Debugf("find batchResponse in fromBatchResponse: %s; error: %v", transferID, err)
+		h.log.Debugf("find batchResponse in fromBatchResponse: %s; error: %v", transferID, err)
 		if err != nil {
 			err = errors.Errorf("batch FROM: %w", err)
 			if strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
@@ -427,13 +416,10 @@ func (h *Handler) toBatchResponse(ctx context.Context, channelName string, trans
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	log := glog.FromContext(ctx).With(
-		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
-	)
 
 	err = retry.Do(func() error {
 		blocks, err := h.responseWithAttempt(ctx, channelName, transferID)
-		log.Debugf("find batchResponse in toBatchResponse: %s; error: %v", transferID, err)
+		h.log.Debugf("find batchResponse in toBatchResponse: %s; error: %v", transferID, err)
 		if err != nil {
 			err = errors.Errorf("batch TO: %w", err)
 			if strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
@@ -494,13 +480,10 @@ func (h *Handler) responseWithAttempt(ctx context.Context, channel string, trans
 	defer func() {
 		tracing.FinishSpan(span, err)
 	}()
-	log := glog.FromContext(ctx).With(
-		glog.Field{K: "transfer.span.context", V: span.SpanContext()},
-	)
 
 	err = retry.Do(func() error {
 		blocks, err := h.blockStorage.BlockLoad(ctx, h.blockStorage.Key(model.ID(channel), model.ID(transferID)))
-		log.Debugf("block load in responseWithAttempt: %s; error: %v", transferID, err)
+		h.log.Debugf("block load in responseWithAttempt: %s; error: %v", transferID, err)
 		if err != nil {
 			resp = model.TransferBlock{}
 			return err

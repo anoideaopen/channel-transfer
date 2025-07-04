@@ -3,7 +3,6 @@ package logger
 import (
 	"maps"
 	"sort"
-	"sync"
 	"syscall"
 	"time"
 
@@ -25,37 +24,31 @@ type sugaredLogger struct {
 	sugar  *zap.SugaredLogger
 	fields map[string]interface{}
 	cfg    zap.Config
-	mx     *sync.Mutex
 }
 
 func (sl *sugaredLogger) Set(fields ...glog.Field) {
-	sl.mx.Lock()
 	for _, field := range fields {
 		sl.fields[field.K] = field.V
 	}
 
 	args := mapToArgs(sl.fields)
-	sl.mx.Unlock()
 	zLogger, _ := sl.cfg.Build(zap.AddCaller(), zap.AddCallerSkip(1))
 	sl.sugar = zLogger.Sugar().With(args...)
 }
 
 func (sl *sugaredLogger) With(fields ...glog.Field) glog.Logger {
-	sl.mx.Lock()
 	fl := maps.Clone(sl.fields)
 	for _, field := range fields {
 		fl[field.K] = field.V
 	}
 
 	args := mapToArgs(fl)
-	sl.mx.Unlock()
 	zLogger, _ := sl.cfg.Build(zap.AddCaller(), zap.AddCallerSkip(1))
 
 	return &sugaredLogger{
 		sugar:  zLogger.Sugar().With(args...),
 		fields: fl,
 		cfg:    sl.cfg,
-		mx:     &sync.Mutex{},
 	}
 }
 
@@ -155,7 +148,6 @@ func newSugarLogger(loggerType string, level string) (*sugaredLogger, error) {
 		sugar:  zLogger.Sugar(),
 		fields: make(map[string]interface{}),
 		cfg:    cfg,
-		mx:     &sync.Mutex{},
 	}, nil
 }
 
