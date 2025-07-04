@@ -4,7 +4,6 @@ package transfer
 import (
 	"context"
 	"fmt"
-	_ "net/http/pprof"
 	"strings"
 
 	"github.com/anoideaopen/channel-transfer/pkg/data"
