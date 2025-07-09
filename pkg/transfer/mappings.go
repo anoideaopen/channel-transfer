@@ -2,12 +2,12 @@ package transfer
 
 import (
 	"encoding/json"
-	"strconv"
 	"strings"
 
 	"github.com/anoideaopen/channel-transfer/pkg/helpers/methods"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	dto "github.com/anoideaopen/channel-transfer/proto"
+	"github.com/anoideaopen/foundation/core/types/big"
 	"github.com/anoideaopen/foundation/proto"
 	"github.com/go-errors/errors"
 	"google.golang.org/grpc/codes"
@@ -306,7 +306,7 @@ func checkAdminRequestTransfer(
 	if tAdminRequest.GetAmount() == "" {
 		return errors.New("amount undefined")
 	}
-	if _, err := strconv.ParseInt(tAdminRequest.GetAmount(), 10, 64); err != nil {
+	if _, ok := new(big.Int).SetString(tAdminRequest.GetAmount(), 10); !ok {
 		return errors.New("amount is not a number")
 	}
 
@@ -333,7 +333,7 @@ func checkCustomerRequestTransfer(
 	if tCustomerRequest.GetAmount() == "" {
 		return errors.New("amount undefined")
 	}
-	if _, err := strconv.ParseInt(tCustomerRequest.GetAmount(), 10, 64); err != nil {
+	if _, ok := new(big.Int).SetString(tCustomerRequest.GetAmount(), 10); !ok {
 		return errors.New("amount is not a number")
 	}
 
@@ -367,7 +367,7 @@ func checkAdminRequestMultiTransfer(
 		if item.GetAmount() == "" {
 			return errors.New("amount undefined")
 		}
-		if _, err := strconv.ParseInt(item.GetAmount(), 10, 64); err != nil {
+		if _, ok := new(big.Int).SetString(item.GetAmount(), 10); !ok {
 			return errors.New("amount is not a number")
 		}
 	}
@@ -406,7 +406,7 @@ func checkCustomerRequestMultiTransfer(
 		if item.GetAmount() == "" {
 			return errors.New("amount undefined")
 		}
-		if _, err := strconv.ParseInt(item.GetAmount(), 10, 64); err != nil {
+		if _, ok := new(big.Int).SetString(item.GetAmount(), 10); !ok {
 			return errors.New("amount is not a number")
 		}
 	}
