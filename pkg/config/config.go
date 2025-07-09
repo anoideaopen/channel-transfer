@@ -28,6 +28,7 @@ type Config struct {
 	RedisStorage *RedisStorage `mapstructure:"redisStorage" validate:"required"`
 	Service      *Service      `mapstructure:"service" validate:"required"`
 	PromMetrics  *PromMetrics  `mapstructure:"promMetrics"`
+	Tracing      *Tracing      `mapstructure:"tracing"`
 
 	Channels []Channel `mapstructure:"channels" validate:"required,dive,required"`
 
@@ -127,6 +128,18 @@ func (eo Options) EffRetryExecuteDelay(defOpts Options) (time.Duration, error) {
 		return 0, errors.New("retryExecuteDelay is not specified")
 	}
 	return *val, nil
+}
+
+type Tracing struct {
+	EnabledTracingRedis bool `mapstructure:"enabledTracingRedis"`
+	*Collector          `mapstructure:"collector"`
+}
+
+type Collector struct {
+	Endpoint                 string `mapstructure:"endpoint" validate:"required"`
+	AuthorizationHeaderKey   string `mapstructure:"authorizationHeaderKey"`
+	AuthorizationHeaderValue string `mapstructure:"authorizationHeaderValue"`
+	TLSCA                    string `mapstructure:"tlsCA,omitempty"`
 }
 
 type RedisStorage struct {

@@ -17,21 +17,8 @@ func carrierFromMetadata(md metadata.MD) propagation.TextMapCarrier {
 }
 
 func carrierFromContext(ctx context.Context) propagation.TextMapCarrier {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return &metadataCarrier{MD: metadata.New(nil)}
-	}
-
-	var (
-		carrier  = metadataCarrier{MD: md}
-		traceCtx = propagation.TraceContext{}
-	)
-
-	ctx = traceCtx.Extract(ctx, &carrier)
-
-	carrier.MD = metadata.New(nil)
-	traceCtx.Inject(ctx, &carrier)
-
+	carrier := metadataCarrier{MD: metadata.New(nil)}
+	propagation.TraceContext{}.Inject(ctx, &carrier)
 	return &carrier
 }
 
