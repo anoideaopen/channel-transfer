@@ -10,6 +10,8 @@ import (
 	"github.com/go-errors/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap/zapgrpc"
+	"google.golang.org/grpc/grpclog"
 )
 
 const (
@@ -157,6 +159,9 @@ func CreateLogger(loggerType, logLevel string) (glog.Logger, SyncLoggerMethod, e
 	if err != nil {
 		return nil, nil, errors.Errorf("failed to create logger: %w", err)
 	}
+
+	grpclog.SetLoggerV2(zapgrpc.NewLogger(sugar.sugar.Desugar()))
+
 	return sugar, sugar.Flush, nil
 }
 
