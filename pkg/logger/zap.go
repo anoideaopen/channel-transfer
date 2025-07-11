@@ -10,6 +10,8 @@ import (
 	"github.com/go-errors/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap/zapgrpc"
+	"google.golang.org/grpc/grpclog"
 )
 
 const (
@@ -139,6 +141,8 @@ func newSugarLogger(loggerType string, level string) (*sugaredLogger, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	grpclog.SetLoggerV2(zapgrpc.NewLogger(zLogger))
 
 	return &sugaredLogger{
 		sugar:  zLogger.Sugar(),
