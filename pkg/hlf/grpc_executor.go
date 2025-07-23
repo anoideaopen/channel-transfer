@@ -31,7 +31,6 @@ func (ex *gRPCExecutor) invoke(ctx context.Context, req channel.Request, _ []cha
 		argsListForTracing += string(arg) + ", "
 	}
 	span.SetAttributes(
-		attribute.String("invoke.args", argsListForTracing),
 		attribute.String("invoke.method", req.Fcn),
 	)
 

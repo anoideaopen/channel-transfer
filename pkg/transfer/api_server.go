@@ -14,8 +14,6 @@ import (
 	"github.com/anoideaopen/glog"
 	"github.com/go-errors/errors"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -367,15 +365,6 @@ func (api *APIServer) transferStatus(ctx context.Context, transferID string) (*d
 		err error
 	)
 
-	ctx, span := tracer.Start(ctx,
-		"api_server: transferStatus",
-		trace.WithAttributes(
-			attribute.String("id", transferID),
-		),
-	)
-	defer func() {
-		tracing.FinishSpan(span, err)
-	}()
 	tr, err = api.ctrl.TransferFetch(ctx, model.ID(transferID))
 	if err != nil {
 		if strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {

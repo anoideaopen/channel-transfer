@@ -74,11 +74,12 @@ func (h *Handler) queryChannelTransfers(ctx context.Context) ([]*fpb.CCTransfer,
 
 func (h *Handler) createTransferFrom(ctx context.Context, request model.TransferRequest) (model.StatusKind, error) {
 	var err error
-	ctxFromSpan, span := tracing.StartSpan(
+	ctxFromSpan, span := tracer.Start(
 		ctx,
-		tracer,
 		"ledger: createTransferFrom",
-		tracing.NewTraceableRequest(&request),
+		trace.WithAttributes(
+			attribute.String("id", string(request.Transfer)),
+		),
 	)
 	defer func() {
 		tracing.FinishSpan(span, err)
@@ -148,11 +149,12 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 
 func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.TransferRequest) (model.StatusKind, error) {
 	var err error
-	ctxFromSpan, span := tracing.StartSpan(
+	ctxFromSpan, span := tracer.Start(
 		ctx,
-		tracer,
 		"ledger: createMultiTransferFrom",
-		tracing.NewTraceableRequest(&request),
+		trace.WithAttributes(
+			attribute.String("id", string(request.Transfer)),
+		),
 	)
 	defer func() {
 		tracing.FinishSpan(span, err)
@@ -241,7 +243,6 @@ func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer
 	if err != nil {
 		h.log.Warningf("failed fetching transfer request from storage: %w", err)
 	}
-	tracing.SetAttributes(span, tracing.NewTraceableRequest(&request))
 	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 
 	if status, err := h.expandTO(ctx, channelName); err != nil {

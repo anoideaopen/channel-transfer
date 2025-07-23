@@ -52,6 +52,7 @@ func StartSpan(
 ) (context.Context, trace.Span) {
 	attributes = append(attributes,
 		attribute.String("id", req.GetIdTransfer()),
+		attribute.String("request_id", req.GetGenerals().GetRequestId()),
 		attribute.String("from", req.GetGenerals().GetChannel()),
 		attribute.String("to", req.GetChannelTo()),
 		attribute.String("token", req.GetToken()),
@@ -62,19 +63,6 @@ func StartSpan(
 		trace.WithAttributes(
 			attributes...,
 		),
-	)
-}
-
-func SetAttributes(
-	span trace.Span,
-	req TransferDataGetter,
-) {
-	span.SetAttributes(
-		attribute.String("id", req.GetIdTransfer()),
-		attribute.String("from", req.GetGenerals().GetChannel()),
-		attribute.String("to", req.GetChannelTo()),
-		attribute.String("token", req.GetToken()),
-		attribute.String("amount", req.GetAmount()),
 	)
 }
 

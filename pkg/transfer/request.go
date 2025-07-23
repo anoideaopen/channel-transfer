@@ -28,13 +28,11 @@ func NewRequest(storage *redis.Storage) *Request {
 
 func (r *Request) TransferKeep(ctx context.Context, transferRequest model.TransferRequest) error {
 	var err error
-	tracebleRequest := tracing.NewTraceableRequest(&transferRequest)
-	ctx, span := tracing.StartSpan(
-		ctx,
-		tracer,
+	ctx, span := tracer.Start(ctx,
 		"transfer: TransferKeep",
-		tracebleRequest,
-		attribute.String("method", transferRequest.Method),
+		trace.WithAttributes(
+			attribute.String("id", string(transferRequest.Transfer)),
+		),
 	)
 	defer func() {
 		tracing.FinishSpan(span, err)
@@ -48,32 +46,21 @@ func (r *Request) TransferKeep(ctx context.Context, transferRequest model.Transf
 
 func (r *Request) TransferFetch(ctx context.Context, transfer model.ID) (model.TransferRequest, error) {
 	var err error
-	ctx, span := tracer.Start(
-		ctx,
-		"transfer: TransferFetch",
-		trace.WithAttributes(
-			attribute.String("id", string(transfer)),
-		),
-	)
-	defer func() {
-		tracing.FinishSpan(span, err)
-	}()
 	transferRequest := model.TransferRequest{}
 	if err = r.storage.Load(ctx, &transferRequest, data.Key(transfer)); err != nil {
 		return transferRequest, fmt.Errorf("load request : %w", err)
 	}
-	tracing.SetAttributes(span, tracing.NewTraceableRequest(&transferRequest))
 	return transferRequest, nil
 }
 
 func (r *Request) TransferModify(ctx context.Context, transferRequest model.TransferRequest, ttl time.Duration) error {
 	var err error
-	tracebleRequest := tracing.NewTraceableRequest(&transferRequest)
-	ctx, span := tracing.StartSpan(
+	ctx, span := tracer.Start(
 		ctx,
-		tracer,
 		"transfer: TransferModify",
-		tracebleRequest,
+		trace.WithAttributes(
+			attribute.String("id", string(transferRequest.Transfer)),
+		),
 	)
 	defer func() {
 		tracing.FinishSpan(span, err)
@@ -151,7 +138,7 @@ func (r *Request) TransferResultModify(ctx context.Context, transferID model.ID,
 	var err error
 	ctx, span := tracer.Start(
 		ctx,
-		"transfer: TransferResultModify", // request: TransferFetch
+		"transfer: TransferResultModify",
 		trace.WithAttributes(
 			attribute.String("id", string(transferID)),
 			attribute.String("new.status", result.Status),
@@ -171,7 +158,6 @@ func (r *Request) TransferResultModify(ctx context.Context, transferID model.ID,
 			return fmt.Errorf("save request : %w", err)
 		}
 	}
-	tracing.SetAttributes(span, tracing.NewTraceableRequest(&request))
 
 	if !r.canBeChangedStatus(request.Status, result.Status) {
 		return nil

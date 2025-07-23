@@ -3,6 +3,7 @@ package hlf
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
@@ -46,13 +47,16 @@ func (he *hlfExecutor) invoke(ctx context.Context, request channel.Request, opti
 	options = append(options, channel.WithParentContext(ctx))
 
 	var argsListForTracing string
+
+	// request.Args usually contain only transferID
 	for _, arg := range request.Args {
-		argsListForTracing += string(arg) + ", "
+		argsListForTracing = strings.Join([]string{argsListForTracing, string(arg)}, ", ")
 	}
 
 	ctx, span := tracer.Start(ctx,
 		"hlfexecutor: invoke",
 		trace.WithAttributes(
+			attribute.String("invoke.method", request.Fcn),
 			attribute.String("invoke.args", fmt.Sprintf("%+v\n", argsListForTracing)),
 		),
 	)
@@ -101,13 +105,16 @@ func (he *hlfExecutor) query(ctx context.Context, request channel.Request, optio
 	options = append(options, channel.WithParentContext(ctx))
 
 	var argsListForTracing string
+
+	// request.Args usually contain only transferID
 	for _, arg := range request.Args {
-		argsListForTracing += string(arg) + ", "
+		argsListForTracing = strings.Join([]string{argsListForTracing, string(arg)}, ", ")
 	}
 
 	ctx, span := tracer.Start(ctx,
 		"hlfexecutor: query",
 		trace.WithAttributes(
+			attribute.String("query.method", request.Fcn),
 			attribute.String("query.args", fmt.Sprintf("%+v\n", argsListForTracing)),
 		),
 	)

@@ -18,11 +18,12 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/transfer"
 	"github.com/anoideaopen/channel-transfer/proto"
 	"github.com/anoideaopen/common-component/errorshlp"
-	fpb "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/glog"
 	"github.com/go-errors/errors"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/atomic"
 	"golang.org/x/sync/errgroup"
 )
@@ -156,7 +157,6 @@ func (h *Handler) launcher(ctx context.Context, group *errgroup.Group) {
 	}
 
 	counter := 0
-	mx := &sync.Mutex{}
 	for _, ccTransfer := range ccTransfers {
 		if _, ok := h.inUsed.Load(ccTransfer.GetId()); ok {
 			continue
@@ -165,49 +165,34 @@ func (h *Handler) launcher(ctx context.Context, group *errgroup.Group) {
 		h.inUsed.Store(ccTransfer.GetId(), struct{}{})
 		if group.TryGo(
 			func() error {
-				mx.Lock()
-				// copy transfer to local variable to avoid fields concurrent access
-				// while processing several transfers in parallel
-				localTransfer := fpb.CCTransfer{
-					Id:               ccTransfer.GetId(),
-					From:             ccTransfer.GetFrom(),
-					To:               ccTransfer.GetTo(),
-					Token:            ccTransfer.GetToken(),
-					User:             ccTransfer.GetUser(),
-					Amount:           ccTransfer.GetAmount(),
-					ForwardDirection: ccTransfer.GetForwardDirection(),
-					IsCommit:         ccTransfer.GetIsCommit(),
-					TimeAsNanos:      ccTransfer.GetTimeAsNanos(),
-					Items:            ccTransfer.GetItems(),
-				}
-				mx.Unlock()
-				defer h.inUsed.Delete(localTransfer.GetId())
-				request, err := h.requestStorage.TransferFetch(ctx, model.ID(localTransfer.GetId()))
+				defer h.inUsed.Delete(ccTransfer.GetId())
+				request, err := h.requestStorage.TransferFetch(ctx, model.ID(ccTransfer.GetId()))
 				if err != nil {
 					h.log.Warningf("failed fetching transfer request from storage: %w", err)
 				}
 				ctxWithMetadata := telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 				ctxWithTraceID := otel.GetTextMapPropagator().Extract(ctxWithMetadata, propagation.MapCarrier(request.Metadata))
 
-				ctxWithSpan, span := tracing.StartSpan(
+				ctxWithSpan, span := tracer.Start(
 					ctxWithTraceID,
-					tracer,
 					"chproducer: launcher: TryGo",
-					tracing.NewTraceableRequest(&request),
+					trace.WithAttributes(
+						attribute.String("id", string(request.Transfer)),
+					),
 				)
 				defer func() {
 					tracing.FinishSpan(span, err)
 				}()
 
-				status, err := h.resolveStatus(ctxWithSpan, &localTransfer)
+				status, err := h.resolveStatus(ctxWithSpan, ccTransfer)
 				if err != nil {
-					h.log.Error(errors.Errorf("resolve transfer status %s: %w", localTransfer.GetId(), err))
+					h.log.Error(errors.Errorf("resolve transfer status %s: %w", ccTransfer.GetId(), err))
 				}
-				h.restoreCompletedStatus(ctxWithSpan, status, model.ID(localTransfer.GetId()))
+				h.restoreCompletedStatus(ctxWithSpan, status, model.ID(ccTransfer.GetId()))
 
-				err = h.transferProcessing(ctxWithSpan, status, &localTransfer, err)
+				err = h.transferProcessing(ctxWithSpan, status, ccTransfer, err)
 				if err != nil {
-					h.log.Error(errors.Errorf("transfer processing %s: %w", localTransfer.GetId(), err))
+					h.log.Error(errors.Errorf("transfer processing %s: %w", ccTransfer.GetId(), err))
 				}
 
 				return nil
@@ -229,11 +214,13 @@ func (h *Handler) createTransfer(ctx context.Context, request model.TransferRequ
 	var err error
 	ctxWithMetadata := telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 	ctxWithTraceID := otel.GetTextMapPropagator().Extract(ctxWithMetadata, propagation.MapCarrier(request.Metadata))
-	ctxFromSpan, span := tracing.StartSpan(
+
+	ctxFromSpan, span := tracer.Start(
 		ctxWithTraceID,
-		tracer,
 		"chproducer: createTransfer",
-		tracing.NewTraceableRequest(&request),
+		trace.WithAttributes(
+			attribute.String("id", string(request.Transfer)),
+		),
 	)
 	defer func() {
 		tracing.FinishSpan(span, err)
