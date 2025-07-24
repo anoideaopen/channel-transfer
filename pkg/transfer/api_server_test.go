@@ -138,11 +138,10 @@ func TestAPIServerTransferStatus(t *testing.T) {
 	defer close(requests)
 
 	var (
-		ctx           = context.Background()
-		tracingCtx, _ = tracer.Start(ctx, "fake span for tracing context generation")
-		ctrl          = gomock.NewController(t)
-		mc            = mock.NewMockRequestController(ctrl)
-		srv           = NewAPIServer(ctx, requests, mc, nil)
+		ctx  = context.Background()
+		ctrl = gomock.NewController(t)
+		mc   = mock.NewMockRequestController(ctrl)
+		srv  = NewAPIServer(ctx, requests, mc, nil)
 	)
 
 	var (
@@ -165,8 +164,8 @@ func TestAPIServerTransferStatus(t *testing.T) {
 	)
 
 	gomock.InOrder(
-		mc.EXPECT().TransferFetch(tracingCtx, mdl.Request).Return(mdl, nil),
-		mc.EXPECT().TransferFetch(tracingCtx, mdl.Request).Return(model.TransferRequest{}, data.ErrObjectNotFound),
+		mc.EXPECT().TransferFetch(ctx, mdl.Request).Return(mdl, nil),
+		mc.EXPECT().TransferFetch(ctx, mdl.Request).Return(model.TransferRequest{}, data.ErrObjectNotFound),
 	)
 
 	resp, err := srv.TransferStatus(ctx, in)
