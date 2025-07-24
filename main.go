@@ -13,7 +13,6 @@ import (
 
 var AppInfoVer = "undefined-ver"
 
-//nolint:funlen
 func main() {
 	cfg, err := config.GetConfig()
 	if err != nil {
