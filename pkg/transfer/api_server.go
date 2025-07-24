@@ -1,4 +1,3 @@
-//nolint:spancheck
 package transfer
 
 import (
