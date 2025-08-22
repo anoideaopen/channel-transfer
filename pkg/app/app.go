@@ -29,6 +29,8 @@ import (
 	prometheus2 "github.com/prometheus/client_golang/prometheus"
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
+	prometheus3 "go.opentelemetry.io/otel/exporters/prometheus"
+	"go.opentelemetry.io/otel/sdk/metric"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -75,6 +77,7 @@ func Run(ctx context.Context, cfg *config.Config, version string) error {
 		},
 		log,
 		version,
+		rdb,
 	)
 	if err != nil {
 		return errors.Errorf("metrics: %+v", err)
@@ -222,6 +225,7 @@ func initTracer(ctx context.Context, cfg *config.Config, rdb redis.UniversalClie
 	); err != nil {
 		return fmt.Errorf("failed to initialize tracer: %w", err)
 	}
+	log.Debug("server: tracing enabled")
 	if cfg.Tracing.EnabledTracingRedis {
 		if err := redisotel.InstrumentTracing(rdb); err != nil {
 			log.Warning("redisotel tracing enabling failed", errors.New(err))
@@ -239,6 +243,7 @@ func initMetrics(
 	handlers []service.HTTPHandler,
 	log glog.Logger,
 	version string,
+	rdb redis.UniversalClient,
 ) (context.Context, *grpcprom.ServerMetrics, []service.HTTPHandler, error) {
 	if cfg.PromMetrics == nil {
 		return ctx, nil, nil, nil
@@ -269,6 +274,18 @@ func initMetrics(
 		m.CollectorProcessBlockNum().Set(0,
 			metrics.Labels().Channel.Create(channel.Name),
 		)
+	}
+
+	if cfg.PromMetrics.EnableMetricsRedis {
+		exporter, err := prometheus3.New(prometheus3.WithRegisterer(prometheus2.DefaultRegisterer))
+		if err != nil {
+			log.Warning("prometheus exporter creation failed", errors.New(err))
+		}
+		provider := metric.NewMeterProvider(metric.WithReader(exporter))
+		if err := redisotel.InstrumentMetrics(rdb, redisotel.WithMeterProvider(provider)); err != nil {
+			log.Warning("redisotel metrics enabling failed", errors.New(err))
+		}
+		log.Debug("server: redis metrics enabled")
 	}
 
 	grpcMetrics := grpcprom.NewServerMetrics(grpcprom.WithServerHandlingTimeHistogram())
