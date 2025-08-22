@@ -94,7 +94,8 @@ func (che *ChExecutor) Invoke(ctx context.Context, req channel.Request, options 
 		// if this is a batch method (starts with Tx) and we have gRPC executor for the channel,
 		// we use the executor to send the request to external task executor
 		if methods.IsBatchMethod(req.Fcn) && che.gRPCExecutor != nil {
-			return che.gRPCExecutor.invoke(ctx, req, options)
+			ctxWithLogger := glog.NewContext(ctx, che.log)
+			return che.gRPCExecutor.invoke(ctxWithLogger, req, options)
 		}
 		// otherwise we use hlf executor and send the request to HLF
 		return che.executor.invoke(ctx, req, options)

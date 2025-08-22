@@ -55,6 +55,18 @@
 - prometheus prefix without _
 
 
+#### CHANNEL_TRANSFER_PROMMETRICS_TRACING_ENABLEDTRACINGREDIS
+- true turns redis calls tracing on
+#### CHANNEL_TRANSFER_PROMMETRICS_TRACING_COLLECTOR_ENDPOINT
+- not empty value turns tracing on. it sets traces collector endpoint
+#### CHANNEL_TRANSFER_PROMMETRICS_TRACING_COLLECTOR_AUTHORIZATIONHEADERKEY
+- traces collector authorization header key
+#### CHANNEL_TRANSFER_PROMMETRICS_TRACING_COLLECTOR_AUTHORIZATIONHEADERVALUE
+- traces collector authorization header value
+#### CHANNEL_TRANSFER_PROMMETRICS_TRACING_COLLECTOR_TLSCA
+- traces collector TLS CA certificate(s) in PEM encoding and then base64
+
+
 #### CHANNEL_TRANSFER_CRYPTOSRC
 - values: local, vault, google
 

@@ -17,11 +17,12 @@ func TestAPIServerTransfer(t *testing.T) {
 	defer close(requests)
 
 	var (
-		channels = []string{"ch1", "ch2"}
-		ctx      = context.Background()
-		ctrl     = gomock.NewController(t)
-		mc       = mock.NewMockRequestController(ctrl)
-		srv      = NewAPIServer(ctx, requests, mc, channels)
+		channels      = []string{"ch1", "ch2"}
+		ctx           = context.Background()
+		tracingCtx, _ = tracer.Start(ctx, "fake span for tracing context generation")
+		ctrl          = gomock.NewController(t)
+		mc            = mock.NewMockRequestController(ctrl)
+		srv           = NewAPIServer(ctx, requests, mc, channels)
 	)
 
 	var (
@@ -110,8 +111,8 @@ func TestAPIServerTransfer(t *testing.T) {
 	)
 
 	gomock.InOrder(
-		mc.EXPECT().TransferKeep(ctx, mdlCustomer).Return(nil),
-		mc.EXPECT().TransferKeep(ctx, mdlAdmin).Return(nil),
+		mc.EXPECT().TransferKeep(tracingCtx, mdlCustomer).Return(nil),
+		mc.EXPECT().TransferKeep(tracingCtx, mdlAdmin).Return(nil),
 	)
 
 	resp, err := srv.TransferByCustomer(ctx, inCustomer)
@@ -182,11 +183,12 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 	defer close(requests)
 
 	var (
-		channels = []string{"ch1", "ch2"}
-		ctx      = context.Background()
-		ctrl     = gomock.NewController(t)
-		mc       = mock.NewMockRequestController(ctrl)
-		srv      = NewAPIServer(ctx, requests, mc, channels)
+		channels      = []string{"ch1", "ch2"}
+		ctx           = context.Background()
+		tracingCtx, _ = tracer.Start(ctx, "fake span for tracing context generation")
+		ctrl          = gomock.NewController(t)
+		mc            = mock.NewMockRequestController(ctrl)
+		srv           = NewAPIServer(ctx, requests, mc, channels)
 	)
 
 	var (
@@ -307,8 +309,8 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 	)
 
 	gomock.InOrder(
-		mc.EXPECT().TransferKeep(ctx, mdlCustomer).Return(nil),
-		mc.EXPECT().TransferKeep(ctx, mdlAdmin).Return(nil),
+		mc.EXPECT().TransferKeep(tracingCtx, mdlCustomer).Return(nil),
+		mc.EXPECT().TransferKeep(tracingCtx, mdlAdmin).Return(nil),
 	)
 
 	resp, err := srv.MultiTransferByCustomer(ctx, inCustomer)

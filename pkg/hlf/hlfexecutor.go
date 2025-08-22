@@ -2,6 +2,7 @@ package hlf
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
@@ -14,7 +15,12 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/status"
 	chctx "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
+
+var tracer = otel.Tracer("pkg/hlf:hlfexecutor")
 
 type ExecuteOptions struct {
 	ExecuteTimeout       time.Duration
@@ -31,6 +37,31 @@ type hlfExecutor struct {
 }
 
 func (he *hlfExecutor) invoke(ctx context.Context, request channel.Request, options []channel.RequestOption) (channel.Response, error) {
+	var (
+		err  error
+		resp channel.Response
+	)
+
+	options = append(options, channel.WithParentContext(ctx))
+
+	var argsListForTracing string
+
+	// request.Args usually contain only transferID
+	for _, arg := range request.Args {
+		argsListForTracing = strings.Join([]string{argsListForTracing, string(arg)}, ", ")
+	}
+
+	ctx, span := tracer.Start(ctx,
+		"hlfexecutor: invoke",
+		trace.WithAttributes(
+			attribute.String("invoke.method", request.Fcn),
+			attribute.String("invoke.args", argsListForTracing),
+		),
+	)
+	defer func() {
+		telemetry.FinishSpan(span, err)
+	}()
+
 	executeTimeout := he.chCtx.EndpointConfig().Timeout(fab.Execute)
 	if he.execOpts.ExecuteTimeout > 0 {
 		executeTimeout = he.execOpts.ExecuteTimeout
@@ -55,12 +86,39 @@ func (he *hlfExecutor) invoke(ctx context.Context, request channel.Request, opti
 	)
 
 	request.TransientMap = telemetry.TransientMapFromContext(ctx)
+	resp, err = he.chClient.InvokeHandler(h, request, options...)
+	if err != nil {
+		err = errors.Errorf("invoke failed: %w", err)
+	}
 
-	return he.chClient.InvokeHandler(h, request, options...)
+	return resp, err
 }
 
 func (he *hlfExecutor) query(ctx context.Context, request channel.Request, options []channel.RequestOption) (channel.Response, error) {
+	var (
+		err  error
+		resp channel.Response
+	)
+
 	options = append(options, channel.WithParentContext(ctx))
+
+	var argsListForTracing string
+
+	// request.Args usually contain only transferID
+	for _, arg := range request.Args {
+		argsListForTracing = strings.Join([]string{argsListForTracing, string(arg)}, ", ")
+	}
+
+	ctx, span := tracer.Start(ctx,
+		"hlfexecutor: query",
+		trace.WithAttributes(
+			attribute.String("query.method", request.Fcn),
+			attribute.String("query.args", argsListForTracing),
+		),
+	)
+	defer func() {
+		telemetry.FinishSpan(span, err)
+	}()
 
 	executeTimeout := he.chCtx.EndpointConfig().Timeout(fab.Execute)
 	if he.execOpts.ExecuteTimeout > 0 {
@@ -76,7 +134,12 @@ func (he *hlfExecutor) query(ctx context.Context, request channel.Request, optio
 
 	request.TransientMap = telemetry.TransientMapFromContext(ctx)
 
-	return he.chClient.Query(request, options...)
+	resp, err = he.chClient.Query(request, options...)
+	if err != nil {
+		err = errors.Errorf("query failed: %w", err)
+	}
+
+	return resp, err
 }
 
 // CommitTxHandler for committing transactions

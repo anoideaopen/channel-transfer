@@ -1,3 +1,4 @@
+//nolint:spancheck
 package chproducer
 
 import (
@@ -11,10 +12,13 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/helpers/methods"
 	"github.com/anoideaopen/channel-transfer/pkg/metrics"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
+	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
 	"github.com/anoideaopen/channel-transfer/proto"
 	fpb "github.com/anoideaopen/foundation/proto"
 	"github.com/avast/retry-go/v4"
 	"github.com/go-errors/errors"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -40,6 +44,18 @@ var re = regexp.MustCompile(`no channel peers configured for channel \[`)
 
 //nolint:funlen,gocognit,gocyclo
 func (h *Handler) transferProcessing(ctx context.Context, initStatus model.StatusKind, transfer *fpb.CCTransfer, lastErr error) error {
+	var err error
+
+	ctx, span := tracer.Start(ctx,
+		"chproducer: transferProcessing",
+		trace.WithAttributes(
+			attribute.String("id", transfer.GetId()),
+		),
+	)
+	defer func() {
+		telemetry.FinishSpan(span, err)
+	}()
+
 	state := make(chan model.StatusKind, 1)
 	defer close(state)
 
@@ -99,6 +115,11 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 			h.log.Debugf("event status %s, id %s, channel from %s, channel to %s",
 				status.String(), transfer.GetId(), transfer.GetFrom(), transfer.GetTo(),
 			)
+			request, err := h.requestStorage.TransferFetch(ctx, model.ID(transfer.GetId()))
+			if err != nil {
+				h.log.Warningf("failed fetching transfer request from storage: %w", err)
+			}
+			ctx := telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 
 			switch status {
 			case model.InProgressTransferFrom:
@@ -263,7 +284,28 @@ func (h *Handler) cancelTransfer(ctx context.Context, transferID string, lastErr
 }
 
 func (h *Handler) resolveStatus(ctx context.Context, transfer *fpb.CCTransfer) (model.StatusKind, error) {
+	var (
+		err     error
+		request model.TransferRequest
+	)
+
+	ctx, span := tracer.Start(ctx,
+		"chproducer: resolveStatus",
+		trace.WithAttributes(
+			attribute.String("id", transfer.GetId()),
+		),
+	)
+	defer func() {
+		telemetry.FinishSpan(span, err)
+	}()
+
 	channelName := strings.ToLower(transfer.GetTo())
+	request, err = h.requestStorage.TransferFetch(ctx, model.ID(transfer.GetId()))
+	if err != nil {
+		h.log.Warningf("failed fetching transfer request from storage: %w", err)
+	}
+	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
+
 	if status, err := h.expandTO(ctx, channelName); err != nil {
 		return status, err
 	}
@@ -303,9 +345,18 @@ func (h *Handler) fromBatchResponse(ctx context.Context, transferID string) (mod
 	var (
 		batchResponse *fpb.TxResponse
 		m             model.StatusKind
+		err           error
 	)
-
-	err := retry.Do(func() error {
+	ctx, span := tracer.Start(
+		ctx,
+		"chproducer: fromBatchResponse",
+		trace.WithAttributes(
+			attribute.String("id", transferID),
+		))
+	defer func() {
+		telemetry.FinishSpan(span, err)
+	}()
+	err = retry.Do(func() error {
 		blocks, err := h.responseWithAttempt(ctx, h.channel, transferID)
 		h.log.Debugf("find batchResponse in fromBatchResponse: %s; error: %v", transferID, err)
 		if err != nil {
@@ -353,9 +404,19 @@ func (h *Handler) toBatchResponse(ctx context.Context, channelName string, trans
 	var (
 		batchResponse *fpb.TxResponse
 		m             model.StatusKind
+		err           error
 	)
+	ctx, span := tracer.Start(
+		ctx,
+		"chproducer: toBatchResponse",
+		trace.WithAttributes(
+			attribute.String("id", transferID),
+		))
+	defer func() {
+		telemetry.FinishSpan(span, err)
+	}()
 
-	err := retry.Do(func() error {
+	err = retry.Do(func() error {
 		blocks, err := h.responseWithAttempt(ctx, channelName, transferID)
 		h.log.Debugf("find batchResponse in toBatchResponse: %s; error: %v", transferID, err)
 		if err != nil {
@@ -404,8 +465,22 @@ func (h *Handler) toBatchResponse(ctx context.Context, channelName string, trans
 }
 
 func (h *Handler) responseWithAttempt(ctx context.Context, channel string, transferID string) (model.TransferBlock, error) {
-	var resp model.TransferBlock
-	err := retry.Do(func() error {
+	var (
+		resp model.TransferBlock
+		err  error
+	)
+
+	ctx, span := tracer.Start(
+		ctx,
+		"chproducer: responseWithAttempt",
+		trace.WithAttributes(
+			attribute.String("id", transferID),
+		))
+	defer func() {
+		telemetry.FinishSpan(span, err)
+	}()
+
+	err = retry.Do(func() error {
 		blocks, err := h.blockStorage.BlockLoad(ctx, h.blockStorage.Key(model.ID(channel), model.ID(transferID)))
 		h.log.Debugf("block load in responseWithAttempt: %s; error: %v", transferID, err)
 		if err != nil {

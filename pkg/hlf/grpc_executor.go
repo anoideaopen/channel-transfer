@@ -3,9 +3,11 @@ package hlf
 import (
 	"context"
 
+	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
 	"github.com/anoideaopen/channel-transfer/proto"
 	"github.com/google/uuid"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
+	"go.opentelemetry.io/otel/attribute"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/metadata"
@@ -19,6 +21,19 @@ type gRPCExecutor struct {
 
 // invoke sends a transaction request to an external batcher service instead of HLF
 func (ex *gRPCExecutor) invoke(ctx context.Context, req channel.Request, _ []channel.RequestOption) (channel.Response, error) {
+	var err error
+	ctx, span := tracer.Start(ctx, "hlfexecutor: invoke gRPC")
+	defer func() {
+		telemetry.FinishSpan(span, err)
+	}()
+	var argsListForTracing string
+	for _, arg := range req.Args {
+		argsListForTracing += string(arg) + ", "
+	}
+	span.SetAttributes(
+		attribute.String("invoke.method", req.Fcn),
+	)
+
 	adaptor := proto.NewTaskExecutorAdapterClient(ex.Client)
 
 	ctx = metadata.AppendToOutgoingContext(ctx, "requestID", uuid.New().String())
@@ -30,7 +45,7 @@ func (ex *gRPCExecutor) invoke(ctx context.Context, req channel.Request, _ []cha
 		Args:      req.Args,
 	}
 
-	if _, err := adaptor.SubmitTransaction(ctx, request); err != nil {
+	if _, err = adaptor.SubmitTransaction(ctx, request); err != nil {
 		return channel.Response{}, err
 	}
 
