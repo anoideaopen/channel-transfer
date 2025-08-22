@@ -3,7 +3,7 @@ package hlf
 import (
 	"context"
 
-	"github.com/anoideaopen/channel-transfer/pkg/tracing"
+	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
 	"github.com/anoideaopen/channel-transfer/proto"
 	"github.com/google/uuid"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
@@ -24,7 +24,7 @@ func (ex *gRPCExecutor) invoke(ctx context.Context, req channel.Request, _ []cha
 	var err error
 	ctx, span := tracer.Start(ctx, "hlfexecutor: invoke gRPC")
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 	var argsListForTracing string
 	for _, arg := range req.Args {

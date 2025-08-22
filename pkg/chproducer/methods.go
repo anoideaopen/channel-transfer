@@ -13,7 +13,6 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/metrics"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
-	"github.com/anoideaopen/channel-transfer/pkg/tracing"
 	"github.com/anoideaopen/channel-transfer/proto"
 	fpb "github.com/anoideaopen/foundation/proto"
 	"github.com/avast/retry-go/v4"
@@ -54,7 +53,7 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 
 	state := make(chan model.StatusKind, 1)
@@ -297,7 +296,7 @@ func (h *Handler) resolveStatus(ctx context.Context, transfer *fpb.CCTransfer) (
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 
 	channelName := strings.ToLower(transfer.GetTo())
@@ -355,7 +354,7 @@ func (h *Handler) fromBatchResponse(ctx context.Context, transferID string) (mod
 			attribute.String("id", transferID),
 		))
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 	err = retry.Do(func() error {
 		blocks, err := h.responseWithAttempt(ctx, h.channel, transferID)
@@ -414,7 +413,7 @@ func (h *Handler) toBatchResponse(ctx context.Context, channelName string, trans
 			attribute.String("id", transferID),
 		))
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 
 	err = retry.Do(func() error {
@@ -478,7 +477,7 @@ func (h *Handler) responseWithAttempt(ctx context.Context, channel string, trans
 			attribute.String("id", transferID),
 		))
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 
 	err = retry.Do(func() error {

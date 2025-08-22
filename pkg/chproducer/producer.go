@@ -14,7 +14,6 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/metrics"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
-	"github.com/anoideaopen/channel-transfer/pkg/tracing"
 	"github.com/anoideaopen/channel-transfer/pkg/transfer"
 	"github.com/anoideaopen/channel-transfer/proto"
 	"github.com/anoideaopen/common-component/errorshlp"
@@ -181,7 +180,7 @@ func (h *Handler) launcher(ctx context.Context, group *errgroup.Group) {
 					),
 				)
 				defer func() {
-					tracing.FinishSpan(span, err)
+					telemetry.FinishSpan(span, err)
 				}()
 
 				status, err := h.resolveStatus(ctxWithSpan, ccTransfer)
@@ -223,7 +222,7 @@ func (h *Handler) createTransfer(ctx context.Context, request model.TransferRequ
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 
 	if len(request.Items) > 0 {

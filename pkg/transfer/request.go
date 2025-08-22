@@ -10,7 +10,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/data"
 	"github.com/anoideaopen/channel-transfer/pkg/data/redis"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
-	"github.com/anoideaopen/channel-transfer/pkg/tracing"
+	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
 	"github.com/anoideaopen/channel-transfer/proto"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -35,7 +35,7 @@ func (r *Request) TransferKeep(ctx context.Context, transferRequest model.Transf
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 	if err = r.storage.Save(ctx, &transferRequest, data.Key(transferRequest.Transfer)); err != nil {
 		return fmt.Errorf("save request : %w", err)
@@ -63,7 +63,7 @@ func (r *Request) TransferModify(ctx context.Context, transferRequest model.Tran
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 
 	request := model.TransferRequest{}
@@ -129,7 +129,7 @@ func (r *Request) Registry(ctx context.Context) ([]*model.TransferRequest, error
 		"transfer: Registry",
 	)
 	defer func() {
-		tracing.FinishSpan(span, nil)
+		telemetry.FinishSpan(span, nil)
 	}()
 	return data.ToSlice[model.TransferRequest](r.storage.Search(ctx, &model.TransferRequest{}, ""))
 }
@@ -146,7 +146,7 @@ func (r *Request) TransferResultModify(ctx context.Context, transferID model.ID,
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 	request := model.TransferRequest{}
 	if err := r.storage.Load(ctx, &request, data.Key(transferID)); err != nil {

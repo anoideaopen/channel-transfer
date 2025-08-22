@@ -8,7 +8,6 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/data"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
-	"github.com/anoideaopen/channel-transfer/pkg/tracing"
 	dto "github.com/anoideaopen/channel-transfer/proto"
 	"github.com/anoideaopen/glog"
 	"github.com/go-errors/errors"
@@ -88,14 +87,14 @@ func (api *APIServer) TransferByCustomer(
 		glog.Field{K: "transfer.token", V: req.GetToken()},
 	)
 	md := telemetry.TransferMetadataFromContext(ctx)
-	ctx, span := tracing.StartSpan(
+	ctx, span := telemetry.StartSpan(
 		ctx,
 		tracer,
 		"api_server: TransferByCustomer",
 		req,
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 	log.Debug("transferByCustomer request received")
 	tr, err = dtoBeginCustomerToModelTransferRequest(req, api.actualChannels)
@@ -148,14 +147,14 @@ func (api *APIServer) TransferByAdmin(
 		glog.Field{K: "transfer.token", V: req.GetToken()},
 	)
 	md := telemetry.TransferMetadataFromContext(ctx)
-	ctx, span := tracing.StartSpan(
+	ctx, span := telemetry.StartSpan(
 		ctx,
 		tracer,
 		"api_server: TransferByAdmin",
 		req,
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 	log.Debug("transferByAdmin request received")
 	tr, err := dtoBeginAdminToModelTransferRequest(req, api.actualChannels)
@@ -209,14 +208,14 @@ func (api *APIServer) MultiTransferByCustomer(
 	)
 
 	md := telemetry.TransferMetadataFromContext(ctx)
-	ctx, span := tracing.StartSpan(
+	ctx, span := telemetry.StartSpan(
 		ctx,
 		tracer,
 		"api_server: MultiTransferByCustomer",
 		req,
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 	log.Debug("multiTransferByCustomer request received")
 	tr, err := dtoBeginCustomerToModelMultiTransferRequest(req, api.actualChannels)
@@ -269,14 +268,14 @@ func (api *APIServer) MultiTransferByAdmin(
 	)
 
 	md := telemetry.TransferMetadataFromContext(ctx)
-	ctx, span := tracing.StartSpan(
+	ctx, span := telemetry.StartSpan(
 		ctx,
 		tracer,
 		"api_server: MultiTransferByAdmin",
 		req,
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 	log.Debug("multiTransferByAdmin request received")
 	tr, err := dtoBeginAdminToModelMultiTransferRequest(req, api.actualChannels)

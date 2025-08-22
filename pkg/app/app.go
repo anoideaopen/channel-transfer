@@ -20,7 +20,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/channel-transfer/pkg/service"
 	"github.com/anoideaopen/channel-transfer/pkg/service/healthcheck"
-	"github.com/anoideaopen/channel-transfer/pkg/tracing"
+	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
 	"github.com/anoideaopen/channel-transfer/pkg/transfer"
 	"github.com/anoideaopen/common-component/basemetrics/baseprometheus"
 	"github.com/anoideaopen/glog"
@@ -215,7 +215,7 @@ func initTracer(ctx context.Context, cfg *config.Config, rdb redis.UniversalClie
 		return nil
 	}
 	log.Debug("server: tracing enabled")
-	if err := tracing.InitTracing(
+	if err := telemetry.InitTracing(
 		ctx,
 		cfg.Tracing.Collector,
 		strings.ToLower(config.EnvPrefix),

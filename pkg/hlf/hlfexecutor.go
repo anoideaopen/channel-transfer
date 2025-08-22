@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
-	"github.com/anoideaopen/channel-transfer/pkg/tracing"
 	"github.com/go-errors/errors"
 	pb "github.com/hyperledger/fabric-protos-go-apiv2/peer"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
@@ -60,7 +59,7 @@ func (he *hlfExecutor) invoke(ctx context.Context, request channel.Request, opti
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 
 	executeTimeout := he.chCtx.EndpointConfig().Timeout(fab.Execute)
@@ -118,7 +117,7 @@ func (he *hlfExecutor) query(ctx context.Context, request channel.Request, optio
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 
 	executeTimeout := he.chCtx.EndpointConfig().Timeout(fab.Execute)

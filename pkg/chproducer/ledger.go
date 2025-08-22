@@ -10,7 +10,6 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/metrics"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	"github.com/anoideaopen/channel-transfer/pkg/telemetry"
-	"github.com/anoideaopen/channel-transfer/pkg/tracing"
 	"github.com/anoideaopen/foundation/core/cctransfer"
 	fpb "github.com/anoideaopen/foundation/proto"
 	"github.com/go-errors/errors"
@@ -82,7 +81,7 @@ func (h *Handler) createTransferFrom(ctx context.Context, request model.Transfer
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 
 	if request.Token == "" {
@@ -157,7 +156,7 @@ func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.Tra
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 
 	if len(request.Items) == 0 {
@@ -233,7 +232,7 @@ func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 
 	channelName := strings.ToLower(transfer.GetTo())
@@ -285,7 +284,7 @@ func (h *Handler) cancelTransferFrom(ctx context.Context, transferID string) (mo
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 	h.log.Debugf("cancel cc transfer from, channel %s, id %s", h.channel, transferID)
 
@@ -311,7 +310,7 @@ func (h *Handler) commitTransferFrom(ctx context.Context, transferID string) (mo
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 
 	h.log.Debugf("commit cc transfer from, channel %s, id %s", h.channel, transferID)
@@ -337,7 +336,7 @@ func (h *Handler) deleteTransferFrom(ctx context.Context, transferID string) (mo
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 
 	h.log.Debugf("delete cc transfer from, channel %s, id %s", h.channel, transferID)
@@ -365,7 +364,7 @@ func (h *Handler) deleteTransferTo(ctx context.Context, channelName string, tran
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 
 	if err = h.invoke(ctx, channelName, channelName, model.NbTxDeleteCCTransferTo, transferID); err != nil {
@@ -389,7 +388,7 @@ func (h *Handler) invoke(ctx context.Context, channelName string, chaincodeID st
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 
 	doer, err := h.poolController.Executor(channelName)
@@ -422,7 +421,7 @@ func (h *Handler) queryChannelTransferTo(ctx context.Context, channelName string
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 
 	executor, err := h.poolController.Executor(channelName)
@@ -462,7 +461,7 @@ func (h *Handler) queryChannelTransferFrom(ctx context.Context, channelName stri
 		),
 	)
 	defer func() {
-		tracing.FinishSpan(span, err)
+		telemetry.FinishSpan(span, err)
 	}()
 
 	executor, err := h.poolController.Executor(channelName)
