@@ -2,7 +2,6 @@ package hlf
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -57,7 +56,7 @@ func (he *hlfExecutor) invoke(ctx context.Context, request channel.Request, opti
 		"hlfexecutor: invoke",
 		trace.WithAttributes(
 			attribute.String("invoke.method", request.Fcn),
-			attribute.String("invoke.args", fmt.Sprintf("%+v\n", argsListForTracing)),
+			attribute.String("invoke.args", argsListForTracing),
 		),
 	)
 	defer func() {
@@ -115,7 +114,7 @@ func (he *hlfExecutor) query(ctx context.Context, request channel.Request, optio
 		"hlfexecutor: query",
 		trace.WithAttributes(
 			attribute.String("query.method", request.Fcn),
-			attribute.String("query.args", fmt.Sprintf("%+v\n", argsListForTracing)),
+			attribute.String("query.args", argsListForTracing),
 		),
 	)
 	defer func() {

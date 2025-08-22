@@ -19,6 +19,8 @@ import (
 
 const StatusOptionFilterName = "excludeStatus"
 
+var tracer = otel.Tracer("pkg/transfer")
+
 // Errors related to request processing.
 var (
 	ErrBadRequest        = errors.New("bad request")
@@ -30,7 +32,6 @@ var (
 	ErrMethod            = errors.New("method name undefined")
 	ErrUnknownMethod     = errors.New("unknown method name")
 	ErrSign              = errors.New("sign undefined")
-	tracer               = otel.Tracer("pkg/transfer")
 )
 
 // APIServer implements the logic for processing user requests and serves as
@@ -212,10 +213,7 @@ func (api *APIServer) MultiTransferByCustomer(
 		ctx,
 		tracer,
 		"api_server: MultiTransferByCustomer",
-		&MultiTransferDataGetter{
-			ItemDataGetter:          req,
-			BasicTransferDataGetter: req,
-		},
+		req,
 	)
 	defer func() {
 		tracing.FinishSpan(span, err)
@@ -275,10 +273,7 @@ func (api *APIServer) MultiTransferByAdmin(
 		ctx,
 		tracer,
 		"api_server: MultiTransferByAdmin",
-		&MultiTransferDataGetter{
-			ItemDataGetter:          req,
-			BasicTransferDataGetter: req,
-		},
+		req,
 	)
 	defer func() {
 		tracing.FinishSpan(span, err)
@@ -386,34 +381,4 @@ func (api *APIServer) transferStatus(ctx context.Context, transferID string) (*d
 		Status:     dto.TransferStatusResponse_Status(code),
 		Message:    tr.Message,
 	}, nil
-}
-
-// ItemDataGetter defines the interface for accessing a list of transfer items.
-type ItemDataGetter interface {
-	GetItems() []*dto.TransferItem
-}
-
-// MultiTransferDataGetter is a struct that satisfies the [tracing.TransferDataGetter] interface.
-// It combines basic transfer data with item data.
-type MultiTransferDataGetter struct {
-	ItemDataGetter
-	tracing.BasicTransferDataGetter
-}
-
-// GetToken returns a string representation of the tokens from all items in the multi-transfer.
-func (m *MultiTransferDataGetter) GetToken() string {
-	itemList := make([]string, 0, len(m.GetItems()))
-	for _, item := range m.GetItems() {
-		itemList = append(itemList, item.GetToken())
-	}
-	return fmt.Sprintf("%+v", itemList)
-}
-
-// GetAmount returns a string representation of the amounts from all items in the multi-transfer.
-func (m *MultiTransferDataGetter) GetAmount() string {
-	itemList := make([]string, 0, len(m.GetItems()))
-	for _, item := range m.GetItems() {
-		itemList = append(itemList, item.GetAmount())
-	}
-	return fmt.Sprintf("%+v", itemList)
 }
