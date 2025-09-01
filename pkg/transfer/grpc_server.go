@@ -25,7 +25,8 @@ const tcpNetwork = "tcp"
 func runGRPC(ctx context.Context, transferServer *APIServer, tlsConfig *tls.Config, address string, accessToken string, grpcMetrics *grpcprom.ServerMetrics) error {
 	log := glog.FromContext(ctx).With(logger.Labels{Component: logger.ComponentAPI}.Fields()...)
 
-	listen, err := net.Listen(new(net.TCPAddr).Network(), address)
+	config := net.ListenConfig{}
+	listen, err := config.Listen(ctx, new(net.TCPAddr).Network(), address)
 	if err != nil {
 		return err
 	}
