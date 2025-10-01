@@ -46,6 +46,7 @@ func (s *taskExecutorAPI) SubmitTransaction(
 
 // StartTaskExecutor starts grpc server which listens batcher API on given port
 func StartTaskExecutor() *grpc.Server {
+	ch := make(chan struct{})
 	gRPCServer := grpc.NewServer()
 
 	proto.RegisterTaskExecutorAdapterServer(gRPCServer, &taskExecutorAPI{})
@@ -56,10 +57,14 @@ func StartTaskExecutor() *grpc.Server {
 			panic(err)
 		}
 
+		close(ch)
+
 		if err = gRPCServer.Serve(lis); err != nil {
 			panic(err)
 		}
 	}()
+
+	<-ch
 
 	return gRPCServer
 }
