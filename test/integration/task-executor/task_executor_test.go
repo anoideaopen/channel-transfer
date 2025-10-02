@@ -33,17 +33,10 @@ var _ = Describe("Channel transfer with task executor tests", func() {
 
 	BeforeEach(func() {
 		ts = client.NewTestSuite(components)
-	})
-	AfterEach(func() {
-		ts.ShutdownNetwork()
-	})
 
-	BeforeEach(func() {
 		By("start redis")
 		ts.StartRedis()
-	})
 
-	BeforeEach(func() {
 		ts.InitNetwork(
 			channels,
 			integration.LedgerPort,
@@ -62,22 +55,21 @@ var _ = Describe("Channel transfer with task executor tests", func() {
 		ts.AddUser(user)
 
 		networkFound = ts.NetworkFound
-	})
 
-	BeforeEach(func() {
 		By("start taskExecutor")
 		taskExecutor = StartTaskExecutor()
 		By("start channel transfer")
 		ts.StartChannelTransfer()
 	})
-
 	AfterEach(func() {
-		By("stop redis")
-		ts.StopRedis()
 		By("stop channel transfer")
 		ts.StopChannelTransfer()
 		By("stop taskExecutor")
 		StopTaskExecutor(taskExecutor)
+		By("stop redis")
+		ts.StopRedis()
+
+		ts.ShutdownNetwork()
 	})
 
 	It("Submit transaction", func() {

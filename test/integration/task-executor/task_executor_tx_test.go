@@ -25,16 +25,9 @@ import (
 )
 
 var _ = Describe("Channel transfer with task executor transaction tests", func() {
-	var ts *client.FoundationTestSuite
-
-	BeforeEach(func() {
-		ts = client.NewTestSuite(components)
-	})
-	AfterEach(func() {
-		ts.ShutdownNetwork()
-	})
-
 	var (
+		ts *client.FoundationTestSuite
+
 		channels = []string{cmn.ChannelACL, cmn.ChannelCC, cmn.ChannelFiat}
 		user     *mocks.UserFoundation
 
@@ -48,11 +41,11 @@ var _ = Describe("Channel transfer with task executor transaction tests", func()
 	)
 
 	BeforeEach(func() {
+		ts = client.NewTestSuite(components)
+
 		By("start redis")
 		ts.StartRedis()
-	})
 
-	BeforeEach(func() {
 		ts.InitNetwork(
 			channels,
 			integration.MSPPort,
@@ -74,24 +67,23 @@ var _ = Describe("Channel transfer with task executor transaction tests", func()
 
 		networkFound = ts.NetworkFound
 		network = ts.Network
-	})
 
-	BeforeEach(func() {
 		By("start taskExecutor")
 		taskExecutor = StartTaskExecutor()
 		By("start channel transfer")
 		ts.StartChannelTransfer()
 	})
-
 	AfterEach(func() {
-		By("stop robot")
-		ts.StopRobot()
-		By("stop redis")
-		ts.StopRedis()
 		By("stop channel transfer")
 		ts.StopChannelTransfer()
 		By("stop taskExecutor")
 		StopTaskExecutor(taskExecutor)
+		By("stop robot")
+		ts.StopRobot()
+		By("stop redis")
+		ts.StopRedis()
+
+		ts.ShutdownNetwork()
 	})
 
 	It("transfer created not with channel transfer service", func() {
