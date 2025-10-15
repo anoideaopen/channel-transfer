@@ -1,10 +1,10 @@
 module github.com/anoideaopen/channel-transfer
 
-go 1.25.1
+go 1.25.3
 
 require (
 	github.com/anoideaopen/common-component v0.0.7
-	github.com/anoideaopen/foundation v0.1.2
+	github.com/anoideaopen/foundation v0.1.3
 	github.com/anoideaopen/glog v0.0.4
 	github.com/avast/retry-go/v4 v4.6.0
 	github.com/felixge/httpsnoop v1.0.4

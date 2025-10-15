@@ -52,7 +52,7 @@ func UnaryServerInterceptor(l glog.Logger) grpc.UnaryServerInterceptor {
 			status.Code(err),
 			"finished unary call with code "+status.Code(err).String())
 
-		return
+		return resp, err
 	}
 }
 
@@ -97,7 +97,7 @@ func StreamServerInterceptor(l glog.Logger) grpc.StreamServerInterceptor {
 			status.Code(err),
 			"finished streaming call with code "+status.Code(err).String())
 
-		return
+		return err
 	}
 }
 

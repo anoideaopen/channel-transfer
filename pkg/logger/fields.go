@@ -45,5 +45,5 @@ func (l Labels) Fields() (fields []glog.Field) {
 	if l.Channel != "" {
 		fields = append(fields, glog.Field{K: "channel", V: l.Channel})
 	}
-	return
+	return fields
 }

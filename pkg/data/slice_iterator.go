@@ -31,7 +31,7 @@ func (i *SliceIterator) HasNext() (out bool) {
 	out = i.cur != len(i.items)
 	i.mu.Unlock()
 
-	return
+	return out
 }
 
 // Next returns the next object from the iterator. This object is already
