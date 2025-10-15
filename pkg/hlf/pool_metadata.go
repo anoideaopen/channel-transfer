@@ -138,7 +138,7 @@ func (s *streams) load(key channelKey) (ps *biDirectFlow, ok bool) {
 	s.mtx.RLock()
 	ps, ok = s.data[key]
 	s.mtx.RUnlock()
-	return
+	return ps, ok
 }
 
 func (s *streams) close() {

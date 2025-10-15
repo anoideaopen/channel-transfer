@@ -1,6 +1,6 @@
 module github.com/anoideaopen/channel-transfer/test/integration
 
-go 1.25.1
+go 1.25.3
 
 tool (
 	github.com/IBM/idemix/tools/idemixgen
@@ -21,8 +21,8 @@ tool (
 
 require (
 	github.com/anoideaopen/channel-transfer v0.1.2
-	github.com/anoideaopen/foundation v0.1.2
-	github.com/anoideaopen/foundation/test/integration v0.0.0-20250930204753-7aa15bebfcfe
+	github.com/anoideaopen/foundation v0.1.3
+	github.com/anoideaopen/foundation/test/integration v0.0.0-20251013151027-fe1389e5c9ce
 	github.com/btcsuite/btcd/btcutil v1.1.6
 	github.com/go-openapi/errors v0.22.0
 	github.com/go-openapi/runtime v0.28.0
@@ -30,7 +30,7 @@ require (
 	github.com/go-openapi/swag v0.23.0
 	github.com/go-openapi/validate v0.24.0
 	github.com/google/uuid v1.6.0
-	github.com/hyperledger/fabric v1.4.0-rc1.0.20250929141436-dad09ab05b71
+	github.com/hyperledger/fabric v1.4.0-rc1.0.20251012211530-60d501d4140c
 	github.com/onsi/ginkgo/v2 v2.26.0
 	github.com/onsi/gomega v1.38.2
 	google.golang.org/grpc v1.75.0

@@ -226,7 +226,7 @@ func BlockToRequest(block model.TransferBlock) (request model.TransferRequest, e
 
 			var items []model.TransferItem
 			if err = json.Unmarshal(transaction.Args[6+offset], &items); err != nil {
-				return
+				return request, err
 			}
 
 			request.Method = string(transaction.Args[0])
@@ -258,7 +258,7 @@ func BlockToRequest(block model.TransferBlock) (request model.TransferRequest, e
 		break
 	}
 
-	return
+	return request, nil
 }
 
 func checkGeneral(gp *dto.GeneralParams, actualChannels map[string]struct{}) error {
