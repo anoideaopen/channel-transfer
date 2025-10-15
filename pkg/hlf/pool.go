@@ -387,11 +387,11 @@ func (pool *Pool) storeTransfer(key channelKey, block model.BlockData) error {
 			}
 
 			upperBound := time.Unix(0, int64(transaction.TimeNs)).Add(*pool.opts.TTL + pool.additiveToTTL)
-			if time.Now().After(upperBound) {
+			if time.Now().UTC().After(upperBound) {
 				return nil
 			}
 
-			ttl = time.Until(upperBound)
+			ttl = upperBound.Sub(time.Now().UTC())
 
 			if !isFullTx && !pool.streams.transferID(key, transactionID(transaction.TxID), transferID) {
 				return fmt.Errorf("streams buffer : channel %s not found", string(key))

@@ -338,7 +338,8 @@ func (h *Handler) resolveStatus(ctx context.Context, transfer *fpb.CCTransfer) (
 }
 
 func (h *Handler) expiredTransfer(transfer *fpb.CCTransfer) bool {
-	return time.Until(time.Unix(0, transfer.GetTimeAsNanos()).Add(h.ttl)) <= 0
+	t := time.Unix(0, transfer.GetTimeAsNanos()).Add(h.ttl)
+	return t.Sub(time.Now().UTC()) <= 0
 }
 
 func (h *Handler) fromBatchResponse(ctx context.Context, transferID string) (model.StatusKind, error) {
