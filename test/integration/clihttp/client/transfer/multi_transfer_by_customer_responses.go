@@ -6,7 +6,6 @@ package transfer
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 
@@ -54,7 +53,7 @@ func NewMultiTransferByCustomerOK() *MultiTransferByCustomerOK {
 }
 
 /*
-MultiTransferByCustomerOK describes a response with status code 200, with default header values.
+MultiTransferByCustomerOK handles this case with default header values.
 
 A successful response.
 */
@@ -62,44 +61,8 @@ type MultiTransferByCustomerOK struct {
 	Payload *models.ChannelTransferTransferStatusResponse
 }
 
-// IsSuccess returns true when this multi transfer by customer o k response has a 2xx status code
-func (o *MultiTransferByCustomerOK) IsSuccess() bool {
-	return true
-}
-
-// IsRedirect returns true when this multi transfer by customer o k response has a 3xx status code
-func (o *MultiTransferByCustomerOK) IsRedirect() bool {
-	return false
-}
-
-// IsClientError returns true when this multi transfer by customer o k response has a 4xx status code
-func (o *MultiTransferByCustomerOK) IsClientError() bool {
-	return false
-}
-
-// IsServerError returns true when this multi transfer by customer o k response has a 5xx status code
-func (o *MultiTransferByCustomerOK) IsServerError() bool {
-	return false
-}
-
-// IsCode returns true when this multi transfer by customer o k response a status code equal to that given
-func (o *MultiTransferByCustomerOK) IsCode(code int) bool {
-	return code == 200
-}
-
-// Code gets the status code for the multi transfer by customer o k response
-func (o *MultiTransferByCustomerOK) Code() int {
-	return 200
-}
-
 func (o *MultiTransferByCustomerOK) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/multi-transfer/customer][%d] multiTransferByCustomerOK %s", 200, payload)
-}
-
-func (o *MultiTransferByCustomerOK) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/multi-transfer/customer][%d] multiTransferByCustomerOK %s", 200, payload)
+	return fmt.Sprintf("[POST /v1/multi-transfer/customer][%d] multiTransferByCustomerOK  %+v", 200, o.Payload)
 }
 
 func (o *MultiTransferByCustomerOK) GetPayload() *models.ChannelTransferTransferStatusResponse {
@@ -124,7 +87,7 @@ func NewMultiTransferByCustomerInternalServerError() *MultiTransferByCustomerInt
 }
 
 /*
-MultiTransferByCustomerInternalServerError describes a response with status code 500, with default header values.
+MultiTransferByCustomerInternalServerError handles this case with default header values.
 
 Internal server error
 */
@@ -132,44 +95,8 @@ type MultiTransferByCustomerInternalServerError struct {
 	Payload *models.ChannelTransferErrorResponse
 }
 
-// IsSuccess returns true when this multi transfer by customer internal server error response has a 2xx status code
-func (o *MultiTransferByCustomerInternalServerError) IsSuccess() bool {
-	return false
-}
-
-// IsRedirect returns true when this multi transfer by customer internal server error response has a 3xx status code
-func (o *MultiTransferByCustomerInternalServerError) IsRedirect() bool {
-	return false
-}
-
-// IsClientError returns true when this multi transfer by customer internal server error response has a 4xx status code
-func (o *MultiTransferByCustomerInternalServerError) IsClientError() bool {
-	return false
-}
-
-// IsServerError returns true when this multi transfer by customer internal server error response has a 5xx status code
-func (o *MultiTransferByCustomerInternalServerError) IsServerError() bool {
-	return true
-}
-
-// IsCode returns true when this multi transfer by customer internal server error response a status code equal to that given
-func (o *MultiTransferByCustomerInternalServerError) IsCode(code int) bool {
-	return code == 500
-}
-
-// Code gets the status code for the multi transfer by customer internal server error response
-func (o *MultiTransferByCustomerInternalServerError) Code() int {
-	return 500
-}
-
 func (o *MultiTransferByCustomerInternalServerError) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/multi-transfer/customer][%d] multiTransferByCustomerInternalServerError %s", 500, payload)
-}
-
-func (o *MultiTransferByCustomerInternalServerError) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/multi-transfer/customer][%d] multiTransferByCustomerInternalServerError %s", 500, payload)
+	return fmt.Sprintf("[POST /v1/multi-transfer/customer][%d] multiTransferByCustomerInternalServerError  %+v", 500, o.Payload)
 }
 
 func (o *MultiTransferByCustomerInternalServerError) GetPayload() *models.ChannelTransferErrorResponse {
@@ -196,7 +123,7 @@ func NewMultiTransferByCustomerDefault(code int) *MultiTransferByCustomerDefault
 }
 
 /*
-MultiTransferByCustomerDefault describes a response with status code -1, with default header values.
+MultiTransferByCustomerDefault handles this case with default header values.
 
 An unexpected error response.
 */
@@ -206,44 +133,13 @@ type MultiTransferByCustomerDefault struct {
 	Payload *models.GooglerpcStatus
 }
 
-// IsSuccess returns true when this multi transfer by customer default response has a 2xx status code
-func (o *MultiTransferByCustomerDefault) IsSuccess() bool {
-	return o._statusCode/100 == 2
-}
-
-// IsRedirect returns true when this multi transfer by customer default response has a 3xx status code
-func (o *MultiTransferByCustomerDefault) IsRedirect() bool {
-	return o._statusCode/100 == 3
-}
-
-// IsClientError returns true when this multi transfer by customer default response has a 4xx status code
-func (o *MultiTransferByCustomerDefault) IsClientError() bool {
-	return o._statusCode/100 == 4
-}
-
-// IsServerError returns true when this multi transfer by customer default response has a 5xx status code
-func (o *MultiTransferByCustomerDefault) IsServerError() bool {
-	return o._statusCode/100 == 5
-}
-
-// IsCode returns true when this multi transfer by customer default response a status code equal to that given
-func (o *MultiTransferByCustomerDefault) IsCode(code int) bool {
-	return o._statusCode == code
-}
-
 // Code gets the status code for the multi transfer by customer default response
 func (o *MultiTransferByCustomerDefault) Code() int {
 	return o._statusCode
 }
 
 func (o *MultiTransferByCustomerDefault) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/multi-transfer/customer][%d] multiTransferByCustomer default %s", o._statusCode, payload)
-}
-
-func (o *MultiTransferByCustomerDefault) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/multi-transfer/customer][%d] multiTransferByCustomer default %s", o._statusCode, payload)
+	return fmt.Sprintf("[POST /v1/multi-transfer/customer][%d] multiTransferByCustomer default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *MultiTransferByCustomerDefault) GetPayload() *models.GooglerpcStatus {

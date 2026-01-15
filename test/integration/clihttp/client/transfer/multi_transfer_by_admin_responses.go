@@ -6,7 +6,6 @@ package transfer
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 
@@ -54,7 +53,7 @@ func NewMultiTransferByAdminOK() *MultiTransferByAdminOK {
 }
 
 /*
-MultiTransferByAdminOK describes a response with status code 200, with default header values.
+MultiTransferByAdminOK handles this case with default header values.
 
 A successful response.
 */
@@ -62,44 +61,8 @@ type MultiTransferByAdminOK struct {
 	Payload *models.ChannelTransferTransferStatusResponse
 }
 
-// IsSuccess returns true when this multi transfer by admin o k response has a 2xx status code
-func (o *MultiTransferByAdminOK) IsSuccess() bool {
-	return true
-}
-
-// IsRedirect returns true when this multi transfer by admin o k response has a 3xx status code
-func (o *MultiTransferByAdminOK) IsRedirect() bool {
-	return false
-}
-
-// IsClientError returns true when this multi transfer by admin o k response has a 4xx status code
-func (o *MultiTransferByAdminOK) IsClientError() bool {
-	return false
-}
-
-// IsServerError returns true when this multi transfer by admin o k response has a 5xx status code
-func (o *MultiTransferByAdminOK) IsServerError() bool {
-	return false
-}
-
-// IsCode returns true when this multi transfer by admin o k response a status code equal to that given
-func (o *MultiTransferByAdminOK) IsCode(code int) bool {
-	return code == 200
-}
-
-// Code gets the status code for the multi transfer by admin o k response
-func (o *MultiTransferByAdminOK) Code() int {
-	return 200
-}
-
 func (o *MultiTransferByAdminOK) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/multi-transfer/admin][%d] multiTransferByAdminOK %s", 200, payload)
-}
-
-func (o *MultiTransferByAdminOK) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/multi-transfer/admin][%d] multiTransferByAdminOK %s", 200, payload)
+	return fmt.Sprintf("[POST /v1/multi-transfer/admin][%d] multiTransferByAdminOK  %+v", 200, o.Payload)
 }
 
 func (o *MultiTransferByAdminOK) GetPayload() *models.ChannelTransferTransferStatusResponse {
@@ -124,7 +87,7 @@ func NewMultiTransferByAdminInternalServerError() *MultiTransferByAdminInternalS
 }
 
 /*
-MultiTransferByAdminInternalServerError describes a response with status code 500, with default header values.
+MultiTransferByAdminInternalServerError handles this case with default header values.
 
 Internal server error
 */
@@ -132,44 +95,8 @@ type MultiTransferByAdminInternalServerError struct {
 	Payload *models.ChannelTransferErrorResponse
 }
 
-// IsSuccess returns true when this multi transfer by admin internal server error response has a 2xx status code
-func (o *MultiTransferByAdminInternalServerError) IsSuccess() bool {
-	return false
-}
-
-// IsRedirect returns true when this multi transfer by admin internal server error response has a 3xx status code
-func (o *MultiTransferByAdminInternalServerError) IsRedirect() bool {
-	return false
-}
-
-// IsClientError returns true when this multi transfer by admin internal server error response has a 4xx status code
-func (o *MultiTransferByAdminInternalServerError) IsClientError() bool {
-	return false
-}
-
-// IsServerError returns true when this multi transfer by admin internal server error response has a 5xx status code
-func (o *MultiTransferByAdminInternalServerError) IsServerError() bool {
-	return true
-}
-
-// IsCode returns true when this multi transfer by admin internal server error response a status code equal to that given
-func (o *MultiTransferByAdminInternalServerError) IsCode(code int) bool {
-	return code == 500
-}
-
-// Code gets the status code for the multi transfer by admin internal server error response
-func (o *MultiTransferByAdminInternalServerError) Code() int {
-	return 500
-}
-
 func (o *MultiTransferByAdminInternalServerError) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/multi-transfer/admin][%d] multiTransferByAdminInternalServerError %s", 500, payload)
-}
-
-func (o *MultiTransferByAdminInternalServerError) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/multi-transfer/admin][%d] multiTransferByAdminInternalServerError %s", 500, payload)
+	return fmt.Sprintf("[POST /v1/multi-transfer/admin][%d] multiTransferByAdminInternalServerError  %+v", 500, o.Payload)
 }
 
 func (o *MultiTransferByAdminInternalServerError) GetPayload() *models.ChannelTransferErrorResponse {
@@ -196,7 +123,7 @@ func NewMultiTransferByAdminDefault(code int) *MultiTransferByAdminDefault {
 }
 
 /*
-MultiTransferByAdminDefault describes a response with status code -1, with default header values.
+MultiTransferByAdminDefault handles this case with default header values.
 
 An unexpected error response.
 */
@@ -206,44 +133,13 @@ type MultiTransferByAdminDefault struct {
 	Payload *models.GooglerpcStatus
 }
 
-// IsSuccess returns true when this multi transfer by admin default response has a 2xx status code
-func (o *MultiTransferByAdminDefault) IsSuccess() bool {
-	return o._statusCode/100 == 2
-}
-
-// IsRedirect returns true when this multi transfer by admin default response has a 3xx status code
-func (o *MultiTransferByAdminDefault) IsRedirect() bool {
-	return o._statusCode/100 == 3
-}
-
-// IsClientError returns true when this multi transfer by admin default response has a 4xx status code
-func (o *MultiTransferByAdminDefault) IsClientError() bool {
-	return o._statusCode/100 == 4
-}
-
-// IsServerError returns true when this multi transfer by admin default response has a 5xx status code
-func (o *MultiTransferByAdminDefault) IsServerError() bool {
-	return o._statusCode/100 == 5
-}
-
-// IsCode returns true when this multi transfer by admin default response a status code equal to that given
-func (o *MultiTransferByAdminDefault) IsCode(code int) bool {
-	return o._statusCode == code
-}
-
 // Code gets the status code for the multi transfer by admin default response
 func (o *MultiTransferByAdminDefault) Code() int {
 	return o._statusCode
 }
 
 func (o *MultiTransferByAdminDefault) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/multi-transfer/admin][%d] multiTransferByAdmin default %s", o._statusCode, payload)
-}
-
-func (o *MultiTransferByAdminDefault) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/multi-transfer/admin][%d] multiTransferByAdmin default %s", o._statusCode, payload)
+	return fmt.Sprintf("[POST /v1/multi-transfer/admin][%d] multiTransferByAdmin default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *MultiTransferByAdminDefault) GetPayload() *models.GooglerpcStatus {

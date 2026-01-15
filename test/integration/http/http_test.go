@@ -15,7 +15,6 @@ import (
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
 	"github.com/btcsuite/btcd/btcutil/base58"
-	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 	"github.com/google/uuid"
@@ -61,7 +60,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 
 		clientCtx   context.Context
 		transferCli *clihttp.CrossChanelTransfer
-		auth        runtime.ClientAuthInfoWriter
 	)
 	BeforeEach(func() {
 		By("start redis")
@@ -116,18 +114,13 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 
 		httpAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.HTTPPort]), 10)
 		transport := httptransport.New(httpAddress, "", nil)
+		transport.DefaultAuthentication = httptransport.APIKeyAuth("authorization", "header", networkFound.ChannelTransfer.AccessToken)
 		transferCli = clihttp.New(transport, strfmt.Default)
-
-		auth = httptransport.APIKeyAuth("authorization", "header", networkFound.ChannelTransfer.AccessToken)
 	})
 
 	It("transfer by admin test", func() {
 		amount := "250"
 		restAmount := "750"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		By("creating channel transfer request")
 		transferID := uuid.NewString()
@@ -157,7 +150,7 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		}
 
 		By("sending transfer request")
-		res, err := transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		res, err := transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx})
 		Expect(err).NotTo(HaveOccurred())
 
 		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
@@ -168,7 +161,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
 			"",
 			networkFound.EventuallyTimeout*2)
@@ -184,10 +176,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 	It("transfer by customer test", func() {
 		amount := "250"
 		restAmount := "750"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		By("creating channel transfer request")
 		transferID := uuid.NewString()
@@ -216,7 +204,7 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		}
 
 		By("sending transfer request")
-		res, err := transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		res, err := transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx})
 		Expect(err).NotTo(HaveOccurred())
 
 		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
@@ -227,7 +215,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
 			"",
 			networkFound.EventuallyTimeout*2,
@@ -242,12 +229,8 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 	})
 
 	It("transfer status with wrong transfer id test", func() {
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
-
 		By("requesting status of transfer with id = 1")
-		_, err := transferCli.Transfer.TransferStatus(&transfer.TransferStatusParams{IDTransfer: "1", Context: context.Background()}, authOpts)
+		_, err := transferCli.Transfer.TransferStatus(&transfer.TransferStatusParams{IDTransfer: "1", Context: context.Background()})
 		Expect(err).To(MatchError(ContainSubstring("object not found")))
 	})
 
@@ -255,10 +238,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		amount := "250"
 		sendAmount := "0"
 		wrongChannel := "ASD"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		By("creating channel transfer request")
 		transferID := uuid.NewString()
@@ -288,7 +267,7 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		}
 
 		By("sending transfer request")
-		res, err := transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		res, err := transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx})
 		Expect(err).NotTo(HaveOccurred())
 
 		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
@@ -299,7 +278,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSERROR,
 			errWrongChannel,
 			networkFound.EventuallyTimeout*2,
@@ -317,10 +295,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		amount := "250"
 		sendAmount := "0"
 		wrongChannel := "ASD"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		By("creating channel transfer request")
 		transferID := uuid.NewString()
@@ -349,7 +323,7 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		}
 
 		By("sending transfer request")
-		res, err := transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		res, err := transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx})
 		Expect(err).NotTo(HaveOccurred())
 
 		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
@@ -360,7 +334,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSERROR,
 			errWrongChannel,
 			networkFound.EventuallyTimeout*2,
@@ -377,10 +350,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 	It("admin transfer to not valid channel", func() {
 		amount := "250"
 		sendAmount := "0"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		By("creating channel transfer request")
 		transferID := uuid.NewString()
@@ -410,8 +379,8 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		}
 
 		By("sending transfer request")
-		_, err = transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx}, authOpts)
-		Expect(err).Should(ContainSubstring(errNotValidChannel))
+		_, err = transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx})
+		Expect(err.Error()).Should(ContainSubstring(errNotValidChannel))
 
 		By("checking result balances")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
@@ -424,10 +393,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 	It("client transfer to not valid channel", func() {
 		amount := "250"
 		sendAmount := "0"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		By("creating channel transfer request")
 		transferID := uuid.NewString()
@@ -456,8 +421,8 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		}
 
 		By("sending transfer request")
-		_, err = transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx}, authOpts)
-		Expect(err).Should(ContainSubstring(errNotValidChannel))
+		_, err = transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx})
+		Expect(err.Error()).Should(ContainSubstring(errNotValidChannel))
 
 		By("checking result balances")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
@@ -470,10 +435,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 	It("admin transfer insufficient funds", func() {
 		amount := "250"
 		sendAmount := "0"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		By("creating new user")
 		user1, err := mocks.NewUserFoundation(pbfound.KeyType_ed25519)
@@ -509,7 +470,7 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		}
 
 		By("sending transfer request")
-		res, err := transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		res, err := transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx})
 		Expect(err).NotTo(HaveOccurred())
 
 		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
@@ -520,7 +481,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSERROR,
 			errInsufficientFunds,
 			networkFound.EventuallyTimeout*2,
@@ -537,10 +497,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 	It("customer transfer insufficient funds", func() {
 		amount := "250"
 		sendAmount := "0"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		By("creating new user")
 		user1, err := mocks.NewUserFoundation(pbfound.KeyType_ed25519)
@@ -575,7 +531,7 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		}
 
 		By("sending transfer request")
-		res, err := transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		res, err := transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx})
 		Expect(err).NotTo(HaveOccurred())
 
 		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
@@ -586,7 +542,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSERROR,
 			errInsufficientFunds, networkFound.EventuallyTimeout*2,
 		)
@@ -602,10 +557,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 	It("admin transfer wrong channel from", func() {
 		amount := "250"
 		sendAmount := "0"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		By("creating channel transfer request")
 		transferID := uuid.NewString()
@@ -635,7 +586,7 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		}
 
 		By("sending transfer request")
-		res, err := transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		res, err := transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx})
 		Expect(err).NotTo(HaveOccurred())
 
 		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
@@ -646,7 +597,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSERROR,
 			errInsufficientFunds,
 			networkFound.EventuallyTimeout*2,
@@ -663,10 +613,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 	It("customer transfer wrong channel from", func() {
 		amount := "250"
 		sendAmount := "0"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		By("creating channel transfer request")
 		transferID := uuid.NewString()
@@ -695,7 +641,7 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		}
 
 		By("sending transfer request")
-		res, err := transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		res, err := transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx})
 		Expect(err).NotTo(HaveOccurred())
 
 		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
@@ -706,7 +652,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSERROR,
 			errInsufficientFunds,
 			networkFound.EventuallyTimeout*2,
@@ -723,10 +668,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 	It("admin transfer wrong channel to", func() {
 		amount := "250"
 		sendAmount := "0"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		By("creating channel transfer request")
 		transferID := uuid.NewString()
@@ -756,8 +697,8 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		}
 
 		By("sending transfer request")
-		_, err = transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx}, authOpts)
-		Expect(err).Should(ContainSubstring(errIncorrectToken))
+		_, err = transferCli.Transfer.TransferByAdmin(&transfer.TransferByAdminParams{Body: transferRequest, Context: clientCtx})
+		Expect(err.Error()).Should(ContainSubstring(errIncorrectToken))
 
 		By("checking result balances")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
@@ -770,10 +711,6 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 	It("customer transfer wrong channel to", func() {
 		amount := "250"
 		sendAmount := "0"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		By("creating channel transfer request")
 		transferID := uuid.NewString()
@@ -802,8 +739,8 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		}
 
 		By("sending transfer request")
-		_, err = transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx}, authOpts)
-		Expect(err).Should(ContainSubstring(errIncorrectToken))
+		_, err = transferCli.Transfer.TransferByCustomer(&transfer.TransferByCustomerParams{Body: transferRequest, Context: clientCtx})
+		Expect(err.Error()).Should(ContainSubstring(errIncorrectToken))
 
 		By("checking result balances")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
@@ -819,7 +756,7 @@ func checkResponseStatus(
 	expectedStatus models.ChannelTransferTransferStatusResponseStatus,
 	expectedError string,
 ) error {
-	if *payload.Status == models.ChannelTransferTransferStatusResponseStatusSTATUSERROR &&
+	if payload.Status == models.ChannelTransferTransferStatusResponseStatusSTATUSERROR &&
 		expectedStatus != models.ChannelTransferTransferStatusResponseStatusSTATUSERROR &&
 		expectedError == "" {
 		return fmt.Errorf("error occured: %s", payload.Message)
@@ -827,7 +764,7 @@ func checkResponseStatus(
 	if expectedError != "" && !strings.Contains(payload.Message, expectedError) {
 		return fmt.Errorf("expected %s, got %s", expectedError, payload.Message)
 	}
-	if *payload.Status != expectedStatus {
+	if payload.Status != expectedStatus {
 		return fmt.Errorf("status %s was not received", string(expectedStatus))
 	}
 
@@ -838,7 +775,6 @@ func waitForAnswerAndCheckStatus(
 	clientCtx context.Context,
 	transferCli *clihttp.CrossChanelTransfer,
 	transferID string,
-	authOpts func(c *runtime.ClientOperation),
 	expectedStatus models.ChannelTransferTransferStatusResponseStatus,
 	expectedError string,
 	eventuallyTimeout time.Duration,
@@ -847,12 +783,12 @@ func waitForAnswerAndCheckStatus(
 		response, err := transferCli.Transfer.TransferStatus(&transfer.TransferStatusParams{
 			IDTransfer: transferID,
 			Context:    clientCtx,
-		}, authOpts)
+		})
 		if err != nil {
 			return err
 		}
 		if expectedStatus != models.ChannelTransferTransferStatusResponseStatusSTATUSERROR &&
-			*response.Payload.Status == models.ChannelTransferTransferStatusResponseStatusSTATUSERROR {
+			response.Payload.Status == models.ChannelTransferTransferStatusResponseStatusSTATUSERROR {
 			return fmt.Errorf("error occured: %s", response.Payload.Message)
 		}
 		if err = checkResponseStatus(response.Payload, expectedStatus, expectedError); err != nil {

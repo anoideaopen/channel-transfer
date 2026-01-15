@@ -100,6 +100,8 @@ func dtoBeginAdminToModelMultiTransferRequest(
 		mappedItems[i] = model.TransferItem{
 			Token:  item.GetToken(),
 			Amount: item.GetAmount(),
+			User:   item.GetUser(),
+			Hold:   item.GetHold(),
 		}
 	}
 
@@ -139,6 +141,8 @@ func dtoBeginCustomerToModelMultiTransferRequest(
 		mappedItems[i] = model.TransferItem{
 			Token:  item.GetToken(),
 			Amount: item.GetAmount(),
+			User:   item.GetUser(),
+			Hold:   item.GetHold(),
 		}
 	}
 
@@ -351,15 +355,15 @@ func checkAdminRequestMultiTransfer(
 	if err := checkGeneral(tAdminRequest.GetGenerals(), actualChannels); err != nil {
 		return err
 	}
-	if tAdminRequest.GetAddress() == "" {
-		return errors.New("address undefined")
-	}
+
 	if tAdminRequest.GetChannelTo() == "" {
 		return errors.New("channel TO undefined")
 	}
 	if len(tAdminRequest.GetItems()) == 0 {
 		return errors.New("items is empty")
 	}
+
+	addrEmpty := false
 	for _, item := range tAdminRequest.GetItems() {
 		if item.GetToken() == "" {
 			return errors.New("token undefined")
@@ -370,6 +374,13 @@ func checkAdminRequestMultiTransfer(
 		if _, ok := new(big.Int).SetString(item.GetAmount(), 10); !ok {
 			return errors.New("amount is not a number")
 		}
+		if item.GetUser() == "" {
+			addrEmpty = true
+		}
+	}
+
+	if addrEmpty && tAdminRequest.GetAddress() == "" {
+		return errors.New("address undefined")
 	}
 
 	for _, item := range tAdminRequest.GetItems() {

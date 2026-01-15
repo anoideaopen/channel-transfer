@@ -18,37 +18,40 @@ import (
 	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/models"
 )
 
-// NewMultiTransferByCustomerParams creates a new MultiTransferByCustomerParams object,
-// with the default timeout for this client.
-//
-// Default values are not hydrated, since defaults are normally applied by the API server side.
-//
-// To enforce default values in parameter, use SetDefaults or WithDefaults.
+// NewMultiTransferByCustomerParams creates a new MultiTransferByCustomerParams object
+// with the default values initialized.
 func NewMultiTransferByCustomerParams() *MultiTransferByCustomerParams {
+	var ()
 	return &MultiTransferByCustomerParams{
+
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewMultiTransferByCustomerParamsWithTimeout creates a new MultiTransferByCustomerParams object
-// with the ability to set a timeout on a request.
+// with the default values initialized, and the ability to set a timeout on a request
 func NewMultiTransferByCustomerParamsWithTimeout(timeout time.Duration) *MultiTransferByCustomerParams {
+	var ()
 	return &MultiTransferByCustomerParams{
+
 		timeout: timeout,
 	}
 }
 
 // NewMultiTransferByCustomerParamsWithContext creates a new MultiTransferByCustomerParams object
-// with the ability to set a context for a request.
+// with the default values initialized, and the ability to set a context for a request
 func NewMultiTransferByCustomerParamsWithContext(ctx context.Context) *MultiTransferByCustomerParams {
+	var ()
 	return &MultiTransferByCustomerParams{
+
 		Context: ctx,
 	}
 }
 
 // NewMultiTransferByCustomerParamsWithHTTPClient creates a new MultiTransferByCustomerParams object
-// with the ability to set a custom HTTPClient for a request.
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewMultiTransferByCustomerParamsWithHTTPClient(client *http.Client) *MultiTransferByCustomerParams {
+	var ()
 	return &MultiTransferByCustomerParams{
 		HTTPClient: client,
 	}
@@ -56,34 +59,16 @@ func NewMultiTransferByCustomerParamsWithHTTPClient(client *http.Client) *MultiT
 
 /*
 MultiTransferByCustomerParams contains all the parameters to send to the API endpoint
-
-	for the multi transfer by customer operation.
-
-	Typically these are written to a http.Request.
+for the multi transfer by customer operation typically these are written to a http.Request
 */
 type MultiTransferByCustomerParams struct {
 
-	// Body.
+	/*Body*/
 	Body *models.ChannelTransferMultiTransferBeginCustomerRequest
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
-}
-
-// WithDefaults hydrates default values in the multi transfer by customer params (not the query body).
-//
-// All values with no default are reset to their zero value.
-func (o *MultiTransferByCustomerParams) WithDefaults() *MultiTransferByCustomerParams {
-	o.SetDefaults()
-	return o
-}
-
-// SetDefaults hydrates default values in the multi transfer by customer params (not the query body).
-//
-// All values with no default are reset to their zero value.
-func (o *MultiTransferByCustomerParams) SetDefaults() {
-	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the multi transfer by customer params
@@ -137,6 +122,7 @@ func (o *MultiTransferByCustomerParams) WriteToRequest(r runtime.ClientRequest, 
 		return err
 	}
 	var res []error
+
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err

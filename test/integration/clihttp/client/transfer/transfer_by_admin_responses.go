@@ -6,7 +6,6 @@ package transfer
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 
@@ -54,7 +53,7 @@ func NewTransferByAdminOK() *TransferByAdminOK {
 }
 
 /*
-TransferByAdminOK describes a response with status code 200, with default header values.
+TransferByAdminOK handles this case with default header values.
 
 A successful response.
 */
@@ -62,44 +61,8 @@ type TransferByAdminOK struct {
 	Payload *models.ChannelTransferTransferStatusResponse
 }
 
-// IsSuccess returns true when this transfer by admin o k response has a 2xx status code
-func (o *TransferByAdminOK) IsSuccess() bool {
-	return true
-}
-
-// IsRedirect returns true when this transfer by admin o k response has a 3xx status code
-func (o *TransferByAdminOK) IsRedirect() bool {
-	return false
-}
-
-// IsClientError returns true when this transfer by admin o k response has a 4xx status code
-func (o *TransferByAdminOK) IsClientError() bool {
-	return false
-}
-
-// IsServerError returns true when this transfer by admin o k response has a 5xx status code
-func (o *TransferByAdminOK) IsServerError() bool {
-	return false
-}
-
-// IsCode returns true when this transfer by admin o k response a status code equal to that given
-func (o *TransferByAdminOK) IsCode(code int) bool {
-	return code == 200
-}
-
-// Code gets the status code for the transfer by admin o k response
-func (o *TransferByAdminOK) Code() int {
-	return 200
-}
-
 func (o *TransferByAdminOK) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdminOK %s", 200, payload)
-}
-
-func (o *TransferByAdminOK) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdminOK %s", 200, payload)
+	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdminOK  %+v", 200, o.Payload)
 }
 
 func (o *TransferByAdminOK) GetPayload() *models.ChannelTransferTransferStatusResponse {
@@ -124,7 +87,7 @@ func NewTransferByAdminInternalServerError() *TransferByAdminInternalServerError
 }
 
 /*
-TransferByAdminInternalServerError describes a response with status code 500, with default header values.
+TransferByAdminInternalServerError handles this case with default header values.
 
 Internal server error
 */
@@ -132,44 +95,8 @@ type TransferByAdminInternalServerError struct {
 	Payload *models.ChannelTransferErrorResponse
 }
 
-// IsSuccess returns true when this transfer by admin internal server error response has a 2xx status code
-func (o *TransferByAdminInternalServerError) IsSuccess() bool {
-	return false
-}
-
-// IsRedirect returns true when this transfer by admin internal server error response has a 3xx status code
-func (o *TransferByAdminInternalServerError) IsRedirect() bool {
-	return false
-}
-
-// IsClientError returns true when this transfer by admin internal server error response has a 4xx status code
-func (o *TransferByAdminInternalServerError) IsClientError() bool {
-	return false
-}
-
-// IsServerError returns true when this transfer by admin internal server error response has a 5xx status code
-func (o *TransferByAdminInternalServerError) IsServerError() bool {
-	return true
-}
-
-// IsCode returns true when this transfer by admin internal server error response a status code equal to that given
-func (o *TransferByAdminInternalServerError) IsCode(code int) bool {
-	return code == 500
-}
-
-// Code gets the status code for the transfer by admin internal server error response
-func (o *TransferByAdminInternalServerError) Code() int {
-	return 500
-}
-
 func (o *TransferByAdminInternalServerError) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdminInternalServerError %s", 500, payload)
-}
-
-func (o *TransferByAdminInternalServerError) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdminInternalServerError %s", 500, payload)
+	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdminInternalServerError  %+v", 500, o.Payload)
 }
 
 func (o *TransferByAdminInternalServerError) GetPayload() *models.ChannelTransferErrorResponse {
@@ -196,7 +123,7 @@ func NewTransferByAdminDefault(code int) *TransferByAdminDefault {
 }
 
 /*
-TransferByAdminDefault describes a response with status code -1, with default header values.
+TransferByAdminDefault handles this case with default header values.
 
 An unexpected error response.
 */
@@ -206,44 +133,13 @@ type TransferByAdminDefault struct {
 	Payload *models.GooglerpcStatus
 }
 
-// IsSuccess returns true when this transfer by admin default response has a 2xx status code
-func (o *TransferByAdminDefault) IsSuccess() bool {
-	return o._statusCode/100 == 2
-}
-
-// IsRedirect returns true when this transfer by admin default response has a 3xx status code
-func (o *TransferByAdminDefault) IsRedirect() bool {
-	return o._statusCode/100 == 3
-}
-
-// IsClientError returns true when this transfer by admin default response has a 4xx status code
-func (o *TransferByAdminDefault) IsClientError() bool {
-	return o._statusCode/100 == 4
-}
-
-// IsServerError returns true when this transfer by admin default response has a 5xx status code
-func (o *TransferByAdminDefault) IsServerError() bool {
-	return o._statusCode/100 == 5
-}
-
-// IsCode returns true when this transfer by admin default response a status code equal to that given
-func (o *TransferByAdminDefault) IsCode(code int) bool {
-	return o._statusCode == code
-}
-
 // Code gets the status code for the transfer by admin default response
 func (o *TransferByAdminDefault) Code() int {
 	return o._statusCode
 }
 
 func (o *TransferByAdminDefault) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdmin default %s", o._statusCode, payload)
-}
-
-func (o *TransferByAdminDefault) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdmin default %s", o._statusCode, payload)
+	return fmt.Sprintf("[POST /v1/transfer/admin][%d] transferByAdmin default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *TransferByAdminDefault) GetPayload() *models.GooglerpcStatus {
