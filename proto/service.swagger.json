@@ -262,6 +262,7 @@
         "options": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/protobufOption"
           }
         }
@@ -285,11 +286,12 @@
         },
         "address": {
           "type": "string",
-          "title": "token's owner address"
+          "title": "token's owner address (deprecated)"
         },
         "items": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/channel_transferTransferItem"
           },
           "title": "items to transfer"
@@ -297,6 +299,7 @@
         "options": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/protobufOption"
           }
         }
@@ -321,6 +324,7 @@
         "items": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/channel_transferTransferItem"
           },
           "title": "items to transfer"
@@ -328,6 +332,7 @@
         "options": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/protobufOption"
           }
         }
@@ -364,6 +369,7 @@
         "options": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/protobufOption"
           }
         }
@@ -396,6 +402,7 @@
         "options": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/protobufOption"
           }
         }
@@ -412,6 +419,14 @@
         "amount": {
           "type": "string",
           "title": "Amount of token to transfer"
+        },
+        "user": {
+          "type": "string",
+          "title": "token's owner user"
+        },
+        "hold": {
+          "type": "boolean",
+          "title": "token's hold"
         }
       },
       "title": "TransferItem item parameters for MultiTransferBeginCustomerRequest and MultiTransferBeginAdminRequest"
@@ -458,6 +473,7 @@
         "details": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
         }

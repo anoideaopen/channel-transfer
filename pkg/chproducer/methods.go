@@ -117,7 +117,7 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 			)
 			request, err := h.requestStorage.TransferFetch(ctx, model.ID(transfer.GetId()))
 			if err != nil {
-				h.log.Warningf("failed fetching transfer request from storage: %w", err)
+				h.log.Warningf("failed fetching transfer request from storage: %v", err)
 			}
 			ctx := telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 
@@ -302,7 +302,7 @@ func (h *Handler) resolveStatus(ctx context.Context, transfer *fpb.CCTransfer) (
 	channelName := strings.ToLower(transfer.GetTo())
 	request, err = h.requestStorage.TransferFetch(ctx, model.ID(transfer.GetId()))
 	if err != nil {
-		h.log.Warningf("failed fetching transfer request from storage: %w", err)
+		h.log.Warningf("failed fetching transfer request from storage: %v", err)
 	}
 	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 

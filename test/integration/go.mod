@@ -21,8 +21,8 @@ tool (
 
 require (
 	github.com/anoideaopen/channel-transfer v0.1.3
-	github.com/anoideaopen/foundation v0.1.6-0.20251209113743-dc4987ca3879
-	github.com/anoideaopen/foundation/test/integration v0.0.0-20251209113743-dc4987ca3879
+	github.com/anoideaopen/foundation v0.1.6
+	github.com/anoideaopen/foundation/test/integration v0.0.0-20260121153132-d71e8bba3cd7
 	github.com/btcsuite/btcd/btcutil v1.1.6
 	github.com/go-openapi/errors v0.22.0
 	github.com/go-openapi/runtime v0.28.0
@@ -80,7 +80,7 @@ require (
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.3.0 // indirect
 	github.com/ethereum/c-kzg-4844/v2 v2.1.5 // indirect
-	github.com/ethereum/go-ethereum v1.16.7 // indirect
+	github.com/ethereum/go-ethereum v1.16.8 // indirect
 	github.com/ethereum/go-verkle v0.2.2 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/flowchartsman/swaggerui v0.0.0-20221017034628-909ed4f3701b // indirect
