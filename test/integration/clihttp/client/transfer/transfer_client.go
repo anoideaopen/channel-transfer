@@ -7,38 +7,12 @@ package transfer
 
 import (
 	"github.com/go-openapi/runtime"
-	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 )
 
 // New creates a new transfer API client.
 func New(transport runtime.ClientTransport, formats strfmt.Registry) ClientService {
 	return &Client{transport: transport, formats: formats}
-}
-
-// New creates a new transfer API client with basic auth credentials.
-// It takes the following parameters:
-// - host: http host (github.com).
-// - basePath: any base path for the API client ("/v1", "/v3").
-// - scheme: http scheme ("http", "https").
-// - user: user for basic authentication header.
-// - password: password for basic authentication header.
-func NewClientWithBasicAuth(host, basePath, scheme, user, password string) ClientService {
-	transport := httptransport.New(host, basePath, []string{scheme})
-	transport.DefaultAuthentication = httptransport.BasicAuth(user, password)
-	return &Client{transport: transport, formats: strfmt.Default}
-}
-
-// New creates a new transfer API client with a bearer token for authentication.
-// It takes the following parameters:
-// - host: http host (github.com).
-// - basePath: any base path for the API client ("/v1", "/v3").
-// - scheme: http scheme ("http", "https").
-// - bearerToken: bearer token for Bearer authentication header.
-func NewClientWithBearerToken(host, basePath, scheme, bearerToken string) ClientService {
-	transport := httptransport.New(host, basePath, []string{scheme})
-	transport.DefaultAuthentication = httptransport.BearerToken(bearerToken)
-	return &Client{transport: transport, formats: strfmt.Default}
 }
 
 /*
@@ -49,20 +23,17 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
-// ClientOption may be used to customize the behavior of Client methods.
-type ClientOption func(*runtime.ClientOperation)
-
 // ClientService is the interface for Client methods
 type ClientService interface {
-	MultiTransferByAdmin(params *MultiTransferByAdminParams, opts ...ClientOption) (*MultiTransferByAdminOK, error)
+	MultiTransferByAdmin(params *MultiTransferByAdminParams) (*MultiTransferByAdminOK, error)
 
-	MultiTransferByCustomer(params *MultiTransferByCustomerParams, opts ...ClientOption) (*MultiTransferByCustomerOK, error)
+	MultiTransferByCustomer(params *MultiTransferByCustomerParams) (*MultiTransferByCustomerOK, error)
 
-	TransferByAdmin(params *TransferByAdminParams, opts ...ClientOption) (*TransferByAdminOK, error)
+	TransferByAdmin(params *TransferByAdminParams) (*TransferByAdminOK, error)
 
-	TransferByCustomer(params *TransferByCustomerParams, opts ...ClientOption) (*TransferByCustomerOK, error)
+	TransferByCustomer(params *TransferByCustomerParams) (*TransferByCustomerOK, error)
 
-	TransferStatus(params *TransferStatusParams, opts ...ClientOption) (*TransferStatusOK, error)
+	TransferStatus(params *TransferStatusParams) (*TransferStatusOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -70,12 +41,13 @@ type ClientService interface {
 /*
 MultiTransferByAdmin multis transfer cross channel by admin
 */
-func (a *Client) MultiTransferByAdmin(params *MultiTransferByAdminParams, opts ...ClientOption) (*MultiTransferByAdminOK, error) {
+func (a *Client) MultiTransferByAdmin(params *MultiTransferByAdminParams) (*MultiTransferByAdminOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewMultiTransferByAdminParams()
 	}
-	op := &runtime.ClientOperation{
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "multiTransferByAdmin",
 		Method:             "POST",
 		PathPattern:        "/v1/multi-transfer/admin",
@@ -86,12 +58,7 @@ func (a *Client) MultiTransferByAdmin(params *MultiTransferByAdminParams, opts .
 		Reader:             &MultiTransferByAdminReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -107,12 +74,13 @@ func (a *Client) MultiTransferByAdmin(params *MultiTransferByAdminParams, opts .
 /*
 MultiTransferByCustomer multis transfer cross channel by customer
 */
-func (a *Client) MultiTransferByCustomer(params *MultiTransferByCustomerParams, opts ...ClientOption) (*MultiTransferByCustomerOK, error) {
+func (a *Client) MultiTransferByCustomer(params *MultiTransferByCustomerParams) (*MultiTransferByCustomerOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewMultiTransferByCustomerParams()
 	}
-	op := &runtime.ClientOperation{
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "multiTransferByCustomer",
 		Method:             "POST",
 		PathPattern:        "/v1/multi-transfer/customer",
@@ -123,12 +91,7 @@ func (a *Client) MultiTransferByCustomer(params *MultiTransferByCustomerParams, 
 		Reader:             &MultiTransferByCustomerReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -144,12 +107,13 @@ func (a *Client) MultiTransferByCustomer(params *MultiTransferByCustomerParams, 
 /*
 TransferByAdmin transfers cross channel by admin
 */
-func (a *Client) TransferByAdmin(params *TransferByAdminParams, opts ...ClientOption) (*TransferByAdminOK, error) {
+func (a *Client) TransferByAdmin(params *TransferByAdminParams) (*TransferByAdminOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewTransferByAdminParams()
 	}
-	op := &runtime.ClientOperation{
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "transferByAdmin",
 		Method:             "POST",
 		PathPattern:        "/v1/transfer/admin",
@@ -160,12 +124,7 @@ func (a *Client) TransferByAdmin(params *TransferByAdminParams, opts ...ClientOp
 		Reader:             &TransferByAdminReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -181,12 +140,13 @@ func (a *Client) TransferByAdmin(params *TransferByAdminParams, opts ...ClientOp
 /*
 TransferByCustomer transfers cross channel by customer
 */
-func (a *Client) TransferByCustomer(params *TransferByCustomerParams, opts ...ClientOption) (*TransferByCustomerOK, error) {
+func (a *Client) TransferByCustomer(params *TransferByCustomerParams) (*TransferByCustomerOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewTransferByCustomerParams()
 	}
-	op := &runtime.ClientOperation{
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "transferByCustomer",
 		Method:             "POST",
 		PathPattern:        "/v1/transfer/customer",
@@ -197,12 +157,7 @@ func (a *Client) TransferByCustomer(params *TransferByCustomerParams, opts ...Cl
 		Reader:             &TransferByCustomerReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -218,12 +173,13 @@ func (a *Client) TransferByCustomer(params *TransferByCustomerParams, opts ...Cl
 /*
 TransferStatus gets status transfer by id transfer
 */
-func (a *Client) TransferStatus(params *TransferStatusParams, opts ...ClientOption) (*TransferStatusOK, error) {
+func (a *Client) TransferStatus(params *TransferStatusParams) (*TransferStatusOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewTransferStatusParams()
 	}
-	op := &runtime.ClientOperation{
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "transferStatus",
 		Method:             "GET",
 		PathPattern:        "/v1/status/{idTransfer}",
@@ -234,12 +190,7 @@ func (a *Client) TransferStatus(params *TransferStatusParams, opts ...ClientOpti
 		Reader:             &TransferStatusReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
+	})
 	if err != nil {
 		return nil, err
 	}

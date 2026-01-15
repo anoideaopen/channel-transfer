@@ -20,6 +20,8 @@ type TransferResult struct {
 type TransferItem struct {
 	Token  string `json:"token"`
 	Amount string `json:"amount"`
+	User   string `json:"user,omitempty"`
+	Hold   bool   `json:"hold,omitempty"`
 }
 
 type TransferMetadata map[string]string

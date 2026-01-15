@@ -135,6 +135,8 @@ message TransferBeginAdminRequest{
 message TransferItem{
   string token = 1; // Token to transfer
   string amount = 2; // Amount of token to transfer
+  string user = 3; // token's owner user
+  bool hold = 4; // token's hold
 }
 
 // MultiTransferBeginAdminRequest request for tokens transfer by tokens owner
@@ -151,7 +153,7 @@ message MultiTransferBeginAdminRequest{
   GeneralParams generals = 1; // general parameters
   string id_transfer = 2; // transfer ID (should be unique)
   string channel_to = 3; // destination channel
-  string address = 4; // token's owner address
+  string address = 4; // token's owner address (deprecated)
   repeated TransferItem items = 5; // items to transfer
   repeated google.protobuf.Option options = 6;
 }

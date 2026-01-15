@@ -167,7 +167,7 @@ func (h *Handler) launcher(ctx context.Context, group *errgroup.Group) {
 				defer h.inUsed.Delete(ccTransfer.GetId())
 				request, err := h.requestStorage.TransferFetch(ctx, model.ID(ccTransfer.GetId()))
 				if err != nil {
-					h.log.Warningf("failed fetching transfer request from storage: %w", err)
+					h.log.Warningf("failed fetching transfer request from storage: %v", err)
 				}
 				ctxWithMetadata := telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 				ctxWithTraceID := otel.GetTextMapPropagator().Extract(ctxWithMetadata, propagation.MapCarrier(request.Metadata))

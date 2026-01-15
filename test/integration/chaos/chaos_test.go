@@ -14,7 +14,6 @@ import (
 	pbfound "github.com/anoideaopen/foundation/proto"
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
-	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 	"github.com/google/uuid"
@@ -53,7 +52,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 
 		clientCtx   context.Context
 		transferCli *clihttp.CrossChanelTransfer
-		auth        runtime.ClientAuthInfoWriter
 	)
 
 	BeforeEach(func() {
@@ -127,18 +125,13 @@ var _ = Describe("Channel transfer chaos tests", func() {
 
 		httpAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.HTTPPort]), 10)
 		transport := httptransport.New(httpAddress, "", nil)
+		transport.DefaultAuthentication = httptransport.APIKeyAuth("authorization", "header", networkFound.ChannelTransfer.AccessToken)
 		transferCli = clihttp.New(transport, strfmt.Default)
-
-		auth = httptransport.APIKeyAuth("authorization", "header", networkFound.ChannelTransfer.AccessToken)
 	})
 
 	It("Admin transfer before TTL test", func() {
 		amount := "250"
 		restAmount := "750"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		transferID := uuid.NewString()
 
@@ -168,7 +161,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
 			"",
 			ts.NetworkFound.EventuallyTimeout*2,
@@ -185,10 +177,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 	It("Customer transfer before TTL test", func() {
 		amount := "250"
 		restAmount := "750"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		transferID := uuid.NewString()
 
@@ -216,7 +204,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
 			"",
 			ts.NetworkFound.EventuallyTimeout*2,
@@ -233,10 +220,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 	It("Transfer by admin cancel by test", func() {
 		amount := "250"
 		sendAmount := "0"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		transferID := uuid.NewString()
 
@@ -271,7 +254,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCANCELED,
 			"",
 			ts.NetworkFound.EventuallyTimeout*2,
@@ -288,10 +270,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 	It("Customer transfer cancel by timeout test", func() {
 		amount := "250"
 		sendAmount := "0"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		transferID := uuid.NewString()
 
@@ -324,7 +302,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCANCELED,
 			"",
 			ts.NetworkFound.EventuallyTimeout*2,
@@ -341,10 +318,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 	It("Channel Transfer To before TTL test", func() {
 		amount := "250"
 		restAmount := "750"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		transferID := uuid.NewString()
 
@@ -390,7 +363,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
 			"",
 			ts.NetworkFound.EventuallyTimeout*2,
@@ -407,10 +379,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 	It("Channel transfer To after TTL test", func() {
 		amount := "250"
 		restAmount := "750"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		transferID := uuid.NewString()
 
@@ -458,7 +426,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
 			"",
 			ts.NetworkFound.EventuallyTimeout*2,
@@ -475,10 +442,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 	It("Channel transfer From before TTL test", func() {
 		amount := "250"
 		restAmount := "750"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		transferID := uuid.NewString()
 
@@ -537,7 +500,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
 			"",
 			ts.NetworkFound.EventuallyTimeout*2,
@@ -555,10 +517,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 		amount := "250"
 		restAmount := "750"
 
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
-
 		transferID := uuid.NewString()
 
 		By("Stopping service")
@@ -620,7 +578,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
 			"",
 			ts.NetworkFound.EventuallyTimeout*2,
@@ -638,10 +595,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 		amount := "250"
 		restAmount := "750"
 
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
-
 		transferID := uuid.NewString()
 
 		By("Stopping service")
@@ -703,7 +656,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
 			"",
 			ts.NetworkFound.EventuallyTimeout*2,
@@ -721,10 +673,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 		amount := "250"
 		restAmount := "750"
 
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
-
 		transferID := uuid.NewString()
 
 		By("Stopping service")
@@ -789,7 +737,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
 			"",
 			ts.NetworkFound.EventuallyTimeout*2,
@@ -807,10 +754,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 		amount := "250"
 		restAmount := "750"
 
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
-
 		transferID := uuid.NewString()
 
 		By("Stopping service")
@@ -875,7 +818,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
 			"",
 			ts.NetworkFound.EventuallyTimeout*2,
@@ -892,10 +834,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 	It("Delete transfer From after TTL test", func() {
 		amount := "250"
 		restAmount := "750"
-
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
 
 		transferID := uuid.NewString()
 
@@ -964,7 +902,6 @@ var _ = Describe("Channel transfer chaos tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
 			"",
 			ts.NetworkFound.EventuallyTimeout*2,
@@ -984,7 +921,7 @@ func checkResponseStatus(
 	expectedStatus models.ChannelTransferTransferStatusResponseStatus,
 	expectedError string,
 ) error {
-	if *payload.Status == models.ChannelTransferTransferStatusResponseStatusSTATUSERROR &&
+	if payload.Status == models.ChannelTransferTransferStatusResponseStatusSTATUSERROR &&
 		expectedStatus != models.ChannelTransferTransferStatusResponseStatusSTATUSERROR &&
 		expectedError == "" {
 		return fmt.Errorf("error occured: %s", payload.Message)
@@ -992,8 +929,8 @@ func checkResponseStatus(
 	if expectedError != "" && !strings.Contains(payload.Message, expectedError) {
 		return fmt.Errorf("expected %s, got %s", expectedError, payload.Message)
 	}
-	if *payload.Status != expectedStatus {
-		return fmt.Errorf("status %s was not received, got %s", string(expectedStatus), *payload.Status)
+	if payload.Status != expectedStatus {
+		return fmt.Errorf("status %s was not received, got %s", string(expectedStatus), payload.Status)
 	}
 
 	return nil
@@ -1003,17 +940,16 @@ func waitForAnswerAndCheckStatus(
 	clientCtx context.Context,
 	transferCli *clihttp.CrossChanelTransfer,
 	transferID string,
-	authOpts func(c *runtime.ClientOperation),
 	expectedStatus models.ChannelTransferTransferStatusResponseStatus,
 	expectedError string,
 	eventuallyTimeout time.Duration,
 ) {
 	Eventually(func() error {
-		response, err := transferCli.Transfer.TransferStatus(&transfer.TransferStatusParams{IDTransfer: transferID, Context: clientCtx}, authOpts)
+		response, err := transferCli.Transfer.TransferStatus(&transfer.TransferStatusParams{IDTransfer: transferID, Context: clientCtx})
 		if err != nil {
 			return err
 		}
-		if expectedStatus != models.ChannelTransferTransferStatusResponseStatusSTATUSERROR && *response.Payload.Status == models.ChannelTransferTransferStatusResponseStatusSTATUSERROR {
+		if expectedStatus != models.ChannelTransferTransferStatusResponseStatusSTATUSERROR && response.Payload.Status == models.ChannelTransferTransferStatusResponseStatusSTATUSERROR {
 			return fmt.Errorf("error occured: %s", response.Payload.Message)
 		}
 		if err = checkResponseStatus(response.Payload, expectedStatus, expectedError); err != nil {

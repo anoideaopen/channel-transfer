@@ -21,8 +21,8 @@ tool (
 
 require (
 	github.com/anoideaopen/channel-transfer v0.1.3
-	github.com/anoideaopen/foundation v0.1.6-0.20251209113743-dc4987ca3879
-	github.com/anoideaopen/foundation/test/integration v0.0.0-20251209113743-dc4987ca3879
+	github.com/anoideaopen/foundation v0.1.6
+	github.com/anoideaopen/foundation/test/integration v0.0.0-20260121153132-d71e8bba3cd7
 	github.com/btcsuite/btcd/btcutil v1.1.6
 	github.com/go-openapi/errors v0.22.0
 	github.com/go-openapi/runtime v0.28.0

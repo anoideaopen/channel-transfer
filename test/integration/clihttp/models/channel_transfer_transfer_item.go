@@ -6,8 +6,6 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"context"
-
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
@@ -20,17 +18,18 @@ type ChannelTransferTransferItem struct {
 	// Amount of token to transfer
 	Amount string `json:"amount,omitempty"`
 
+	// token's hold
+	Hold bool `json:"hold,omitempty"`
+
 	// Token to transfer
 	Token string `json:"token,omitempty"`
+
+	// token's owner user
+	User string `json:"user,omitempty"`
 }
 
 // Validate validates this channel transfer transfer item
 func (m *ChannelTransferTransferItem) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// ContextValidate validates this channel transfer transfer item based on context it is used
-func (m *ChannelTransferTransferItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
