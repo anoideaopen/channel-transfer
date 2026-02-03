@@ -16,8 +16,12 @@ import (
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
 	"github.com/btcsuite/btcd/btcutil/base58"
 	"github.com/google/uuid"
+	cb "github.com/hyperledger/fabric-protos-go-apiv2/common"
+	ab "github.com/hyperledger/fabric-protos-go-apiv2/orderer"
+	pb "github.com/hyperledger/fabric-protos-go-apiv2/peer"
 	"github.com/hyperledger/fabric/integration"
 	"github.com/hyperledger/fabric/integration/nwo"
+	"github.com/hyperledger/fabric/protoutil"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"google.golang.org/grpc"
@@ -231,6 +235,196 @@ func resumeOrderers() {
 	} else {
 		GinkgoWriter.Printf("[Test] All orderers resumed\n")
 	}
+}
+
+// findCommitCCTransferFromOnBlockchain scans the blockchain for commitCCTransferFrom
+// transactions with the given transfer ID. This verifies that commitCCTransferFrom was
+// actually called (NBTx methods bypass TaskExecutor, so we need to check the blockchain).
+//
+// Returns true if a matching transaction was found, false otherwise.
+// All block processing is done in memory without saving to filesystem.
+func findCommitCCTransferFromOnBlockchain(
+	network *nwo.Network,
+	peer *nwo.Peer,
+	channel string,
+	chaincodeID string,
+	transferID string,
+) bool {
+	// Get the current ledger height
+	ledgerHeight := nwo.GetLedgerHeight(network, peer, channel)
+	GinkgoWriter.Printf("[BlockScanner] Ledger height for channel %s: %d\n", channel, ledgerHeight)
+
+	// Determine start block (scan last 50 blocks max)
+	startBlock := uint64(0)
+	if uint64(ledgerHeight) > 50 {
+		startBlock = uint64(ledgerHeight) - 50
+	}
+
+	// Create delivery client to peer
+	pcc := network.PeerClientConn(peer)
+	defer pcc.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), network.EventuallyTimeout)
+	defer cancel()
+
+	dc, err := pb.NewDeliverClient(pcc).Deliver(ctx)
+	Expect(err).NotTo(HaveOccurred())
+	defer dc.CloseSend()
+
+	// Get signer for delivery request
+	signer := network.PeerUserSigner(peer, "User1")
+
+	// Create seek envelope to fetch blocks from startBlock to current height
+	deliverEnvelope, err := protoutil.CreateSignedEnvelope(
+		cb.HeaderType_DELIVER_SEEK_INFO,
+		channel,
+		signer,
+		&ab.SeekInfo{
+			Behavior: ab.SeekInfo_BLOCK_UNTIL_READY,
+			Start: &ab.SeekPosition{
+				Type: &ab.SeekPosition_Specified{
+					Specified: &ab.SeekSpecified{Number: startBlock},
+				},
+			},
+			Stop: &ab.SeekPosition{
+				Type: &ab.SeekPosition_Specified{
+					Specified: &ab.SeekSpecified{Number: uint64(ledgerHeight) - 1},
+				},
+			},
+		},
+		0,
+		0,
+	)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = dc.Send(deliverEnvelope)
+	Expect(err).NotTo(HaveOccurred())
+
+	GinkgoWriter.Printf("[BlockScanner] Scanning blocks %d to %d for commitCCTransferFrom...\n",
+		startBlock, ledgerHeight-1)
+
+	// Receive and process blocks
+	blocksProcessed := 0
+	for {
+		resp, err := dc.Recv()
+		if err != nil {
+			GinkgoWriter.Printf("[BlockScanner] Delivery ended: %v\n", err)
+			break
+		}
+
+		switch t := resp.Type.(type) {
+		case *pb.DeliverResponse_Block:
+			block := t.Block
+			blocksProcessed++
+
+			found := scanBlockForCommitCCTransferFrom(block, chaincodeID, transferID)
+			if found {
+				GinkgoWriter.Printf("[BlockScanner] FOUND commitCCTransferFrom for transfer %s in block %d\n",
+					transferID, block.Header.Number)
+				return true
+			}
+
+		case *pb.DeliverResponse_Status:
+			GinkgoWriter.Printf("[BlockScanner] Delivery status: %v after %d blocks\n", t.Status, blocksProcessed)
+			if t.Status == cb.Status_SUCCESS {
+				// Reached the end of requested blocks
+				break
+			}
+		}
+
+		// Stop after processing all requested blocks
+		if blocksProcessed >= ledgerHeight-int(startBlock) {
+			break
+		}
+	}
+
+	GinkgoWriter.Printf("[BlockScanner] commitCCTransferFrom NOT found for transfer %s (scanned %d blocks)\n",
+		transferID, blocksProcessed)
+	return false
+}
+
+// scanBlockForCommitCCTransferFrom checks if a block contains commitCCTransferFrom
+// transaction for the given chaincode and transfer ID.
+func scanBlockForCommitCCTransferFrom(block *cb.Block, chaincodeID string, transferID string) bool {
+	if block == nil || block.Data == nil {
+		return false
+	}
+
+	for txIndex, envBytes := range block.Data.Data {
+		env, err := protoutil.GetEnvelopeFromBlock(envBytes)
+		if err != nil {
+			continue
+		}
+
+		payload, err := protoutil.UnmarshalPayload(env.GetPayload())
+		if err != nil || payload.GetHeader() == nil {
+			continue
+		}
+
+		chdr, err := protoutil.UnmarshalChannelHeader(payload.GetHeader().GetChannelHeader())
+		if err != nil {
+			continue
+		}
+
+		// Only process endorser transactions
+		if cb.HeaderType(chdr.GetType()) != cb.HeaderType_ENDORSER_TRANSACTION {
+			continue
+		}
+
+		tx, err := protoutil.UnmarshalTransaction(payload.GetData())
+		if err != nil {
+			continue
+		}
+
+		for _, action := range tx.GetActions() {
+			ccActionPayload, err := protoutil.UnmarshalChaincodeActionPayload(action.GetPayload())
+			if err != nil || ccActionPayload.GetChaincodeProposalPayload() == nil {
+				continue
+			}
+
+			// Get the chaincode proposal payload to find the function name
+			ccProposalPayload, err := protoutil.UnmarshalChaincodeProposalPayload(ccActionPayload.GetChaincodeProposalPayload())
+			if err != nil || ccProposalPayload.GetInput() == nil {
+				continue
+			}
+
+			// Unmarshal the chaincode invocation spec
+			cis, err := protoutil.UnmarshalChaincodeInvocationSpec(ccProposalPayload.GetInput())
+			if err != nil || cis.GetChaincodeSpec() == nil || cis.GetChaincodeSpec().GetInput() == nil {
+				continue
+			}
+
+			ccSpec := cis.GetChaincodeSpec()
+			ccInput := ccSpec.GetInput()
+
+			// Check if this is our chaincode
+			if ccSpec.GetChaincodeId() == nil || ccSpec.GetChaincodeId().GetName() != chaincodeID {
+				continue
+			}
+
+			// Get function name (first arg)
+			if len(ccInput.GetArgs()) == 0 {
+				continue
+			}
+			functionName := string(ccInput.GetArgs()[0])
+
+			// Check if this is commitCCTransferFrom with our transfer ID
+			// Note: The function name on the blockchain is "commitCCTransferFrom" (not "NBTxCommitCCTransferFrom")
+			if functionName == "commitCCTransferFrom" {
+				// Second arg should be the transfer ID
+				if len(ccInput.GetArgs()) > 1 {
+					txTransferID := string(ccInput.GetArgs()[1])
+					GinkgoWriter.Printf("[BlockScanner] Found commitCCTransferFrom in block %d, tx %d, transferID: %s\n",
+						block.Header.Number, txIndex, txTransferID)
+					if txTransferID == transferID {
+						return true
+					}
+				}
+			}
+		}
+	}
+
+	return false
 }
 
 var _ = Describe("Double spending fix - Pause Orderers", func() {
@@ -452,15 +646,31 @@ var _ = Describe("Double spending fix - Pause Orderers", func() {
 		Expect(wasCancelCalled).To(BeFalse(),
 			"cancelCCTransferFrom should NOT be called - fix should prevent cancellation when TransferTo exists")
 
-		By("Step 7: Verify balances after resuming orderers")
-		// Resume orderers to allow balance queries
+		By("Step 7: Resume orderers for verification")
+		// Resume orderers to allow blockchain queries and potential transfer completion
 		resumeOrderers()
 		time.Sleep(3 * time.Second) // Give orderers time to resume and reconnect
 
-		// Note: With the fix applied, the transfer should eventually complete
-		// or stay in a non-canceled state. Balances may vary depending on
-		// whether the transfer eventually completes after orderers resume.
+		By("Step 8: Verify commitCCTransferFrom was called on blockchain")
+		// NBTx methods (like commitCCTransferFrom) bypass TaskExecutor, so we can't verify
+		// them through the mock. Instead, we scan the blockchain to verify the transaction
+		// was actually committed.
+		//
+		// Note: commitCCTransferFrom might have failed during the orderer pause, but if the
+		// fix is working correctly, the transfer should eventually complete after orderers
+		// resume, which means commitCCTransferFrom will eventually succeed.
+		Eventually(func() bool {
+			return findCommitCCTransferFromOnBlockchain(
+				ts.Network,
+				ts.Peer,
+				cmn.ChannelFiat, // Source channel where commitCCTransferFrom is called
+				cmn.ChannelFiat, // Chaincode name (same as channel for fiat)
+				transferID,
+			)
+		}, 60*time.Second, 2*time.Second).Should(BeTrue(),
+			"commitCCTransferFrom should be found on blockchain - proves the transfer was committed")
 
-		GinkgoWriter.Printf("Test PASSED: cancelCCTransferFrom was not called, double-spending prevented\n")
+		GinkgoWriter.Printf("Test PASSED: cancelCCTransferFrom was NOT called, commitCCTransferFrom WAS called\n")
+		GinkgoWriter.Printf("Double-spending prevented - transfer completed correctly\n")
 	})
 })

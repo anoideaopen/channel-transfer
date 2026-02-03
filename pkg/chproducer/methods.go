@@ -269,24 +269,6 @@ func isTheStatusExpired(status model.StatusKind) bool {
 	return false
 }
 
-// shouldSkipToBatchNotFoundStatus returns true if we should NOT return
-// ToBatchNotFound status because TransferTo exists on blockchain.
-// This prevents double-spending by ensuring transfers are not canceled
-// when the destination transfer has already been committed.
-//
-// Bug scenario this fixes:
-// 1. TransferTo is committed on destination blockchain
-// 2. Batch response (TransferBlock) expires from Redis storage
-// 3. toBatchResponse() returns ToBatchNotFound status
-// 4. Without this check, isTheStatusExpired(ToBatchNotFound) returns true
-// 5. Transfer gets canceled in source channel only
-// 6. RESULT: Double-spending - tokens exist in both channels
-//
-// Note: This function is only called when hasTransferTo=true.
-func shouldSkipToBatchNotFoundStatus(status model.StatusKind) bool {
-	return status == model.ToBatchNotFound
-}
-
 func (h *Handler) cancelTransfer(ctx context.Context, transferID string, lastErr error) (model.StatusKind, error) {
 	status, err := h.cancelTransferFrom(ctx, transferID)
 	if err != nil {
@@ -334,17 +316,6 @@ func (h *Handler) resolveStatus(ctx context.Context, transfer *fpb.CCTransfer) (
 			return model.CompletedTransferFrom, errors.Errorf("query transfer: %w", err)
 		}
 		return model.InternalErrorTransferStatus, errors.Errorf("query transfer: %w", err)
-	}
-
-	if hasTransferTo {
-		status, err := h.toBatchResponse(ctx, strings.ToLower(transfer.GetTo()), transfer.GetId())
-		if err != nil {
-			if shouldSkipToBatchNotFoundStatus(status) {
-				h.log.Warningf("batch response not found for transfer %s, but TransferTo exists on blockchain - proceeding without cancellation", transfer.GetId())
-			} else {
-				return status, err
-			}
-		}
 	}
 
 	if !transfer.GetIsCommit() {
