@@ -449,6 +449,18 @@ var _ = Describe("Double spending fix - Pause Orderers", func() {
 		resumeOrderers()
 		time.Sleep(2 * time.Second) // Give orderers time to resume
 
+		// IMPORTANT: Stop channel-transfer and TaskExecutor BEFORE shutting down
+		// the network. This ensures Fabric SDK clients don't get stuck in
+		// reconnection loops when orderers become unavailable during ShutdownNetwork().
+		By("stop channel transfer before network shutdown")
+		ts.StopChannelTransfer()
+
+		By("stop TaskExecutor before network shutdown")
+		if taskExecutor != nil {
+			taskExecutor.GracefulStop()
+			taskExecutor = nil // Prevent double-stop in inner AfterEach
+		}
+
 		ts.ShutdownNetwork()
 	})
 
@@ -514,12 +526,6 @@ var _ = Describe("Double spending fix - Pause Orderers", func() {
 		if conn != nil {
 			err := conn.Close()
 			Expect(err).NotTo(HaveOccurred())
-		}
-		By("stop channel transfer")
-		ts.StopChannelTransfer()
-		By("stop TaskExecutor")
-		if taskExecutor != nil {
-			taskExecutor.GracefulStop()
 		}
 	})
 
