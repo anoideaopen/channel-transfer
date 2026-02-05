@@ -6,8 +6,6 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -25,7 +23,7 @@ type ChannelTransferTransferStatusResponse struct {
 	Message string `json:"message,omitempty"`
 
 	// transfer status
-	Status *ChannelTransferTransferStatusResponseStatus `json:"status,omitempty"`
+	Status ChannelTransferTransferStatusResponseStatus `json:"status,omitempty"`
 }
 
 // Validate validates this channel transfer transfer status response
@@ -43,54 +41,16 @@ func (m *ChannelTransferTransferStatusResponse) Validate(formats strfmt.Registry
 }
 
 func (m *ChannelTransferTransferStatusResponse) validateStatus(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
-	if m.Status != nil {
-		if err := m.Status.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("status")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
-				return ce.ValidateName("status")
-			}
-			return err
+	if err := m.Status.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("status")
 		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this channel transfer transfer status response based on the context it is used
-func (m *ChannelTransferTransferStatusResponse) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateStatus(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *ChannelTransferTransferStatusResponse) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Status != nil {
-
-		if swag.IsZero(m.Status) { // not required
-			return nil
-		}
-
-		if err := m.Status.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("status")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
-				return ce.ValidateName("status")
-			}
-			return err
-		}
+		return err
 	}
 
 	return nil

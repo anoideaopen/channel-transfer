@@ -6,7 +6,6 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
@@ -18,15 +17,6 @@ import (
 //
 // swagger:model channel_transferTransferStatusResponseStatus
 type ChannelTransferTransferStatusResponseStatus string
-
-func NewChannelTransferTransferStatusResponseStatus(value ChannelTransferTransferStatusResponseStatus) *ChannelTransferTransferStatusResponseStatus {
-	return &value
-}
-
-// Pointer returns a pointer to a freshly-allocated ChannelTransferTransferStatusResponseStatus.
-func (m ChannelTransferTransferStatusResponseStatus) Pointer() *ChannelTransferTransferStatusResponseStatus {
-	return &m
-}
 
 const (
 
@@ -78,10 +68,5 @@ func (m ChannelTransferTransferStatusResponseStatus) Validate(formats strfmt.Reg
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-// ContextValidate validates this channel transfer transfer status response status based on context it is used
-func (m ChannelTransferTransferStatusResponseStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }

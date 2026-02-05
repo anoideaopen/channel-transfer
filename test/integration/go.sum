@@ -656,10 +656,12 @@ github.com/anoideaopen/common-component v0.0.7 h1:WIJ4if0izKbocImiJnMTAMG78E10pm
 github.com/anoideaopen/common-component v0.0.7/go.mod h1:68IQHutoXgcHHV0TCZQSYkH0pluBUUqmZTv7JZb16sk=
 github.com/anoideaopen/fabric-sdk-go v0.1.0 h1:E4eDgq4sb0OCY4mPcXveVgywgWlzlw+wvFLxxmsvl84=
 github.com/anoideaopen/fabric-sdk-go v0.1.0/go.mod h1:5e4ziwaXJQmkUtQOIkb1oEwwP8KxptEN9o2vuk/pzJ0=
-github.com/anoideaopen/foundation v0.1.6-0.20251209113743-dc4987ca3879 h1:4bSzhksezu4t15ZBbRw+Xvtw2szcXNE8X0LB4HxwRpI=
-github.com/anoideaopen/foundation v0.1.6-0.20251209113743-dc4987ca3879/go.mod h1:EeGoBO9acAElOf+RA837SSNW9/kTA3WvoimqL9fcGRI=
-github.com/anoideaopen/foundation/test/integration v0.0.0-20251209113743-dc4987ca3879 h1:0kUi/ITzXLQCmN2wq+RNA9vOKee2nDk56eEW2DrJJpw=
-github.com/anoideaopen/foundation/test/integration v0.0.0-20251209113743-dc4987ca3879/go.mod h1:qPfKF5ML5+/qA56wBP5iePGM1IwykTNOHQv/pS+Qtck=
+github.com/anoideaopen/foundation v0.1.6 h1:MX9ZTl/B2m7nR+5ul+nWEXHVefz2w88j3oRQ4d4YGUA=
+github.com/anoideaopen/foundation v0.1.6/go.mod h1:rH+nY39sPMQvMlUy4bJi3yMDvCeZUKl4xhsdWMsLfO0=
+github.com/anoideaopen/foundation/test/integration v0.0.0-20260115154453-4bcad48f21a6 h1:VWJZdbuYEhl/uCYIyeO4CseGxqIQprBXbDGF5l+gfRc=
+github.com/anoideaopen/foundation/test/integration v0.0.0-20260115154453-4bcad48f21a6/go.mod h1:kXsZ7BhRZuEnl7U3mFU8HY6eIEzyk+zYjZxggoIZeUo=
+github.com/anoideaopen/foundation/test/integration v0.0.0-20260121153132-d71e8bba3cd7 h1:ImABzD9Bdn7dch6prn2wZaoujh3l874lmh+V9tRguLU=
+github.com/anoideaopen/foundation/test/integration v0.0.0-20260121153132-d71e8bba3cd7/go.mod h1:kXsZ7BhRZuEnl7U3mFU8HY6eIEzyk+zYjZxggoIZeUo=
 github.com/anoideaopen/glog v0.0.4 h1:/Xy6MQS1wxzBbKunj9BpvKx/RaEx82Jrez1QMCEkyrM=
 github.com/anoideaopen/glog v0.0.4/go.mod h1:s2ZMWQxIj3ODi5xwTgYrOgTwbL5/ZAMT5Y6YxWBk4SE=
 github.com/anoideaopen/robot v0.1.1 h1:zSdiD4aORwWXcubYTlZU2uj0rPHLa5Wsgd90PNQVYmU=

@@ -67,7 +67,7 @@ func (r *Request) TransferModify(ctx context.Context, transferRequest model.Tran
 	}()
 
 	request := model.TransferRequest{}
-	if err := r.storage.Load(ctx, &request, data.Key(transferRequest.Transfer)); err != nil {
+	if err = r.storage.Load(ctx, &request, data.Key(transferRequest.Transfer)); err != nil {
 		if !strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
 			return fmt.Errorf("load request : %w", err)
 		}

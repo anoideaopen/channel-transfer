@@ -6,7 +6,6 @@ package transfer
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 
@@ -54,7 +53,7 @@ func NewTransferByCustomerOK() *TransferByCustomerOK {
 }
 
 /*
-TransferByCustomerOK describes a response with status code 200, with default header values.
+TransferByCustomerOK handles this case with default header values.
 
 A successful response.
 */
@@ -62,44 +61,8 @@ type TransferByCustomerOK struct {
 	Payload *models.ChannelTransferTransferStatusResponse
 }
 
-// IsSuccess returns true when this transfer by customer o k response has a 2xx status code
-func (o *TransferByCustomerOK) IsSuccess() bool {
-	return true
-}
-
-// IsRedirect returns true when this transfer by customer o k response has a 3xx status code
-func (o *TransferByCustomerOK) IsRedirect() bool {
-	return false
-}
-
-// IsClientError returns true when this transfer by customer o k response has a 4xx status code
-func (o *TransferByCustomerOK) IsClientError() bool {
-	return false
-}
-
-// IsServerError returns true when this transfer by customer o k response has a 5xx status code
-func (o *TransferByCustomerOK) IsServerError() bool {
-	return false
-}
-
-// IsCode returns true when this transfer by customer o k response a status code equal to that given
-func (o *TransferByCustomerOK) IsCode(code int) bool {
-	return code == 200
-}
-
-// Code gets the status code for the transfer by customer o k response
-func (o *TransferByCustomerOK) Code() int {
-	return 200
-}
-
 func (o *TransferByCustomerOK) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/transfer/customer][%d] transferByCustomerOK %s", 200, payload)
-}
-
-func (o *TransferByCustomerOK) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/transfer/customer][%d] transferByCustomerOK %s", 200, payload)
+	return fmt.Sprintf("[POST /v1/transfer/customer][%d] transferByCustomerOK  %+v", 200, o.Payload)
 }
 
 func (o *TransferByCustomerOK) GetPayload() *models.ChannelTransferTransferStatusResponse {
@@ -124,7 +87,7 @@ func NewTransferByCustomerInternalServerError() *TransferByCustomerInternalServe
 }
 
 /*
-TransferByCustomerInternalServerError describes a response with status code 500, with default header values.
+TransferByCustomerInternalServerError handles this case with default header values.
 
 Internal server error
 */
@@ -132,44 +95,8 @@ type TransferByCustomerInternalServerError struct {
 	Payload *models.ChannelTransferErrorResponse
 }
 
-// IsSuccess returns true when this transfer by customer internal server error response has a 2xx status code
-func (o *TransferByCustomerInternalServerError) IsSuccess() bool {
-	return false
-}
-
-// IsRedirect returns true when this transfer by customer internal server error response has a 3xx status code
-func (o *TransferByCustomerInternalServerError) IsRedirect() bool {
-	return false
-}
-
-// IsClientError returns true when this transfer by customer internal server error response has a 4xx status code
-func (o *TransferByCustomerInternalServerError) IsClientError() bool {
-	return false
-}
-
-// IsServerError returns true when this transfer by customer internal server error response has a 5xx status code
-func (o *TransferByCustomerInternalServerError) IsServerError() bool {
-	return true
-}
-
-// IsCode returns true when this transfer by customer internal server error response a status code equal to that given
-func (o *TransferByCustomerInternalServerError) IsCode(code int) bool {
-	return code == 500
-}
-
-// Code gets the status code for the transfer by customer internal server error response
-func (o *TransferByCustomerInternalServerError) Code() int {
-	return 500
-}
-
 func (o *TransferByCustomerInternalServerError) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/transfer/customer][%d] transferByCustomerInternalServerError %s", 500, payload)
-}
-
-func (o *TransferByCustomerInternalServerError) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/transfer/customer][%d] transferByCustomerInternalServerError %s", 500, payload)
+	return fmt.Sprintf("[POST /v1/transfer/customer][%d] transferByCustomerInternalServerError  %+v", 500, o.Payload)
 }
 
 func (o *TransferByCustomerInternalServerError) GetPayload() *models.ChannelTransferErrorResponse {
@@ -196,7 +123,7 @@ func NewTransferByCustomerDefault(code int) *TransferByCustomerDefault {
 }
 
 /*
-TransferByCustomerDefault describes a response with status code -1, with default header values.
+TransferByCustomerDefault handles this case with default header values.
 
 An unexpected error response.
 */
@@ -206,44 +133,13 @@ type TransferByCustomerDefault struct {
 	Payload *models.GooglerpcStatus
 }
 
-// IsSuccess returns true when this transfer by customer default response has a 2xx status code
-func (o *TransferByCustomerDefault) IsSuccess() bool {
-	return o._statusCode/100 == 2
-}
-
-// IsRedirect returns true when this transfer by customer default response has a 3xx status code
-func (o *TransferByCustomerDefault) IsRedirect() bool {
-	return o._statusCode/100 == 3
-}
-
-// IsClientError returns true when this transfer by customer default response has a 4xx status code
-func (o *TransferByCustomerDefault) IsClientError() bool {
-	return o._statusCode/100 == 4
-}
-
-// IsServerError returns true when this transfer by customer default response has a 5xx status code
-func (o *TransferByCustomerDefault) IsServerError() bool {
-	return o._statusCode/100 == 5
-}
-
-// IsCode returns true when this transfer by customer default response a status code equal to that given
-func (o *TransferByCustomerDefault) IsCode(code int) bool {
-	return o._statusCode == code
-}
-
 // Code gets the status code for the transfer by customer default response
 func (o *TransferByCustomerDefault) Code() int {
 	return o._statusCode
 }
 
 func (o *TransferByCustomerDefault) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/transfer/customer][%d] transferByCustomer default %s", o._statusCode, payload)
-}
-
-func (o *TransferByCustomerDefault) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /v1/transfer/customer][%d] transferByCustomer default %s", o._statusCode, payload)
+	return fmt.Sprintf("[POST /v1/transfer/customer][%d] transferByCustomer default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *TransferByCustomerDefault) GetPayload() *models.GooglerpcStatus {

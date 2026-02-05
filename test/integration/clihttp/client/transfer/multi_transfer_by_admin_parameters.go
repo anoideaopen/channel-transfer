@@ -18,37 +18,40 @@ import (
 	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/models"
 )
 
-// NewMultiTransferByAdminParams creates a new MultiTransferByAdminParams object,
-// with the default timeout for this client.
-//
-// Default values are not hydrated, since defaults are normally applied by the API server side.
-//
-// To enforce default values in parameter, use SetDefaults or WithDefaults.
+// NewMultiTransferByAdminParams creates a new MultiTransferByAdminParams object
+// with the default values initialized.
 func NewMultiTransferByAdminParams() *MultiTransferByAdminParams {
+	var ()
 	return &MultiTransferByAdminParams{
+
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewMultiTransferByAdminParamsWithTimeout creates a new MultiTransferByAdminParams object
-// with the ability to set a timeout on a request.
+// with the default values initialized, and the ability to set a timeout on a request
 func NewMultiTransferByAdminParamsWithTimeout(timeout time.Duration) *MultiTransferByAdminParams {
+	var ()
 	return &MultiTransferByAdminParams{
+
 		timeout: timeout,
 	}
 }
 
 // NewMultiTransferByAdminParamsWithContext creates a new MultiTransferByAdminParams object
-// with the ability to set a context for a request.
+// with the default values initialized, and the ability to set a context for a request
 func NewMultiTransferByAdminParamsWithContext(ctx context.Context) *MultiTransferByAdminParams {
+	var ()
 	return &MultiTransferByAdminParams{
+
 		Context: ctx,
 	}
 }
 
 // NewMultiTransferByAdminParamsWithHTTPClient creates a new MultiTransferByAdminParams object
-// with the ability to set a custom HTTPClient for a request.
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewMultiTransferByAdminParamsWithHTTPClient(client *http.Client) *MultiTransferByAdminParams {
+	var ()
 	return &MultiTransferByAdminParams{
 		HTTPClient: client,
 	}
@@ -56,34 +59,16 @@ func NewMultiTransferByAdminParamsWithHTTPClient(client *http.Client) *MultiTran
 
 /*
 MultiTransferByAdminParams contains all the parameters to send to the API endpoint
-
-	for the multi transfer by admin operation.
-
-	Typically these are written to a http.Request.
+for the multi transfer by admin operation typically these are written to a http.Request
 */
 type MultiTransferByAdminParams struct {
 
-	// Body.
+	/*Body*/
 	Body *models.ChannelTransferMultiTransferBeginAdminRequest
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
-}
-
-// WithDefaults hydrates default values in the multi transfer by admin params (not the query body).
-//
-// All values with no default are reset to their zero value.
-func (o *MultiTransferByAdminParams) WithDefaults() *MultiTransferByAdminParams {
-	o.SetDefaults()
-	return o
-}
-
-// SetDefaults hydrates default values in the multi transfer by admin params (not the query body).
-//
-// All values with no default are reset to their zero value.
-func (o *MultiTransferByAdminParams) SetDefaults() {
-	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the multi transfer by admin params
@@ -137,6 +122,7 @@ func (o *MultiTransferByAdminParams) WriteToRequest(r runtime.ClientRequest, reg
 		return err
 	}
 	var res []error
+
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err
