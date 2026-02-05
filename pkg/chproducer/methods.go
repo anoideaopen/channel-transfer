@@ -317,11 +317,6 @@ func (h *Handler) resolveStatus(ctx context.Context, transfer *fpb.CCTransfer) (
 		}
 		return model.InternalErrorTransferStatus, errors.Errorf("query transfer: %w", err)
 	}
-	if hasTransferTo {
-		if status, err := h.toBatchResponse(ctx, strings.ToLower(transfer.GetTo()), transfer.GetId()); err != nil {
-			return status, err
-		}
-	}
 
 	if !transfer.GetIsCommit() {
 		if hasTransferTo {
