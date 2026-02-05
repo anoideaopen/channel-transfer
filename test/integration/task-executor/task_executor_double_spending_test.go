@@ -1,4 +1,4 @@
-package chaos
+package task_executor
 
 import (
 	"context"
@@ -27,6 +27,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
+)
+
+const (
+	fnEmit     = "emit"
+	emitAmount = "1000"
 )
 
 // Channel-transfer config template with retry settings for orderer pause scenario.
