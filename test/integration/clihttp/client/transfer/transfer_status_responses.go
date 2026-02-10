@@ -6,7 +6,6 @@ package transfer
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 
@@ -54,7 +53,7 @@ func NewTransferStatusOK() *TransferStatusOK {
 }
 
 /*
-TransferStatusOK describes a response with status code 200, with default header values.
+TransferStatusOK handles this case with default header values.
 
 A successful response.
 */
@@ -62,44 +61,8 @@ type TransferStatusOK struct {
 	Payload *models.ChannelTransferTransferStatusResponse
 }
 
-// IsSuccess returns true when this transfer status o k response has a 2xx status code
-func (o *TransferStatusOK) IsSuccess() bool {
-	return true
-}
-
-// IsRedirect returns true when this transfer status o k response has a 3xx status code
-func (o *TransferStatusOK) IsRedirect() bool {
-	return false
-}
-
-// IsClientError returns true when this transfer status o k response has a 4xx status code
-func (o *TransferStatusOK) IsClientError() bool {
-	return false
-}
-
-// IsServerError returns true when this transfer status o k response has a 5xx status code
-func (o *TransferStatusOK) IsServerError() bool {
-	return false
-}
-
-// IsCode returns true when this transfer status o k response a status code equal to that given
-func (o *TransferStatusOK) IsCode(code int) bool {
-	return code == 200
-}
-
-// Code gets the status code for the transfer status o k response
-func (o *TransferStatusOK) Code() int {
-	return 200
-}
-
 func (o *TransferStatusOK) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatusOK %s", 200, payload)
-}
-
-func (o *TransferStatusOK) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatusOK %s", 200, payload)
+	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatusOK  %+v", 200, o.Payload)
 }
 
 func (o *TransferStatusOK) GetPayload() *models.ChannelTransferTransferStatusResponse {
@@ -124,7 +87,7 @@ func NewTransferStatusInternalServerError() *TransferStatusInternalServerError {
 }
 
 /*
-TransferStatusInternalServerError describes a response with status code 500, with default header values.
+TransferStatusInternalServerError handles this case with default header values.
 
 Internal server error
 */
@@ -132,44 +95,8 @@ type TransferStatusInternalServerError struct {
 	Payload *models.ChannelTransferErrorResponse
 }
 
-// IsSuccess returns true when this transfer status internal server error response has a 2xx status code
-func (o *TransferStatusInternalServerError) IsSuccess() bool {
-	return false
-}
-
-// IsRedirect returns true when this transfer status internal server error response has a 3xx status code
-func (o *TransferStatusInternalServerError) IsRedirect() bool {
-	return false
-}
-
-// IsClientError returns true when this transfer status internal server error response has a 4xx status code
-func (o *TransferStatusInternalServerError) IsClientError() bool {
-	return false
-}
-
-// IsServerError returns true when this transfer status internal server error response has a 5xx status code
-func (o *TransferStatusInternalServerError) IsServerError() bool {
-	return true
-}
-
-// IsCode returns true when this transfer status internal server error response a status code equal to that given
-func (o *TransferStatusInternalServerError) IsCode(code int) bool {
-	return code == 500
-}
-
-// Code gets the status code for the transfer status internal server error response
-func (o *TransferStatusInternalServerError) Code() int {
-	return 500
-}
-
 func (o *TransferStatusInternalServerError) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatusInternalServerError %s", 500, payload)
-}
-
-func (o *TransferStatusInternalServerError) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatusInternalServerError %s", 500, payload)
+	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatusInternalServerError  %+v", 500, o.Payload)
 }
 
 func (o *TransferStatusInternalServerError) GetPayload() *models.ChannelTransferErrorResponse {
@@ -196,7 +123,7 @@ func NewTransferStatusDefault(code int) *TransferStatusDefault {
 }
 
 /*
-TransferStatusDefault describes a response with status code -1, with default header values.
+TransferStatusDefault handles this case with default header values.
 
 An unexpected error response.
 */
@@ -206,44 +133,13 @@ type TransferStatusDefault struct {
 	Payload *models.GooglerpcStatus
 }
 
-// IsSuccess returns true when this transfer status default response has a 2xx status code
-func (o *TransferStatusDefault) IsSuccess() bool {
-	return o._statusCode/100 == 2
-}
-
-// IsRedirect returns true when this transfer status default response has a 3xx status code
-func (o *TransferStatusDefault) IsRedirect() bool {
-	return o._statusCode/100 == 3
-}
-
-// IsClientError returns true when this transfer status default response has a 4xx status code
-func (o *TransferStatusDefault) IsClientError() bool {
-	return o._statusCode/100 == 4
-}
-
-// IsServerError returns true when this transfer status default response has a 5xx status code
-func (o *TransferStatusDefault) IsServerError() bool {
-	return o._statusCode/100 == 5
-}
-
-// IsCode returns true when this transfer status default response a status code equal to that given
-func (o *TransferStatusDefault) IsCode(code int) bool {
-	return o._statusCode == code
-}
-
 // Code gets the status code for the transfer status default response
 func (o *TransferStatusDefault) Code() int {
 	return o._statusCode
 }
 
 func (o *TransferStatusDefault) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatus default %s", o._statusCode, payload)
-}
-
-func (o *TransferStatusDefault) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatus default %s", o._statusCode, payload)
+	return fmt.Sprintf("[GET /v1/status/{idTransfer}][%d] transferStatus default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *TransferStatusDefault) GetPayload() *models.GooglerpcStatus {

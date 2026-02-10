@@ -4,7 +4,7 @@ go 1.25.7
 
 require (
 	github.com/anoideaopen/common-component v0.0.7
-	github.com/anoideaopen/foundation v0.1.5
+	github.com/anoideaopen/foundation v0.1.6
 	github.com/anoideaopen/glog v0.0.4
 	github.com/avast/retry-go/v4 v4.7.0
 	github.com/felixge/httpsnoop v1.0.4
@@ -103,7 +103,6 @@ require (
 	golang.org/x/net v0.48.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
-	golang.org/x/tools v0.40.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 

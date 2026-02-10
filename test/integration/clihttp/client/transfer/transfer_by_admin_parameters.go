@@ -18,37 +18,40 @@ import (
 	"github.com/anoideaopen/channel-transfer/test/integration/clihttp/models"
 )
 
-// NewTransferByAdminParams creates a new TransferByAdminParams object,
-// with the default timeout for this client.
-//
-// Default values are not hydrated, since defaults are normally applied by the API server side.
-//
-// To enforce default values in parameter, use SetDefaults or WithDefaults.
+// NewTransferByAdminParams creates a new TransferByAdminParams object
+// with the default values initialized.
 func NewTransferByAdminParams() *TransferByAdminParams {
+	var ()
 	return &TransferByAdminParams{
+
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewTransferByAdminParamsWithTimeout creates a new TransferByAdminParams object
-// with the ability to set a timeout on a request.
+// with the default values initialized, and the ability to set a timeout on a request
 func NewTransferByAdminParamsWithTimeout(timeout time.Duration) *TransferByAdminParams {
+	var ()
 	return &TransferByAdminParams{
+
 		timeout: timeout,
 	}
 }
 
 // NewTransferByAdminParamsWithContext creates a new TransferByAdminParams object
-// with the ability to set a context for a request.
+// with the default values initialized, and the ability to set a context for a request
 func NewTransferByAdminParamsWithContext(ctx context.Context) *TransferByAdminParams {
+	var ()
 	return &TransferByAdminParams{
+
 		Context: ctx,
 	}
 }
 
 // NewTransferByAdminParamsWithHTTPClient creates a new TransferByAdminParams object
-// with the ability to set a custom HTTPClient for a request.
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewTransferByAdminParamsWithHTTPClient(client *http.Client) *TransferByAdminParams {
+	var ()
 	return &TransferByAdminParams{
 		HTTPClient: client,
 	}
@@ -56,34 +59,16 @@ func NewTransferByAdminParamsWithHTTPClient(client *http.Client) *TransferByAdmi
 
 /*
 TransferByAdminParams contains all the parameters to send to the API endpoint
-
-	for the transfer by admin operation.
-
-	Typically these are written to a http.Request.
+for the transfer by admin operation typically these are written to a http.Request
 */
 type TransferByAdminParams struct {
 
-	// Body.
+	/*Body*/
 	Body *models.ChannelTransferTransferBeginAdminRequest
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
-}
-
-// WithDefaults hydrates default values in the transfer by admin params (not the query body).
-//
-// All values with no default are reset to their zero value.
-func (o *TransferByAdminParams) WithDefaults() *TransferByAdminParams {
-	o.SetDefaults()
-	return o
-}
-
-// SetDefaults hydrates default values in the transfer by admin params (not the query body).
-//
-// All values with no default are reset to their zero value.
-func (o *TransferByAdminParams) SetDefaults() {
-	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the transfer by admin params
@@ -137,6 +122,7 @@ func (o *TransferByAdminParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		return err
 	}
 	var res []error
+
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err

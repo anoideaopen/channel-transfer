@@ -33,7 +33,7 @@ func Execute(
 	})
 
 	group.Go(func() error {
-		return runHTTP(ctx, tlsConfig, cfg.AddressHTTP, cfg.AddressGRPC, grpcMetrics != nil)
+		return runHTTP(ctx, apiServer, tlsConfig, cfg.AddressHTTP, grpcMetrics != nil)
 	})
 
 	return nil

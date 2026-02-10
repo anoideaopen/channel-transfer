@@ -19,21 +19,14 @@ import (
 	metrics "github.com/slok/go-http-metrics/metrics/prometheus"
 	middleware2 "github.com/slok/go-http-metrics/middleware"
 	mstd "github.com/slok/go-http-metrics/middleware/std"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 // RunHTTP serve http with optional TLS by hardcoded url path /v1
-func runHTTP(ctx context.Context, tlsConfig *tls.Config, addressHTTP string, addressGRPC string, useMetrics bool) error {
+func runHTTP(ctx context.Context, transferServer *APIServer, tlsConfig *tls.Config, addressHTTP string, useMetrics bool) error {
 	log := glog.FromContext(ctx).With(logger.Labels{Component: logger.ComponentAPI}.Fields()...)
 
-	conn, err := grpc.NewClient(addressGRPC, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return fmt.Errorf("grpc dial: %w", err)
-	}
-
 	mux := runtime.NewServeMux(middleware.NewRESTErrorHandler(log))
-	if err = proto.RegisterAPIHandler(ctx, mux, conn); err != nil {
+	if err := proto.RegisterAPIHandlerServer(ctx, mux, transferServer); err != nil {
 		return fmt.Errorf("register gateway: %w", err)
 	}
 
@@ -73,6 +66,7 @@ func runHTTP(ctx context.Context, tlsConfig *tls.Config, addressHTTP string, add
 		_ = s.Close()
 	}()
 
+	var err error
 	if tlsConfig != nil {
 		err = s.ListenAndServeTLS("", "")
 	} else {

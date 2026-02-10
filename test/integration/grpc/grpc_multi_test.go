@@ -364,4 +364,213 @@ var _ = Describe("Channel multi transfer GRPC tests", func() {
 			).CheckBalance(transferItems[i].GetAmount())
 		}
 	})
+
+	It("multi transfer by admin test (version 2)", func() {
+		By("creating grpc connection")
+		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
+
+		transportCredentials := insecure.NewCredentials()
+		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
+
+		var err error
+
+		conn, err = grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(transportCredentials))
+		Expect(err).NotTo(HaveOccurred())
+		defer func() {
+			err := conn.Close()
+			Expect(err).NotTo(HaveOccurred())
+		}()
+
+		By("creating channel transfer API client")
+		apiClient = cligrpc.NewAPIClient(conn)
+
+		tis := make([]*cligrpc.TransferItem, 0, len(transferItems))
+		for _, item := range transferItems {
+			tis = append(tis, &cligrpc.TransferItem{
+				Token:  item.GetToken(),
+				Amount: item.GetAmount(),
+				User:   user.AddressBase58Check,
+			})
+		}
+
+		By("creating channel transfer request")
+		items, err := json.Marshal(tis)
+		Expect(err).NotTo(HaveOccurred())
+
+		transferID := uuid.NewString()
+		channelTransferArgs := []string{transferID, "CC", "", string(items)}
+
+		requestID := uuid.NewString()
+		nonce := client.NewNonceByTime().Get()
+		signArgs := append(append([]string{"channelMultiTransferByAdmin", requestID, cmn.ChannelIndustrial, cmn.ChannelIndustrial}, channelTransferArgs...), nonce)
+		publicKey, sign, err := ts.Admin().Sign(signArgs...)
+		Expect(err).NotTo(HaveOccurred())
+
+		transfer := &cligrpc.MultiTransferBeginAdminRequest{
+			Generals: &cligrpc.GeneralParams{
+				MethodName: "channelMultiTransferByAdmin",
+				RequestId:  requestID,
+				Chaincode:  cmn.ChannelIndustrial,
+				Channel:    cmn.ChannelIndustrial,
+				Nonce:      nonce,
+				PublicKey:  publicKey,
+				Sign:       base58.Encode(sign),
+			},
+			IdTransfer: channelTransferArgs[0],
+			ChannelTo:  channelTransferArgs[1],
+			Address:    channelTransferArgs[2],
+			Items:      tis,
+		}
+
+		By("sending multi transfer request")
+		r, err := apiClient.MultiTransferByAdmin(clientCtx, transfer)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(r.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_IN_PROCESS))
+
+		By("checking multi transfer status")
+		transferStatusRequest := &cligrpc.TransferStatusRequest{
+			IdTransfer: transferID,
+		}
+
+		excludeStatus := cligrpc.TransferStatusResponse_STATUS_IN_PROCESS.String()
+		value, err := anypb.New(wrapperspb.String(excludeStatus))
+		Expect(err).NotTo(HaveOccurred())
+
+		transferStatusRequest.Options = append(transferStatusRequest.Options, &typepb.Option{
+			Name:  "excludeStatus",
+			Value: value,
+		})
+
+		ctx, cancel := context.WithTimeout(clientCtx, network.EventuallyTimeout*2)
+		defer cancel()
+
+		By("awaiting for channel transfer to respond")
+		statusResponse, err := apiClient.TransferStatus(ctx, transferStatusRequest)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(statusResponse.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_COMPLETED))
+
+		By("checking result balances")
+		for i, expected := range expectedIndustrialBalances {
+			group := strings.Split(expected.GetToken(), "_")[1]
+
+			ts.Query(
+				cmn.ChannelIndustrial,
+				cmn.ChannelIndustrial,
+				"industrialBalanceOf",
+				user.AddressBase58Check,
+			).CheckIndustrialBalance(group, expected.GetAmount())
+
+			ts.Query(
+				cmn.ChannelCC,
+				cmn.ChannelCC,
+				"allowedBalanceOf",
+				user.AddressBase58Check,
+				tis[i].GetToken(),
+			).CheckBalance(tis[i].GetAmount())
+		}
+	})
+
+	It("multi transfer by customer test (version 2)", func() {
+		By("creating grpc connection")
+		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
+
+		transportCredentials := insecure.NewCredentials()
+		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
+
+		var err error
+
+		conn, err = grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(transportCredentials))
+		Expect(err).NotTo(HaveOccurred())
+		defer func() {
+			err := conn.Close()
+			Expect(err).NotTo(HaveOccurred())
+		}()
+
+		By("creating channel transfer API client")
+		apiClient = cligrpc.NewAPIClient(conn)
+
+		tis := make([]*cligrpc.TransferItem, 0, len(transferItems))
+		for _, item := range transferItems {
+			tis = append(tis, &cligrpc.TransferItem{
+				Token:  item.GetToken(),
+				Amount: item.GetAmount(),
+				User:   user.AddressBase58Check,
+			})
+		}
+
+		By("creating channel transfer request")
+		items, err := json.Marshal(tis)
+		Expect(err).NotTo(HaveOccurred())
+
+		transferID := uuid.NewString()
+		channelTransferArgs := []string{transferID, "CC", string(items)}
+
+		requestID := uuid.NewString()
+		nonce := client.NewNonceByTime().Get()
+		signArgs := append(append([]string{"channelMultiTransferByCustomer", requestID, cmn.ChannelIndustrial, cmn.ChannelIndustrial}, channelTransferArgs...), nonce)
+		publicKey, sign, err := user.Sign(signArgs...)
+		Expect(err).NotTo(HaveOccurred())
+
+		transfer := &cligrpc.MultiTransferBeginCustomerRequest{
+			Generals: &cligrpc.GeneralParams{
+				MethodName: "channelMultiTransferByCustomer",
+				RequestId:  requestID,
+				Chaincode:  cmn.ChannelIndustrial,
+				Channel:    cmn.ChannelIndustrial,
+				Nonce:      nonce,
+				PublicKey:  publicKey,
+				Sign:       base58.Encode(sign),
+			},
+			IdTransfer: channelTransferArgs[0],
+			ChannelTo:  channelTransferArgs[1],
+			Items:      tis,
+		}
+
+		By("sending transfer request")
+		r, err := apiClient.MultiTransferByCustomer(clientCtx, transfer)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(r.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_IN_PROCESS))
+
+		By("checking transfer status")
+		transferStatusRequest := &cligrpc.TransferStatusRequest{
+			IdTransfer: transferID,
+		}
+
+		excludeStatus := cligrpc.TransferStatusResponse_STATUS_IN_PROCESS.String()
+		value, err := anypb.New(wrapperspb.String(excludeStatus))
+		Expect(err).NotTo(HaveOccurred())
+
+		transferStatusRequest.Options = append(transferStatusRequest.Options, &typepb.Option{
+			Name:  "excludeStatus",
+			Value: value,
+		})
+
+		ctx, cancel := context.WithTimeout(clientCtx, network.EventuallyTimeout*2)
+		defer cancel()
+
+		By("awaiting for channel transfer to respond")
+		statusResponse, err := apiClient.TransferStatus(ctx, transferStatusRequest)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(statusResponse.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_COMPLETED))
+
+		By("checking result balances")
+		for i, expected := range expectedIndustrialBalances {
+			group := strings.Split(expected.GetToken(), "_")[1]
+
+			ts.Query(
+				cmn.ChannelIndustrial,
+				cmn.ChannelIndustrial,
+				"industrialBalanceOf",
+				user.AddressBase58Check,
+			).CheckIndustrialBalance(group, expected.GetAmount())
+
+			ts.Query(
+				cmn.ChannelCC,
+				cmn.ChannelCC,
+				"allowedBalanceOf",
+				user.AddressBase58Check,
+				tis[i].GetToken(),
+			).CheckBalance(tis[i].GetAmount())
+		}
+	})
 })

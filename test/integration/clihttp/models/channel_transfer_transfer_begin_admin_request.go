@@ -6,7 +6,6 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -60,6 +59,7 @@ func (m *ChannelTransferTransferBeginAdminRequest) Validate(formats strfmt.Regis
 }
 
 func (m *ChannelTransferTransferBeginAdminRequest) validateGenerals(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Generals) { // not required
 		return nil
 	}
@@ -68,8 +68,6 @@ func (m *ChannelTransferTransferBeginAdminRequest) validateGenerals(formats strf
 		if err := m.Generals.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("generals")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
-				return ce.ValidateName("generals")
 			}
 			return err
 		}
@@ -79,6 +77,7 @@ func (m *ChannelTransferTransferBeginAdminRequest) validateGenerals(formats strf
 }
 
 func (m *ChannelTransferTransferBeginAdminRequest) validateOptions(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Options) { // not required
 		return nil
 	}
@@ -92,72 +91,6 @@ func (m *ChannelTransferTransferBeginAdminRequest) validateOptions(formats strfm
 			if err := m.Options[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("options" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("options" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-// ContextValidate validate this channel transfer transfer begin admin request based on the context it is used
-func (m *ChannelTransferTransferBeginAdminRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateGenerals(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateOptions(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *ChannelTransferTransferBeginAdminRequest) contextValidateGenerals(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Generals != nil {
-
-		if swag.IsZero(m.Generals) { // not required
-			return nil
-		}
-
-		if err := m.Generals.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("generals")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
-				return ce.ValidateName("generals")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *ChannelTransferTransferBeginAdminRequest) contextValidateOptions(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Options); i++ {
-
-		if m.Options[i] != nil {
-
-			if swag.IsZero(m.Options[i]) { // not required
-				return nil
-			}
-
-			if err := m.Options[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("options" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("options" + "." + strconv.Itoa(i))
 				}
 				return err
 			}

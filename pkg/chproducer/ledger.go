@@ -244,7 +244,7 @@ func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer
 
 	request, err := h.requestStorage.TransferFetch(ctx, model.ID(transfer.GetId()))
 	if err != nil {
-		h.log.Warningf("failed fetching transfer request from storage: %w", err)
+		h.log.Warningf("failed fetching transfer request from storage: %v", err)
 	}
 	ctx = telemetry.AppendTransferMetadataToContext(ctx, request.Metadata)
 
@@ -290,7 +290,7 @@ func (h *Handler) cancelTransferFrom(ctx context.Context, transferID string) (mo
 
 	if err = h.invoke(ctx, h.channel, h.chaincodeID, model.TxCancelCCTransferFrom, transferID); err != nil {
 		if strings.Contains(err.Error(), errTransferNotFound) {
-			h.log.Error(errors.Errorf("cancel transfer: %w", err))
+			h.log.Error(errors.Errorf("cancel transfer: %v", err))
 			return model.Canceled, nil
 		}
 

@@ -15,7 +15,6 @@ import (
 	"github.com/anoideaopen/foundation/test/integration/cmn"
 	"github.com/anoideaopen/foundation/test/integration/cmn/client"
 	"github.com/btcsuite/btcd/btcutil/base58"
-	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 	"github.com/google/uuid"
@@ -50,7 +49,6 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 
 		clientCtx   context.Context
 		transferCli *clihttp.CrossChanelTransfer
-		auth        runtime.ClientAuthInfoWriter
 
 		transferItems              []model.TransferItem
 		initialBalances            []model.TransferItem
@@ -207,16 +205,11 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 
 		httpAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.HTTPPort]), 10)
 		transport := httptransport.New(httpAddress, "", nil)
+		transport.DefaultAuthentication = httptransport.APIKeyAuth("authorization", "header", networkFound.ChannelTransfer.AccessToken)
 		transferCli = clihttp.New(transport, strfmt.Default)
-
-		auth = httptransport.APIKeyAuth("authorization", "header", networkFound.ChannelTransfer.AccessToken)
 	})
 
 	It("multi transfer by admin test", func() {
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
-
 		By("creating channel transfer request")
 		items, err := json.Marshal(transferItems)
 		Expect(err).NotTo(HaveOccurred())
@@ -247,7 +240,7 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 		}
 
 		By("sending transfer request")
-		res, err := transferCli.Transfer.MultiTransferByAdmin(&transfer.MultiTransferByAdminParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		res, err := transferCli.Transfer.MultiTransferByAdmin(&transfer.MultiTransferByAdminParams{Body: transferRequest, Context: clientCtx})
 		Expect(err).NotTo(HaveOccurred())
 
 		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
@@ -258,7 +251,6 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
 			"",
 			networkFound.EventuallyTimeout*2)
@@ -285,10 +277,6 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 	})
 
 	It("multi transfer by customer test", func() {
-		authOpts := func(c *runtime.ClientOperation) {
-			c.AuthInfo = auth
-		}
-
 		By("creating channel transfer request")
 		items, err := json.Marshal(transferItems)
 		Expect(err).NotTo(HaveOccurred())
@@ -318,7 +306,7 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 		}
 
 		By("sending transfer request")
-		res, err := transferCli.Transfer.MultiTransferByCustomer(&transfer.MultiTransferByCustomerParams{Body: transferRequest, Context: clientCtx}, authOpts)
+		res, err := transferCli.Transfer.MultiTransferByCustomer(&transfer.MultiTransferByCustomerParams{Body: transferRequest, Context: clientCtx})
 		Expect(err).NotTo(HaveOccurred())
 
 		err = checkResponseStatus(res.GetPayload(), models.ChannelTransferTransferStatusResponseStatusSTATUSINPROCESS, "")
@@ -329,7 +317,6 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 			clientCtx,
 			transferCli,
 			transferID,
-			authOpts,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
 			"",
 			networkFound.EventuallyTimeout*2,
