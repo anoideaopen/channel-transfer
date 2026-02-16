@@ -16,10 +16,10 @@ import (
 func UnaryServerInterceptor(l glog.Logger) grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
-		req interface{},
+		req any,
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
-	) (resp interface{}, err error) {
+	) (resp any, err error) {
 		var (
 			logger = l.With()
 			logCtx = glog.NewContext(ctx, logger)
@@ -60,7 +60,7 @@ func UnaryServerInterceptor(l glog.Logger) grpc.UnaryServerInterceptor {
 // that adds Logger to the context.
 func StreamServerInterceptor(l glog.Logger) grpc.StreamServerInterceptor {
 	return func(
-		srv interface{},
+		srv any,
 		stream grpc.ServerStream,
 		info *grpc.StreamServerInfo,
 		handler grpc.StreamHandler,
@@ -138,7 +138,7 @@ func levelLogf(
 	logger glog.Logger,
 	code codes.Code,
 	format string,
-	args ...interface{},
+	args ...any,
 ) {
 	switch code {
 	case codes.OK, codes.Canceled, codes.InvalidArgument, codes.NotFound,

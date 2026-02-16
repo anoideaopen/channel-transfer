@@ -176,7 +176,8 @@ func (p *Parser) extractTxs(blockNum uint64, txs []prsTx) ([]model.Transaction, 
 }
 
 func argsFromTask(task *proto.Task) [][]byte {
-	argsBytes := [][]byte{[]byte(task.GetMethod())}
+	argsBytes := make([][]byte, 0, len(task.GetArgs())+1)
+	argsBytes = append(argsBytes, []byte(task.GetMethod()))
 	for _, arg := range task.GetArgs() {
 		argsBytes = append(argsBytes, []byte(arg))
 	}

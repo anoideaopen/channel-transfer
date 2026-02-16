@@ -48,9 +48,8 @@ func newOtlpTracerExporter(ctx context.Context, tracingCollector *config.Collect
 		headers      = map[string]string{}
 	)
 
-	options := []otlptracehttp.Option{
-		otlptracehttp.WithEndpoint(tracingCollector.Endpoint),
-	}
+	options := make([]otlptracehttp.Option, 0, 3)
+	options = append(options, otlptracehttp.WithEndpoint(tracingCollector.Endpoint))
 
 	if tracingCollector.TLSCA != "" {
 		// If the header is not empty but there are no certificates, consider it an error

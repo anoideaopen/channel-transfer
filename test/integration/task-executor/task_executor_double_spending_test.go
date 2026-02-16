@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os/exec"
+	"slices"
 	"strconv"
 	"sync"
 	"time"
@@ -178,12 +179,7 @@ func (s *OrdererPausingTaskExecutorMock) SubmitTransaction(
 func (s *OrdererPausingTaskExecutorMock) WasMethodCalled(method string) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	for _, m := range s.executedMethods {
-		if m == method {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(s.executedMethods, method)
 }
 
 func (s *OrdererPausingTaskExecutorMock) GetExecutedMethods() []string {

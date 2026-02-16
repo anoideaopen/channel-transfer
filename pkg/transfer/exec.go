@@ -22,7 +22,7 @@ func Execute(
 ) error {
 	tlsConfig := cfg.TLSConfig()
 
-	channelNames := make([]string, 0)
+	channelNames := make([]string, 0, len(channels))
 	for _, channel := range channels {
 		channelNames = append(channelNames, channel.Name)
 	}

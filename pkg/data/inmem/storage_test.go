@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"slices"
 	"testing"
 
 	"github.com/anoideaopen/channel-transfer/pkg/data"
@@ -121,11 +122,8 @@ func TestInMemStorage(t *testing.T) {
 			t.Fatalf("failed to load object: %v", err)
 		}
 
-		for _, object := range objects {
-			if obj.Equal(object) {
-				cnt++
-				break
-			}
+		if slices.ContainsFunc(objects, obj.Equal) {
+			cnt++
 		}
 	}
 	if cnt != len(objects) {
