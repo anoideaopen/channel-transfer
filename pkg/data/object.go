@@ -18,7 +18,7 @@ type Type string
 // InstanceOf is a simple implementation of getting a unique type for the
 // stored data. It works using the reflect package and returns the data type
 // used as namespace.
-func InstanceOf(v interface{}) Type {
+func InstanceOf(v any) Type {
 	return Type(strings.ReplaceAll(reflect.TypeOf(v).String(), "*", "_"))
 }
 

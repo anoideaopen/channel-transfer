@@ -9,7 +9,7 @@ func ToType[T any](in Object, err error) (*T, error) {
 		return nil, err
 	}
 
-	var iface interface{} = in
+	var iface any = in
 
 	if obj, ok := iface.(*T); ok {
 		return obj, nil

@@ -181,7 +181,7 @@ var _ = Describe("Channel transfer with task executor transaction tests", func()
 			tasks          = make([]*pbfound.Task, 0, transfersCount)
 		)
 
-		for i := 0; i < transfersCount; i++ {
+		for range transfersCount {
 			By("add user to acl")
 			user, err = mocks.NewUserFoundation(pbfound.KeyType_ed25519)
 			Expect(err).NotTo(HaveOccurred())

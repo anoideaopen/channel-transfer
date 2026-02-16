@@ -1,3 +1,4 @@
+//nolint:spancheck
 package hlf
 
 import (
@@ -26,10 +27,7 @@ func (ex *gRPCExecutor) invoke(ctx context.Context, req channel.Request, _ []cha
 	defer func() {
 		telemetry.FinishSpan(span, err)
 	}()
-	var argsListForTracing string
-	for _, arg := range req.Args {
-		argsListForTracing += string(arg) + ", "
-	}
+
 	span.SetAttributes(
 		attribute.String("invoke.method", req.Fcn),
 	)

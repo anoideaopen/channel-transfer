@@ -68,8 +68,8 @@ func createChannelProvider(
 	orgName string,
 	fsdk *fabsdk.FabricSDK,
 ) hlfcontext.ChannelProvider {
-	contextOpts := []fabsdk.ContextOption{fabsdk.WithOrg(orgName)}
-	contextOpts = append(contextOpts, fabsdk.WithUser(userName))
+	contextOpts := make([]fabsdk.ContextOption, 0, 2)
+	contextOpts = append(contextOpts, fabsdk.WithOrg(orgName), fabsdk.WithUser(userName))
 
 	return fsdk.ChannelContext(channelName, contextOpts...)
 }

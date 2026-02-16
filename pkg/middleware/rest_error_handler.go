@@ -49,11 +49,11 @@ func NewRESTErrorHandler(logger glog.Logger) runtime.ServeMuxOption {
 			if err != nil {
 				logger.Errorf("response of api error marshal : %+v", err)
 				// form the json object spb.Status manually
-				buf = []byte(fmt.Sprintf(
+				buf = fmt.Appendf(nil,
 					`{"code":%d,"message":"%s"}`,
 					http.StatusInternalServerError,
 					err.Error(),
-				))
+				)
 			}
 
 			if _, err = writer.Write(buf); err != nil {
@@ -69,15 +69,15 @@ var empty glog.Logger = &emptyLogger{}
 
 type emptyLogger struct{}
 
-func (el *emptyLogger) Set(...glog.Field)               {}
-func (el *emptyLogger) With(...glog.Field) glog.Logger  { return el }
-func (el *emptyLogger) Trace(...interface{})            {}
-func (el *emptyLogger) Tracef(string, ...interface{})   {}
-func (el *emptyLogger) Debug(...interface{})            {}
-func (el *emptyLogger) Debugf(string, ...interface{})   {}
-func (el *emptyLogger) Info(...interface{})             {}
-func (el *emptyLogger) Infof(string, ...interface{})    {}
-func (el *emptyLogger) Warning(...interface{})          {}
-func (el *emptyLogger) Warningf(string, ...interface{}) {}
-func (el *emptyLogger) Error(...interface{})            {}
-func (el *emptyLogger) Errorf(string, ...interface{})   {}
+func (el *emptyLogger) Set(...glog.Field)              {}
+func (el *emptyLogger) With(...glog.Field) glog.Logger { return el }
+func (el *emptyLogger) Trace(...any)                   {}
+func (el *emptyLogger) Tracef(string, ...any)          {}
+func (el *emptyLogger) Debug(...any)                   {}
+func (el *emptyLogger) Debugf(string, ...any)          {}
+func (el *emptyLogger) Info(...any)                    {}
+func (el *emptyLogger) Infof(string, ...any)           {}
+func (el *emptyLogger) Warning(...any)                 {}
+func (el *emptyLogger) Warningf(string, ...any)        {}
+func (el *emptyLogger) Error(...any)                   {}
+func (el *emptyLogger) Errorf(string, ...any)          {}

@@ -22,7 +22,7 @@ const (
 
 type sugaredLogger struct {
 	sugar  *zap.SugaredLogger
-	fields map[string]interface{}
+	fields map[string]any
 	cfg    zap.Config
 }
 
@@ -52,49 +52,49 @@ func (sl *sugaredLogger) With(fields ...glog.Field) glog.Logger {
 	}
 }
 
-func (sl *sugaredLogger) Trace(...interface{}) {
+func (sl *sugaredLogger) Trace(...any) {
 }
 
-func (sl *sugaredLogger) Tracef(string, ...interface{}) {
+func (sl *sugaredLogger) Tracef(string, ...any) {
 }
 
-func (sl *sugaredLogger) Warning(args ...interface{}) {
+func (sl *sugaredLogger) Warning(args ...any) {
 	sl.sugar.Warn(args...)
 }
 
-func (sl *sugaredLogger) Warningf(format string, args ...interface{}) {
+func (sl *sugaredLogger) Warningf(format string, args ...any) {
 	sl.sugar.Warnf(format, args...)
 }
 
-func (sl *sugaredLogger) Debug(args ...interface{}) {
+func (sl *sugaredLogger) Debug(args ...any) {
 	sl.sugar.Debug(args...)
 }
 
-func (sl *sugaredLogger) Debugf(format string, args ...interface{}) {
+func (sl *sugaredLogger) Debugf(format string, args ...any) {
 	sl.sugar.Debugf(format, args...)
 }
 
-func (sl *sugaredLogger) Error(args ...interface{}) {
+func (sl *sugaredLogger) Error(args ...any) {
 	sl.sugar.Error(args...)
 }
 
-func (sl *sugaredLogger) Errorf(format string, args ...interface{}) {
+func (sl *sugaredLogger) Errorf(format string, args ...any) {
 	sl.sugar.Errorf(format, args...)
 }
 
-func (sl *sugaredLogger) Info(args ...interface{}) {
+func (sl *sugaredLogger) Info(args ...any) {
 	sl.sugar.Info(args...)
 }
 
-func (sl *sugaredLogger) Infof(format string, args ...interface{}) {
+func (sl *sugaredLogger) Infof(format string, args ...any) {
 	sl.sugar.Infof(format, args...)
 }
 
-func (sl *sugaredLogger) Panic(args ...interface{}) {
+func (sl *sugaredLogger) Panic(args ...any) {
 	sl.sugar.Panic(args...)
 }
 
-func (sl *sugaredLogger) Panicf(format string, args ...interface{}) {
+func (sl *sugaredLogger) Panicf(format string, args ...any) {
 	sl.sugar.Panicf(format, args...)
 }
 
@@ -146,7 +146,7 @@ func newSugarLogger(loggerType string, level string) (*sugaredLogger, error) {
 
 	return &sugaredLogger{
 		sugar:  zLogger.Sugar(),
-		fields: make(map[string]interface{}),
+		fields: make(map[string]any),
 		cfg:    cfg,
 	}, nil
 }
@@ -179,14 +179,14 @@ func (sl *sugaredLogger) Flush() error {
 	return nil
 }
 
-func mapToArgs(fields map[string]interface{}) []interface{} {
+func mapToArgs(fields map[string]any) []any {
 	sortKeys := make([]string, 0, len(fields))
 	for k := range fields {
 		sortKeys = append(sortKeys, k)
 	}
 	sort.Strings(sortKeys)
 
-	args := make([]interface{}, 0, len(sortKeys)*2)
+	args := make([]any, 0, len(sortKeys)*2)
 	for _, k := range sortKeys {
 		args = append(args, k)
 		args = append(args, fields[k])
