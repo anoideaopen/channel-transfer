@@ -24,11 +24,11 @@ require (
 	github.com/anoideaopen/foundation v0.1.7-0.20260219060046-2c1935dce5a4
 	github.com/anoideaopen/foundation/test/integration v0.0.0-20260219060046-2c1935dce5a4
 	github.com/btcsuite/btcd/btcutil v1.1.6
-	github.com/go-openapi/errors v0.22.0
-	github.com/go-openapi/runtime v0.28.0
-	github.com/go-openapi/strfmt v0.23.0
+	github.com/go-openapi/errors v0.22.4
+	github.com/go-openapi/runtime v0.29.2
+	github.com/go-openapi/strfmt v0.25.0
 	github.com/go-openapi/swag v0.23.0
-	github.com/go-openapi/validate v0.24.0
+	github.com/go-openapi/validate v0.25.1
 	github.com/google/uuid v1.6.0
 	github.com/hyperledger/fabric v1.4.0-rc1.0.20251208210416-356f2b40280f
 	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.7
@@ -59,7 +59,6 @@ require (
 	github.com/anoideaopen/common-component v0.0.7 // indirect
 	github.com/anoideaopen/glog v0.0.4 // indirect
 	github.com/anoideaopen/robot v0.1.2-0.20260219085743-43a1e27a7eaa // indirect
-	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/avast/retry-go/v4 v4.7.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bits-and-blooms/bitset v1.24.4 // indirect
@@ -91,12 +90,21 @@ require (
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-openapi/analysis v0.23.0 // indirect
+	github.com/go-openapi/analysis v0.24.1 // indirect
 	github.com/go-openapi/inflect v0.21.0 // indirect
-	github.com/go-openapi/jsonpointer v0.21.0 // indirect
-	github.com/go-openapi/jsonreference v0.21.0 // indirect
-	github.com/go-openapi/loads v0.22.0 // indirect
-	github.com/go-openapi/spec v0.21.0 // indirect
+	github.com/go-openapi/jsonpointer v0.22.1 // indirect
+	github.com/go-openapi/jsonreference v0.21.3 // indirect
+	github.com/go-openapi/loads v0.23.2 // indirect
+	github.com/go-openapi/spec v0.22.1 // indirect
+	github.com/go-openapi/swag/conv v0.25.1 // indirect
+	github.com/go-openapi/swag/fileutils v0.25.1 // indirect
+	github.com/go-openapi/swag/jsonname v0.25.1 // indirect
+	github.com/go-openapi/swag/jsonutils v0.25.1 // indirect
+	github.com/go-openapi/swag/loading v0.25.1 // indirect
+	github.com/go-openapi/swag/mangling v0.25.1 // indirect
+	github.com/go-openapi/swag/stringutils v0.25.1 // indirect
+	github.com/go-openapi/swag/typeutils v0.25.1 // indirect
+	github.com/go-openapi/swag/yamlutils v0.25.1 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.30.1 // indirect
@@ -146,7 +154,6 @@ require (
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
-	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
@@ -184,7 +191,7 @@ require (
 	go.etcd.io/etcd/pkg/v3 v3.5.16 // indirect
 	go.etcd.io/etcd/raft/v3 v3.5.16 // indirect
 	go.etcd.io/etcd/server/v3 v3.5.16 // indirect
-	go.mongodb.org/mongo-driver v1.16.1 // indirect
+	go.mongodb.org/mongo-driver v1.17.6 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.65.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.60.0 // indirect
