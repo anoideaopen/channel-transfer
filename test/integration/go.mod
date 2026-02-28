@@ -24,9 +24,9 @@ require (
 	github.com/anoideaopen/foundation v0.1.7-0.20260219060046-2c1935dce5a4
 	github.com/anoideaopen/foundation/test/integration v0.0.0-20260219060046-2c1935dce5a4
 	github.com/btcsuite/btcd/btcutil v1.1.6
-	github.com/go-openapi/errors v0.22.0
+	github.com/go-openapi/errors v0.22.4
 	github.com/go-openapi/runtime v0.28.0
-	github.com/go-openapi/strfmt v0.23.0
+	github.com/go-openapi/strfmt v0.25.0
 	github.com/go-openapi/swag v0.23.0
 	github.com/go-openapi/validate v0.24.0
 	github.com/google/uuid v1.6.0
@@ -59,7 +59,6 @@ require (
 	github.com/anoideaopen/common-component v0.0.7 // indirect
 	github.com/anoideaopen/glog v0.0.4 // indirect
 	github.com/anoideaopen/robot v0.1.2-0.20260219085743-43a1e27a7eaa // indirect
-	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/avast/retry-go/v4 v4.7.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bits-and-blooms/bitset v1.24.4 // indirect
@@ -184,7 +183,7 @@ require (
 	go.etcd.io/etcd/pkg/v3 v3.5.16 // indirect
 	go.etcd.io/etcd/raft/v3 v3.5.16 // indirect
 	go.etcd.io/etcd/server/v3 v3.5.16 // indirect
-	go.mongodb.org/mongo-driver v1.16.1 // indirect
+	go.mongodb.org/mongo-driver v1.17.6 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.65.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.60.0 // indirect
