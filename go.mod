@@ -1,6 +1,6 @@
 module github.com/anoideaopen/channel-transfer
 
-go 1.26.0
+go 1.26.1
 
 require (
 	github.com/anoideaopen/common-component v0.0.7
