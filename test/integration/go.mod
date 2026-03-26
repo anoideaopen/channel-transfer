@@ -24,7 +24,7 @@ require (
 	github.com/anoideaopen/foundation v0.1.7
 	github.com/anoideaopen/foundation/test/integration v0.0.0-20260319212605-81b19afbcdc7
 	github.com/btcsuite/btcd/btcutil v1.1.6
-	github.com/go-openapi/errors v0.22.4
+	github.com/go-openapi/errors v0.22.7
 	github.com/go-openapi/runtime v0.29.2
 	github.com/go-openapi/strfmt v0.25.0
 	github.com/go-openapi/swag v0.25.5
