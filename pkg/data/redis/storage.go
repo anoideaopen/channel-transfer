@@ -124,14 +124,14 @@ func (s *Storage) Search(
 			return nil, err
 		}
 
-		if err := clone.UnmarshalBinary(bin); err != nil {
+		if err = clone.UnmarshalBinary(bin); err != nil {
 			return nil, err
 		}
 
 		out = append(out, clone)
 	}
 
-	if err := iter.Err(); err != nil {
+	if err = iter.Err(); err != nil {
 		return nil, err
 	}
 
