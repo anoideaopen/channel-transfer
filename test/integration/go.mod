@@ -25,10 +25,10 @@ require (
 	github.com/anoideaopen/foundation/test/integration v0.0.0-20260528150526-46e7ed6909a0
 	github.com/btcsuite/btcd/btcutil v1.2.0
 	github.com/go-openapi/errors v0.22.7
-	github.com/go-openapi/runtime v0.32.2
-	github.com/go-openapi/strfmt v0.26.2
+	github.com/go-openapi/runtime v0.32.3
+	github.com/go-openapi/strfmt v0.26.3
 	github.com/go-openapi/swag v0.26.0
-	github.com/go-openapi/validate v0.25.2
+	github.com/go-openapi/validate v0.25.3
 	github.com/google/uuid v1.6.0
 	github.com/hyperledger/fabric v1.4.0-rc1.0.20260527094612-dd0d56d5b081
 	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.7
@@ -91,14 +91,14 @@ require (
 	github.com/go-logfmt/logfmt v0.6.1 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-openapi/analysis v0.25.1 // indirect
+	github.com/go-openapi/analysis v0.25.2 // indirect
 	github.com/go-openapi/codescan v0.34.0 // indirect
 	github.com/go-openapi/inflect v0.21.5 // indirect
 	github.com/go-openapi/jsonpointer v0.23.1 // indirect
-	github.com/go-openapi/jsonreference v0.21.5 // indirect
+	github.com/go-openapi/jsonreference v0.21.6 // indirect
 	github.com/go-openapi/loads v0.23.3 // indirect
 	github.com/go-openapi/runtime/server-middleware v0.32.2 // indirect
-	github.com/go-openapi/spec v0.22.4 // indirect
+	github.com/go-openapi/spec v0.22.5 // indirect
 	github.com/go-openapi/swag/cmdutils v0.26.0 // indirect
 	github.com/go-openapi/swag/conv v0.26.0 // indirect
 	github.com/go-openapi/swag/fileutils v0.26.0 // indirect
