@@ -28,7 +28,7 @@ require (
 	github.com/go-openapi/runtime v0.32.3
 	github.com/go-openapi/strfmt v0.26.3
 	github.com/go-openapi/swag v0.26.0
-	github.com/go-openapi/validate v0.25.3
+	github.com/go-openapi/validate v0.26.0
 	github.com/google/uuid v1.6.0
 	github.com/hyperledger/fabric v1.4.0-rc1.0.20260527094612-dd0d56d5b081
 	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.7
