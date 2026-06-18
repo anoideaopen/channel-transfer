@@ -4,10 +4,10 @@ go 1.26.4
 
 require (
 	github.com/anoideaopen/common-component v0.0.7
-	github.com/anoideaopen/foundation v0.1.7
+	github.com/anoideaopen/foundation v0.1.8
 	github.com/anoideaopen/glog v0.0.4
 	github.com/avast/retry-go/v4 v4.7.0
-	github.com/felixge/httpsnoop v1.0.4
+	github.com/felixge/httpsnoop v1.1.0
 	github.com/flowchartsman/swaggerui v0.0.0-20221017034628-909ed4f3701b
 	github.com/go-errors/errors v1.5.1
 	github.com/go-playground/validator/v10 v10.30.3
@@ -17,8 +17,8 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0
 	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.7
 	github.com/hyperledger/fabric-sdk-go v1.0.0
-	github.com/redis/go-redis/extra/redisotel/v9 v9.20.0
-	github.com/redis/go-redis/v9 v9.20.0
+	github.com/redis/go-redis/extra/redisotel/v9 v9.20.1
+	github.com/redis/go-redis/v9 v9.20.1
 	github.com/slok/go-http-metrics v0.13.0
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
@@ -29,9 +29,9 @@ require (
 	go.opentelemetry.io/otel/sdk v1.44.0
 	go.opentelemetry.io/otel/sdk/metric v1.44.0
 	go.uber.org/zap v1.28.0
-	golang.org/x/sync v0.20.0
-	google.golang.org/genproto/googleapis/api v0.0.0-20260526163538-3dc84a4a5aaa
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa
+	golang.org/x/sync v0.21.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20260615183401-62b3387ff324
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260615183401-62b3387ff324
 	google.golang.org/grpc v1.81.1
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v2 v2.4.0
@@ -77,7 +77,7 @@ require (
 	github.com/prometheus/common v0.67.5 // indirect
 	github.com/prometheus/otlptranslator v1.0.0 // indirect
 	github.com/prometheus/procfs v0.20.1 // indirect
-	github.com/redis/go-redis/extra/rediscmd/v9 v9.20.0 // indirect
+	github.com/redis/go-redis/extra/rediscmd/v9 v9.20.1 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
@@ -99,10 +99,10 @@ require (
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	go.yaml.in/yaml/v4 v4.0.0-rc.4 // indirect
-	golang.org/x/crypto v0.52.0 // indirect
-	golang.org/x/net v0.55.0 // indirect
-	golang.org/x/sys v0.45.0 // indirect
-	golang.org/x/text v0.37.0 // indirect
+	golang.org/x/crypto v0.53.0 // indirect
+	golang.org/x/net v0.56.0 // indirect
+	golang.org/x/sys v0.46.0 // indirect
+	golang.org/x/text v0.38.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
