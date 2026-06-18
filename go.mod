@@ -7,7 +7,7 @@ require (
 	github.com/anoideaopen/foundation v0.1.7
 	github.com/anoideaopen/glog v0.0.4
 	github.com/avast/retry-go/v4 v4.7.0
-	github.com/felixge/httpsnoop v1.0.4
+	github.com/felixge/httpsnoop v1.1.0
 	github.com/flowchartsman/swaggerui v0.0.0-20221017034628-909ed4f3701b
 	github.com/go-errors/errors v1.5.1
 	github.com/go-playground/validator/v10 v10.30.3
