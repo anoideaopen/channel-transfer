@@ -18,7 +18,7 @@ require (
 	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.7
 	github.com/hyperledger/fabric-sdk-go v1.0.0
 	github.com/redis/go-redis/extra/redisotel/v9 v9.20.0
-	github.com/redis/go-redis/v9 v9.20.0
+	github.com/redis/go-redis/v9 v9.20.1
 	github.com/slok/go-http-metrics v0.13.0
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
