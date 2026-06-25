@@ -25,7 +25,7 @@ require (
 	github.com/anoideaopen/foundation/test/integration v0.0.0-20260618101433-4e4eeb257ffc
 	github.com/btcsuite/btcd/btcutil v1.2.0
 	github.com/go-openapi/errors v0.22.8
-	github.com/go-openapi/runtime v0.32.3
+	github.com/go-openapi/runtime v0.32.4
 	github.com/go-openapi/strfmt v0.26.3
 	github.com/go-openapi/swag v0.26.1
 	github.com/go-openapi/validate v0.26.0
@@ -96,9 +96,9 @@ require (
 	github.com/go-openapi/inflect v0.21.6 // indirect
 	github.com/go-openapi/jsonpointer v0.23.1 // indirect
 	github.com/go-openapi/jsonreference v0.21.6 // indirect
-	github.com/go-openapi/loads v0.23.4 // indirect
+	github.com/go-openapi/loads v0.24.0 // indirect
 	github.com/go-openapi/runtime/server-middleware v0.32.3 // indirect
-	github.com/go-openapi/spec v0.22.5 // indirect
+	github.com/go-openapi/spec v0.22.6 // indirect
 	github.com/go-openapi/swag/cmdutils v0.26.1 // indirect
 	github.com/go-openapi/swag/conv v0.26.1 // indirect
 	github.com/go-openapi/swag/fileutils v0.26.1 // indirect
