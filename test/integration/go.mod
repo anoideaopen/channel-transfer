@@ -25,7 +25,7 @@ require (
 	github.com/anoideaopen/foundation/test/integration v0.0.0-20260713173707-5190533dcc57
 	github.com/btcsuite/btcd/btcutil v1.2.0
 	github.com/go-openapi/errors v0.22.8
-	github.com/go-openapi/runtime v0.32.4
+	github.com/go-openapi/runtime v0.32.6
 	github.com/go-openapi/strfmt v0.27.0
 	github.com/go-openapi/swag v0.27.0
 	github.com/go-openapi/validate v0.26.1
@@ -91,7 +91,7 @@ require (
 	github.com/go-kit/kit v0.13.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.6.1 // indirect
-	github.com/go-logr/logr v1.4.3 // indirect
+	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/analysis v0.25.5 // indirect
 	github.com/go-openapi/codescan v0.35.0 // indirect
