@@ -25,7 +25,7 @@ require (
 	github.com/anoideaopen/foundation/test/integration v0.0.0-20260713173707-5190533dcc57
 	github.com/btcsuite/btcd/btcutil v1.2.0
 	github.com/go-openapi/errors v0.22.8
-	github.com/go-openapi/runtime v0.32.6
+	github.com/go-openapi/runtime v0.33.0
 	github.com/go-openapi/strfmt v0.27.0
 	github.com/go-openapi/swag v0.28.0
 	github.com/go-openapi/validate v0.26.1
