@@ -14,7 +14,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.41.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.43.0"
 )
 
 // InitTracing creates and registers globally a new TracerProvider.
@@ -70,7 +70,8 @@ func newOtlpTracerExporter(ctx context.Context, tracingCollector *config.Collect
 		}
 	}
 
-	options = append(options,
+	options = append(
+		options,
 		safetyOption,
 		otlptracehttp.WithHeaders(headers),
 	)

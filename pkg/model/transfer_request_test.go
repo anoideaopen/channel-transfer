@@ -6,7 +6,7 @@ import (
 
 	"github.com/anoideaopen/channel-transfer/pkg/data"
 	"github.com/anoideaopen/channel-transfer/pkg/data/inmem"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTransferRequest(t *testing.T) {
@@ -41,22 +41,22 @@ func TestTransferRequest(t *testing.T) {
 	)
 
 	err = db.Save(context.TODO(), tr, "01")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = db.Save(context.TODO(), tr, "02")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = db.Save(context.TODO(), tr, "33")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	collection, err := data.ToSlice[TransferRequest](
 		db.Search(context.TODO(), &TransferRequest{}, "0"),
 	)
-	assert.NoError(t, err)
-	assert.Len(t, collection, 2)
+	require.NoError(t, err)
+	require.Len(t, collection, 2)
 
 	var obj TransferRequest
 	err = db.Load(context.TODO(), &obj, "33")
-	assert.NoError(t, err)
-	assert.Equal(t, obj, *tr)
+	require.NoError(t, err)
+	require.Equal(t, obj, *tr)
 }

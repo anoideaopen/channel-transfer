@@ -52,7 +52,7 @@ func StartTaskExecutor() *grpc.Server {
 	proto.RegisterTaskExecutorAdapterServer(gRPCServer, &taskExecutorAPI{})
 
 	go func() {
-		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", taskExecutorPort()))
+		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", taskExecutorPort())) //nolint:noctx
 		if err != nil {
 			panic(err)
 		}

@@ -49,7 +49,8 @@ func NewRESTErrorHandler(logger glog.Logger) runtime.ServeMuxOption {
 			if err != nil {
 				logger.Errorf("response of api error marshal : %+v", err)
 				// form the json object spb.Status manually
-				buf = fmt.Appendf(nil,
+				buf = fmt.Appendf(
+					nil,
 					`{"code":%d,"message":"%s"}`,
 					http.StatusInternalServerError,
 					err.Error(),

@@ -16,7 +16,7 @@ const (
 func TestInit(t *testing.T) {
 	err := InitTracing(t.Context(), nil, serviceName)
 	require.Error(t, err)
-	require.Equal(t, err.Error(), "tracing collector configuration is nil")
+	require.Equal(t, "tracing collector configuration is nil", err.Error())
 
 	require.NoError(t, InitTracing(t.Context(), &config.Collector{}, serviceName))
 
@@ -24,7 +24,8 @@ func TestInit(t *testing.T) {
 		t.Context(),
 		&config.Collector{
 			TLSCA: tlsCACertWrong,
-		}, serviceName)
+		}, serviceName,
+	)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "nitialize trace exporter: failed to get TLS config")
 
@@ -33,7 +34,8 @@ func TestInit(t *testing.T) {
 		&config.Collector{
 			AuthorizationHeaderKey:   "Authorization",
 			AuthorizationHeaderValue: "Bearer token",
-		}, serviceName)
+		}, serviceName,
+	)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "TLSCA must be set if authorization headers are provided")
 
@@ -43,6 +45,7 @@ func TestInit(t *testing.T) {
 			AuthorizationHeaderKey:   "Authorization",
 			AuthorizationHeaderValue: "Bearer token",
 			TLSCA:                    tlsCACertValid,
-		}, serviceName)
+		}, serviceName,
+	)
 	require.NoError(t, err)
 }

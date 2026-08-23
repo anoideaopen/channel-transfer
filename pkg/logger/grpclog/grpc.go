@@ -50,7 +50,8 @@ func UnaryServerInterceptor(l glog.Logger) grpc.UnaryServerInterceptor {
 		levelLogf(
 			logger,
 			status.Code(err),
-			"finished unary call with code "+status.Code(err).String())
+			"finished unary call with code "+status.Code(err).String(),
+		)
 
 		return resp, err
 	}
@@ -95,7 +96,8 @@ func StreamServerInterceptor(l glog.Logger) grpc.StreamServerInterceptor {
 		levelLogf(
 			logger,
 			status.Code(err),
-			"finished streaming call with code "+status.Code(err).String())
+			"finished streaming call with code "+status.Code(err).String(),
+		)
 
 		return err
 	}

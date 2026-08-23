@@ -28,7 +28,8 @@ func NewRequest(storage *redis.Storage) *Request {
 
 func (r *Request) TransferKeep(ctx context.Context, transferRequest model.TransferRequest) error {
 	var err error
-	ctx, span := tracer.Start(ctx,
+	ctx, span := tracer.Start(
+		ctx,
 		"transfer: TransferKeep",
 		trace.WithAttributes(
 			attribute.String("id", string(transferRequest.Transfer)),

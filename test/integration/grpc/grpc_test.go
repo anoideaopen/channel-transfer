@@ -38,7 +38,6 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 		channels = []string{cmn.ChannelACL, cmn.ChannelCC, cmn.ChannelFiat}
 		user     *mocks.UserFoundation
 
-		clientCtx    context.Context
 		apiClient    cligrpc.APIClient
 		conn         *grpc.ClientConn
 		network      *nwo.Network
@@ -96,7 +95,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 
 	It("transfer by admin test", func() {
 		By("creating grpc connection")
-		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
+		clientCtx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
 		transportCredentials := insecure.NewCredentials()
 		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
@@ -143,7 +142,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 		By("sending transfer request")
 		r, err := apiClient.TransferByAdmin(clientCtx, transfer)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(r.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_IN_PROCESS))
+		Expect(r.GetStatus()).To(Equal(cligrpc.TransferStatusResponse_STATUS_IN_PROCESS))
 
 		By("checking transfer status")
 		transferStatusRequest := &cligrpc.TransferStatusRequest{
@@ -165,7 +164,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 		By("awaiting for channel transfer to respond")
 		statusResponse, err := apiClient.TransferStatus(ctx, transferStatusRequest)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(statusResponse.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_COMPLETED))
+		Expect(statusResponse.GetStatus()).To(Equal(cligrpc.TransferStatusResponse_STATUS_COMPLETED))
 
 		By("checking result balances")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
@@ -177,7 +176,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 
 	It("transfer by customer test", func() {
 		By("creating grpc connection")
-		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
+		clientCtx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
 		transportCredentials := insecure.NewCredentials()
 		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
@@ -223,7 +222,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 		By("sending transfer request")
 		r, err := apiClient.TransferByCustomer(clientCtx, transfer)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(r.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_IN_PROCESS))
+		Expect(r.GetStatus()).To(Equal(cligrpc.TransferStatusResponse_STATUS_IN_PROCESS))
 
 		By("checking transfer status")
 		transferStatusRequest := &cligrpc.TransferStatusRequest{
@@ -245,7 +244,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 		By("awaiting for channel transfer to respond")
 		statusResponse, err := apiClient.TransferStatus(ctx, transferStatusRequest)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(statusResponse.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_COMPLETED))
+		Expect(statusResponse.GetStatus()).To(Equal(cligrpc.TransferStatusResponse_STATUS_COMPLETED))
 
 		By("checking result balances")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
@@ -257,7 +256,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 
 	It("transfer status with wrong transfer id test", func() {
 		By("creating grpc connection")
-		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
+		clientCtx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
 		transportCredentials := insecure.NewCredentials()
 		grpcAddress := networkFound.ChannelTransferGRPCAddress()
@@ -284,7 +283,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 
 	It("transfer status filter test", func() {
 		By("creating grpc connection")
-		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
+		clientCtx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
 		transportCredentials := insecure.NewCredentials()
 		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
@@ -330,7 +329,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 		By("sending transfer request")
 		r, err := apiClient.TransferByCustomer(clientCtx, transfer)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(r.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_IN_PROCESS))
+		Expect(r.GetStatus()).To(Equal(cligrpc.TransferStatusResponse_STATUS_IN_PROCESS))
 
 		By("checking transfer status")
 		transferStatusRequest := &cligrpc.TransferStatusRequest{
@@ -352,12 +351,12 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 		By("awaiting for channel transfer to respond")
 		statusResponse, err := apiClient.TransferStatus(ctx, transferStatusRequest)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(statusResponse.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_COMPLETED))
+		Expect(statusResponse.GetStatus()).To(Equal(cligrpc.TransferStatusResponse_STATUS_COMPLETED))
 	})
 
 	It("transfer wrong STATUS_CANCELLED filter test", func() {
 		By("creating grpc connection")
-		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
+		clientCtx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
 		transportCredentials := insecure.NewCredentials()
 		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
@@ -396,7 +395,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 
 	It("transfer wrong STATUS_COMPLETED filter test", func() {
 		By("creating grpc connection")
-		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
+		clientCtx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
 		transportCredentials := insecure.NewCredentials()
 		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
@@ -435,7 +434,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 
 	It("transfer wrong STATUS_ERROR filter test", func() {
 		By("creating grpc connection")
-		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
+		clientCtx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
 		transportCredentials := insecure.NewCredentials()
 		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
@@ -474,7 +473,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 
 	It("transfer undefined status filter test", func() {
 		By("creating grpc connection")
-		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
+		clientCtx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
 		transportCredentials := insecure.NewCredentials()
 		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
@@ -513,7 +512,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 
 	It("transfer created not with channel transfer service", func() {
 		By("creating grpc connection")
-		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
+		clientCtx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
 		transportCredentials := insecure.NewCredentials()
 		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
@@ -533,7 +532,8 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 		By("creating channel transfer request")
 		transferID := uuid.NewString()
 
-		ts.TxInvokeWithSign(cmn.ChannelFiat, cmn.ChannelFiat, ts.Admin(), "channelTransferByAdmin", "",
+		ts.TxInvokeWithSign(
+			cmn.ChannelFiat, cmn.ChannelFiat, ts.Admin(), "channelTransferByAdmin", "",
 			client.NewNonceByTime().Get(), transferID, "CC", user.AddressBase58Check, "FIAT", "250",
 		)
 
@@ -560,7 +560,7 @@ var _ = Describe("Channel transfer GRPC tests", func() {
 		By("awaiting for channel transfer to respond")
 		statusResponse, err := apiClient.TransferStatus(ctx, transferStatusRequest)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(cligrpc.TransferStatusResponse_STATUS_COMPLETED).To(Equal(statusResponse.Status))
+		Expect(cligrpc.TransferStatusResponse_STATUS_COMPLETED).To(Equal(statusResponse.GetStatus()))
 
 		By("checking result balances")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,

@@ -28,7 +28,8 @@ func NewDemultiplexer(ctx context.Context, in <-chan model.TransferRequest, buff
 		return nil, errorshlp.WrapWithDetails(
 			errors.New("invalid buffer size for channels - must be great than 0"),
 			nerrors.ErrTypeInternal,
-			nerrors.ComponentDemultiplexer)
+			nerrors.ComponentDemultiplexer,
+		)
 	}
 
 	log := glog.FromContext(ctx)

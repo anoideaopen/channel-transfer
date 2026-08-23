@@ -35,10 +35,12 @@ func StartSpan(
 	req TraceableObject,
 	attributes ...attribute.KeyValue,
 ) (context.Context, trace.Span) {
-	attributes = append(attributes,
+	attributes = append(
+		attributes,
 		req.GetTraceAttributes()...,
 	)
-	return tracer.Start(ctx, //nolint:spancheck
+	return tracer.Start( //nolint:spancheck
+		ctx,
 		spanName,
 		trace.WithAttributes(
 			attributes...,

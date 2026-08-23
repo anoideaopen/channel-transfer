@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -11,7 +10,7 @@ import (
 const testConfigName = "config_test.yaml"
 
 func TestGetConfigSimple(t *testing.T) {
-	t.Setenv(fmt.Sprintf("%s_CONFIG", EnvPrefix), testConfigName)
+	t.Setenv(EnvPrefix+"_CONFIG", testConfigName)
 
 	c, err := getConfig()
 	require.NoError(t, err)
@@ -23,8 +22,8 @@ func TestGetConfigSimple(t *testing.T) {
 }
 
 func TestGetConfigOverrideEnv(t *testing.T) {
-	t.Setenv(fmt.Sprintf("%s_LOGLEVEL", EnvPrefix), "myval")
-	t.Setenv(fmt.Sprintf("%s_CONFIG", EnvPrefix), testConfigName)
+	t.Setenv(EnvPrefix+"_LOGLEVEL", "myval")
+	t.Setenv(EnvPrefix+"_CONFIG", testConfigName)
 
 	c, err := getConfig()
 	require.NoError(t, err)
@@ -33,7 +32,7 @@ func TestGetConfigOverrideEnv(t *testing.T) {
 }
 
 func TestValidateConfig(t *testing.T) {
-	t.Setenv(fmt.Sprintf("%s_CONFIG", EnvPrefix), testConfigName)
+	t.Setenv(EnvPrefix+"_CONFIG", testConfigName)
 
 	c, err := getConfig()
 	require.NoError(t, err)
@@ -56,15 +55,15 @@ func TestExecuteOptions(t *testing.T) {
 	}
 
 	et, err := fullExecOptions.EffExecuteTimeout(defOpts)
-	require.EqualValues(t, *fullExecOptions.ExecuteTimeout, et)
+	require.Equal(t, *fullExecOptions.ExecuteTimeout, et)
 	require.NoError(t, err)
 
 	// 2. empty ExecOptions
 	emptyExecOptions := Options{}
 	et, err = emptyExecOptions.EffExecuteTimeout(defOpts)
-	require.EqualValues(t, *defOpts.ExecuteTimeout, et)
+	require.Equal(t, *defOpts.ExecuteTimeout, et)
 	require.NoError(t, err)
 
 	// 3. check that we don't override default values occasionally
-	require.EqualValues(t, defExecuteTimeout, *defOpts.ExecuteTimeout)
+	require.Equal(t, defExecuteTimeout, *defOpts.ExecuteTimeout)
 }

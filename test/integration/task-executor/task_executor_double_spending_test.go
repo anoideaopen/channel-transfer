@@ -102,19 +102,19 @@ func (s *OrdererPausingTaskExecutorMock) SubmitTransaction(
 	_ context.Context,
 	req *cligrpc.TaskExecutorRequest,
 ) (*cligrpc.TaskExecutorResponse, error) {
-	args := make([]string, len(req.Args))
-	for i, arg := range req.Args {
+	args := make([]string, len(req.GetArgs()))
+	for i, arg := range req.GetArgs() {
 		args[i] = string(arg)
 	}
 
-	method := req.Method
+	method := req.GetMethod()
 
 	s.mu.Lock()
 	s.executedMethods = append(s.executedMethods, method)
 	orderersPaused := s.orderersPaused
 	s.mu.Unlock()
 
-	GinkgoWriter.Printf("[TaskExecutor] Received: %s on %s/%s\n", method, req.Channel, req.Chaincode)
+	GinkgoWriter.Printf("[TaskExecutor] Received: %s on %s/%s\n", method, req.GetChannel(), req.GetChaincode())
 
 	// If cancelCCTransferFrom is received, this indicates the BUG (double-spending scenario).
 	// Don't try to execute it (orderers are paused, it would fail and panic).
@@ -136,19 +136,19 @@ func (s *OrdererPausingTaskExecutorMock) SubmitTransaction(
 	}
 
 	// Execute the task - commits to blockchain
-	GinkgoWriter.Printf("[TaskExecutor] Executing: %s on %s/%s\n", method, req.Channel, req.Chaincode)
-	s.executor(req.Channel, req.Chaincode, method, args...)
-	GinkgoWriter.Printf("[TaskExecutor] Completed: %s on %s/%s\n", method, req.Channel, req.Chaincode)
+	GinkgoWriter.Printf("[TaskExecutor] Executing: %s on %s/%s\n", method, req.GetChannel(), req.GetChaincode())
+	s.executor(req.GetChannel(), req.GetChaincode(), method, args...)
+	GinkgoWriter.Printf("[TaskExecutor] Completed: %s on %s/%s\n", method, req.GetChannel(), req.GetChaincode())
 
 	// After createCCTransferTo succeeds, PAUSE ALL ORDERERS using SIGSTOP
 	// This happens SYNCHRONOUSLY before returning, so when channel-transfer
 	// tries to call commitCCTransferFrom, orderers will already be paused
 	if method == "createCCTransferTo" {
-		s.pauseOrderersOnce.Do(func() {
+		s.pauseOrderersOnce.Do(func() { //nolint:contextcheck
 			GinkgoWriter.Printf("[TaskExecutor] createCCTransferTo completed - PAUSING ALL ORDERERS NOW\n")
 
 			// Use pkill to send SIGSTOP to all orderer processes
-			err := exec.Command("pkill", "-STOP", "-f", "orderer").Run()
+			err := exec.CommandContext(context.Background(), "pkill", "-STOP", "-f", "orderer").Run()
 			if err != nil {
 				GinkgoWriter.Printf("[TaskExecutor] WARNING: Failed to pause orderers: %v\n", err)
 			}
@@ -172,7 +172,7 @@ func (s *OrdererPausingTaskExecutorMock) SubmitTransaction(
 
 	return &cligrpc.TaskExecutorResponse{
 		Status:  cligrpc.TaskExecutorResponse_STATUS_ACCEPTED,
-		Message: fmt.Sprintf("accepted %s", method),
+		Message: "accepted " + method,
 	}, nil
 }
 
@@ -209,7 +209,7 @@ func StartOrdererPausingTaskExecutor(
 	cligrpc.RegisterTaskExecutorAdapterServer(gRPCServer, mock)
 
 	go func() {
-		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port)) //nolint:noctx
 		if err != nil {
 			panic(fmt.Sprintf("failed to listen on port %d: %v", port, err))
 		}
@@ -230,7 +230,7 @@ func pauseOrderersTestTaskExecutorPort() uint16 {
 // resumeOrderers sends SIGCONT to all paused orderer processes
 func resumeOrderers() {
 	GinkgoWriter.Printf("[Test] Resuming all orderers (SIGCONT)...\n")
-	err := exec.Command("pkill", "-CONT", "-f", "orderer").Run()
+	err := exec.CommandContext(context.Background(), "pkill", "-CONT", "-f", "orderer").Run()
 	if err != nil {
 		GinkgoWriter.Printf("[Test] WARNING: Failed to resume orderers: %v\n", err)
 	} else {
@@ -313,7 +313,7 @@ func findCommitCCTransferFromOnBlockchain(
 			break
 		}
 
-		switch t := resp.Type.(type) {
+		switch t := resp.GetType().(type) {
 		case *pb.DeliverResponse_Block:
 			block := t.Block
 			blocksProcessed++
@@ -321,7 +321,7 @@ func findCommitCCTransferFromOnBlockchain(
 			found := scanBlockForCommitCCTransferFrom(block, chaincodeID, transferID)
 			if found {
 				GinkgoWriter.Printf("[BlockScanner] FOUND commitCCTransferFrom for transfer %s in block %d\n",
-					transferID, block.Header.Number)
+					transferID, block.GetHeader().GetNumber())
 				return true
 			}
 
@@ -347,11 +347,11 @@ func findCommitCCTransferFromOnBlockchain(
 // scanBlockForCommitCCTransferFrom checks if a block contains commitCCTransferFrom
 // transaction for the given chaincode and transfer ID.
 func scanBlockForCommitCCTransferFrom(block *cb.Block, chaincodeID string, transferID string) bool {
-	if block == nil || block.Data == nil {
+	if block == nil || block.GetData() == nil {
 		return false
 	}
 
-	for txIndex, envBytes := range block.Data.Data {
+	for txIndex, envBytes := range block.GetData().GetData() {
 		env, err := protoutil.GetEnvelopeFromBlock(envBytes)
 		if err != nil {
 			continue
@@ -416,7 +416,7 @@ func scanBlockForCommitCCTransferFrom(block *cb.Block, chaincodeID string, trans
 				if len(ccInput.GetArgs()) > 1 {
 					txTransferID := string(ccInput.GetArgs()[1])
 					GinkgoWriter.Printf("[BlockScanner] Found commitCCTransferFrom in block %d, tx %d, transferID: %s\n",
-						block.Header.Number, txIndex, txTransferID)
+						block.GetHeader().GetNumber(), txIndex, txTransferID)
 					if txTransferID == transferID {
 						return true
 					}
@@ -436,7 +436,6 @@ var _ = Describe("Double spending fix - Pause Orderers", func() {
 		taskExecutor     *grpc.Server
 		taskExecutorMock *OrdererPausingTaskExecutorMock
 
-		clientCtx context.Context
 		apiClient cligrpc.APIClient
 		conn      *grpc.ClientConn
 	)
@@ -507,11 +506,6 @@ var _ = Describe("Double spending fix - Pause Orderers", func() {
 		ts.StartChannelTransfer()
 
 		By("creating gRPC connection to channel-transfer")
-		clientCtx = metadata.NewOutgoingContext(
-			context.Background(),
-			metadata.Pairs("authorization", ts.NetworkFound.ChannelTransfer.AccessToken),
-		)
-
 		grpcAddress := ts.NetworkFound.ChannelTransfer.HostAddress + ":" +
 			strconv.FormatUint(uint64(ts.NetworkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
 
@@ -595,10 +589,14 @@ var _ = Describe("Double spending fix - Pause Orderers", func() {
 		}
 
 		By("Step 2: Send transfer request via gRPC API")
+		clientCtx := metadata.NewOutgoingContext(
+			context.Background(),
+			metadata.Pairs("authorization", ts.NetworkFound.ChannelTransfer.AccessToken),
+		)
 		r, err := apiClient.TransferByAdmin(clientCtx, transfer)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(r.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_IN_PROCESS))
-		GinkgoWriter.Printf("Transfer initiated with ID: %s, status: %s\n", transferID, r.Status)
+		Expect(r.GetStatus()).To(Equal(cligrpc.TransferStatusResponse_STATUS_IN_PROCESS))
+		GinkgoWriter.Printf("Transfer initiated with ID: %s, status: %s\n", transferID, r.GetStatus())
 
 		By("Step 3: Wait for orderers to be paused")
 		// Flow:
@@ -632,11 +630,11 @@ var _ = Describe("Double spending fix - Pause Orderers", func() {
 				GinkgoWriter.Printf("TransferStatus error: %v\n", err)
 				return false
 			}
-			finalStatus = statusResp.Status
-			GinkgoWriter.Printf("Transfer status: %s\n", statusResp.Status)
-			return statusResp.Status == cligrpc.TransferStatusResponse_STATUS_COMPLETED ||
-				statusResp.Status == cligrpc.TransferStatusResponse_STATUS_CANCELED ||
-				statusResp.Status == cligrpc.TransferStatusResponse_STATUS_ERROR
+			finalStatus = statusResp.GetStatus()
+			GinkgoWriter.Printf("Transfer status: %s\n", statusResp.GetStatus())
+			return statusResp.GetStatus() == cligrpc.TransferStatusResponse_STATUS_COMPLETED ||
+				statusResp.GetStatus() == cligrpc.TransferStatusResponse_STATUS_CANCELED ||
+				statusResp.GetStatus() == cligrpc.TransferStatusResponse_STATUS_ERROR
 		}, 180*time.Second, 2*time.Second).Should(BeTrue(),
 			"transfer should reach terminal state")
 

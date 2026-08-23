@@ -31,7 +31,6 @@ var _ = Describe("Channel transfer with task executor transaction tests", func()
 		channels = []string{cmn.ChannelACL, cmn.ChannelCC, cmn.ChannelFiat}
 		user     *mocks.UserFoundation
 
-		clientCtx    context.Context
 		apiClient    cligrpc.APIClient
 		conn         *grpc.ClientConn
 		network      *nwo.Network
@@ -88,7 +87,7 @@ var _ = Describe("Channel transfer with task executor transaction tests", func()
 
 	It("transfer created not with channel transfer service", func() {
 		By("creating grpc connection")
-		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
+		clientCtx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
 		transportCredentials := insecure.NewCredentials()
 		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
@@ -117,7 +116,8 @@ var _ = Describe("Channel transfer with task executor transaction tests", func()
 		By("creating channel transfer request")
 		transferID := uuid.NewString()
 
-		ts.ExecuteTaskWithSign(cmn.ChannelFiat, cmn.ChannelFiat, ts.Admin(),
+		ts.ExecuteTaskWithSign(
+			cmn.ChannelFiat, cmn.ChannelFiat, ts.Admin(),
 			"channelTransferByAdmin", transferID, "CC", user.AddressBase58Check, "FIAT", "250",
 		)
 
@@ -144,7 +144,7 @@ var _ = Describe("Channel transfer with task executor transaction tests", func()
 		By("awaiting for channel transfer to respond")
 		statusResponse, err := apiClient.TransferStatus(ctx, transferStatusRequest)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(cligrpc.TransferStatusResponse_STATUS_COMPLETED).To(Equal(statusResponse.Status))
+		Expect(cligrpc.TransferStatusResponse_STATUS_COMPLETED).To(Equal(statusResponse.GetStatus()))
 
 		By("checking result balances")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
@@ -156,7 +156,7 @@ var _ = Describe("Channel transfer with task executor transaction tests", func()
 
 	It("several transfers in one batch", func() {
 		By("creating grpc connection")
-		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
+		clientCtx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
 		transportCredentials := insecure.NewCredentials()
 		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
@@ -244,7 +244,7 @@ var _ = Describe("Channel transfer with task executor transaction tests", func()
 			By("awaiting for channel transfer to respond")
 			statusResponse, err := apiClient.TransferStatus(ctx, transferStatusRequest)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(cligrpc.TransferStatusResponse_STATUS_COMPLETED).To(Equal(statusResponse.Status))
+			Expect(cligrpc.TransferStatusResponse_STATUS_COMPLETED).To(Equal(statusResponse.GetStatus()))
 
 			By("checking result balances")
 			ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
@@ -257,7 +257,7 @@ var _ = Describe("Channel transfer with task executor transaction tests", func()
 
 	It("transfer with insufficient balance", func() {
 		By("creating grpc connection")
-		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
+		clientCtx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
 		transportCredentials := insecure.NewCredentials()
 		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
@@ -277,7 +277,8 @@ var _ = Describe("Channel transfer with task executor transaction tests", func()
 		By("creating channel transfer request")
 		transferID := uuid.NewString()
 
-		ts.ExecuteTaskWithSign(cmn.ChannelFiat, cmn.ChannelFiat, ts.Admin(),
+		ts.ExecuteTaskWithSign(
+			cmn.ChannelFiat, cmn.ChannelFiat, ts.Admin(),
 			"channelTransferByAdmin", transferID, "CC", user.AddressBase58Check, "FIAT", "250",
 		)
 
@@ -304,7 +305,7 @@ var _ = Describe("Channel transfer with task executor transaction tests", func()
 		By("awaiting for channel transfer to respond")
 		statusResponse, err := apiClient.TransferStatus(ctx, transferStatusRequest)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(statusResponse.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_ERROR))
-		Expect(statusResponse.Message).To(ContainSubstring("insufficient balance"))
+		Expect(statusResponse.GetStatus()).To(Equal(cligrpc.TransferStatusResponse_STATUS_ERROR))
+		Expect(statusResponse.GetMessage()).To(ContainSubstring("insufficient balance"))
 	})
 })

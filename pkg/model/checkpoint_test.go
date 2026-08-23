@@ -6,7 +6,7 @@ import (
 
 	"github.com/anoideaopen/channel-transfer/pkg/data"
 	"github.com/anoideaopen/channel-transfer/pkg/data/inmem"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCheckPoint(t *testing.T) {
@@ -22,19 +22,19 @@ func TestCheckPoint(t *testing.T) {
 	)
 
 	err = db.Save(context.TODO(), tb, "01")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = db.Save(context.TODO(), tb, "02")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	collection, err := data.ToSlice[Checkpoint](
 		db.Search(context.TODO(), &Checkpoint{}, "0"),
 	)
-	assert.NoError(t, err)
-	assert.Len(t, collection, 2)
+	require.NoError(t, err)
+	require.Len(t, collection, 2)
 
 	var obj Checkpoint
 	err = db.Load(context.TODO(), &obj, "02")
-	assert.NoError(t, err)
-	assert.Equal(t, obj, *tb)
+	require.NoError(t, err)
+	require.Equal(t, obj, *tb)
 }

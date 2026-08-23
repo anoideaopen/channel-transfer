@@ -225,7 +225,8 @@ func (h *Handler) createMultiTransferFrom(ctx context.Context, request model.Tra
 func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer) (model.StatusKind, error) {
 	var err error
 
-	ctx, span := tracer.Start(ctx,
+	ctx, span := tracer.Start(
+		ctx,
 		"ledger: createTransferTo",
 		trace.WithAttributes(
 			attribute.String("id", transfer.GetId()),
@@ -277,7 +278,8 @@ func (h *Handler) createTransferTo(ctx context.Context, transfer *fpb.CCTransfer
 func (h *Handler) cancelTransferFrom(ctx context.Context, transferID string) (model.StatusKind, error) {
 	var err error
 
-	ctx, span := tracer.Start(ctx,
+	ctx, span := tracer.Start(
+		ctx,
 		"ledger: cancelTransferFrom",
 		trace.WithAttributes(
 			attribute.String("id", transferID),
@@ -303,7 +305,8 @@ func (h *Handler) cancelTransferFrom(ctx context.Context, transferID string) (mo
 func (h *Handler) commitTransferFrom(ctx context.Context, transferID string) (model.StatusKind, error) {
 	var err error
 
-	ctx, span := tracer.Start(ctx,
+	ctx, span := tracer.Start(
+		ctx,
 		"ledger: commitTransferFrom",
 		trace.WithAttributes(
 			attribute.String("id", transferID),
@@ -329,7 +332,8 @@ func (h *Handler) commitTransferFrom(ctx context.Context, transferID string) (mo
 func (h *Handler) deleteTransferFrom(ctx context.Context, transferID string) (model.StatusKind, error) {
 	var err error
 
-	ctx, span := tracer.Start(ctx,
+	ctx, span := tracer.Start(
+		ctx,
 		"ledger: commitTransferFrom",
 		trace.WithAttributes(
 			attribute.String("id", transferID),
@@ -357,7 +361,8 @@ func (h *Handler) deleteTransferTo(ctx context.Context, channelName string, tran
 
 	h.log.Debugf("delete cc transfer to, channel %s, id %s", channelName, transferID)
 
-	ctx, span := tracer.Start(ctx,
+	ctx, span := tracer.Start(
+		ctx,
 		"ledger: deleteTransferTo",
 		trace.WithAttributes(
 			attribute.String("id", transferID),
@@ -381,7 +386,8 @@ func (h *Handler) deleteTransferTo(ctx context.Context, channelName string, tran
 func (h *Handler) invoke(ctx context.Context, channelName string, chaincodeID string, method model.TransactionKind, transferID string) error {
 	var err error
 
-	ctx, span := tracer.Start(ctx,
+	ctx, span := tracer.Start(
+		ctx,
 		"ledger: invoke",
 		trace.WithAttributes(
 			attribute.String("id", transferID),
@@ -414,7 +420,8 @@ func (h *Handler) invoke(ctx context.Context, channelName string, chaincodeID st
 func (h *Handler) queryChannelTransferTo(ctx context.Context, channelName string, transferID string) (bool, error) {
 	var err error
 
-	ctx, span := tracer.Start(ctx,
+	ctx, span := tracer.Start(
+		ctx,
 		"ledger: queryChannelTransferTo",
 		trace.WithAttributes(
 			attribute.String("id", transferID),
@@ -454,7 +461,8 @@ func (h *Handler) queryChannelTransferTo(ctx context.Context, channelName string
 func (h *Handler) queryChannelTransferFrom(ctx context.Context, channelName string, transferID string) (bool, error) {
 	var err error
 
-	ctx, span := tracer.Start(ctx,
+	ctx, span := tracer.Start(
+		ctx,
 		"ledger: queryChannelTransferFrom",
 		trace.WithAttributes(
 			attribute.String("id", transferID),

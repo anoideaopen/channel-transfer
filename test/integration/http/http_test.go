@@ -103,13 +103,15 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 		By("emit tokens")
 		ts.TxInvokeWithSign(
 			cmn.ChannelFiat, cmn.ChannelFiat, ts.Admin(),
-			"emit", "", client.NewNonceByTime().Get(), user.AddressBase58Check, emitAmount).CheckErrorIsNil()
+			"emit", "", client.NewNonceByTime().Get(), user.AddressBase58Check, emitAmount,
+		).CheckErrorIsNil()
 
 		By("emit check")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
 			"balanceOf", user.AddressBase58Check).CheckBalance(emitAmount)
 
 		By("creating http connection")
+		//nolint:fatcontext
 		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
 		httpAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.HTTPPort]), 10)
@@ -163,7 +165,8 @@ var _ = Describe("Channel transfer HTTP tests", func() {
 			transferID,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
 			"",
-			networkFound.EventuallyTimeout*2)
+			networkFound.EventuallyTimeout*2,
+		)
 
 		By("checking result balances")
 		ts.Query(cmn.ChannelFiat, cmn.ChannelFiat,
@@ -759,7 +762,7 @@ func checkResponseStatus(
 	if payload.Status == models.ChannelTransferTransferStatusResponseStatusSTATUSERROR &&
 		expectedStatus != models.ChannelTransferTransferStatusResponseStatusSTATUSERROR &&
 		expectedError == "" {
-		return fmt.Errorf("error occured: %s", payload.Message)
+		return fmt.Errorf("error occurred: %s", payload.Message)
 	}
 	if expectedError != "" && !strings.Contains(payload.Message, expectedError) {
 		return fmt.Errorf("expected %s, got %s", expectedError, payload.Message)
@@ -789,7 +792,7 @@ func waitForAnswerAndCheckStatus(
 		}
 		if expectedStatus != models.ChannelTransferTransferStatusResponseStatusSTATUSERROR &&
 			response.Payload.Status == models.ChannelTransferTransferStatusResponseStatusSTATUSERROR {
-			return fmt.Errorf("error occured: %s", response.Payload.Message)
+			return fmt.Errorf("error occurred: %s", response.Payload.Message)
 		}
 		if err = checkResponseStatus(response.Payload, expectedStatus, expectedError); err != nil {
 			return err

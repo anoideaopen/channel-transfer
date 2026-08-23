@@ -9,7 +9,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/data/redis"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	redis2 "github.com/redis/go-redis/v9"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -27,7 +27,7 @@ func TestBlockCheckpoint(t *testing.T) {
 		time.Hour,
 		"test",
 	)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	blockCheckpoint := NewBlockCheckpoint(storage)
 
@@ -40,7 +40,7 @@ func TestBlockCheckpoint(t *testing.T) {
 	resultCheckPoint := model.Checkpoint{}
 	t.Run("saving initial checkpoint", func(t *testing.T) {
 		resultCheckPoint, err = blockCheckpoint.CheckpointSave(context.TODO(), checkpoint)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	resultCheckPoint.SrcCollectFromBlockNums++
@@ -50,14 +50,14 @@ func TestBlockCheckpoint(t *testing.T) {
 
 	t.Run("saving new checkpoint", func(t *testing.T) {
 		resultCheckPoint, err = blockCheckpoint.CheckpointSave(context.TODO(), checkpoint)
-		assert.NoError(t, err)
-		assert.Equal(t, checkpoint, resultCheckPoint)
+		require.NoError(t, err)
+		require.Equal(t, checkpoint, resultCheckPoint)
 	})
 
 	t.Run("loading checkpoint", func(t *testing.T) {
 		resultCheckPoint, err = blockCheckpoint.CheckpointLoad(context.TODO(), checkpoint.Channel)
-		assert.NoError(t, err)
-		assert.Equal(t, version2, resultCheckPoint.Ver)
-		assert.Equal(t, uint64(version2), resultCheckPoint.SrcCollectFromBlockNums)
+		require.NoError(t, err)
+		require.Equal(t, version2, resultCheckPoint.Ver)
+		require.Equal(t, uint64(version2), resultCheckPoint.SrcCollectFromBlockNums)
 	})
 }

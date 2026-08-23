@@ -9,7 +9,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/data/redis"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	redis2 "github.com/redis/go-redis/v9"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestBlock(t *testing.T) {
@@ -21,7 +21,7 @@ func TestBlock(t *testing.T) {
 		time.Hour,
 		"test",
 	)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	transactions := []model.Transaction{
 		{
@@ -45,9 +45,9 @@ func TestBlock(t *testing.T) {
 	ledgerBlock := NewLedgerBlock(storage)
 
 	err = ledgerBlock.BlockSave(context.TODO(), transferBlock, redis.TTLNotTakenInto)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	got, err := ledgerBlock.BlockLoad(context.TODO(), ledgerBlock.Key(transferBlock.Channel, transferBlock.Transfer))
-	assert.NoError(t, err)
-	assert.Equal(t, transactions, got.Transactions)
+	require.NoError(t, err)
+	require.Equal(t, transactions, got.Transactions)
 }
