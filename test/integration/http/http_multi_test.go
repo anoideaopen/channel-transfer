@@ -201,6 +201,7 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 		}
 
 		By("creating http connection")
+		//nolint:fatcontext
 		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
 		httpAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.HTTPPort]), 10)
@@ -253,7 +254,8 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 			transferID,
 			models.ChannelTransferTransferStatusResponseStatusSTATUSCOMPLETED,
 			"",
-			networkFound.EventuallyTimeout*2)
+			networkFound.EventuallyTimeout*2,
+		)
 
 		By("checking result balances")
 		for i, expected := range expectedIndustrialBalances {
@@ -345,7 +347,7 @@ var _ = Describe("Channel multi transfer HTTP tests", func() {
 })
 
 func mapTransferItems(transferItems []model.TransferItem) []*models.ChannelTransferTransferItem {
-	mappedTransferItems := make([]*models.ChannelTransferTransferItem, len(transferItems), len(transferItems))
+	mappedTransferItems := make([]*models.ChannelTransferTransferItem, len(transferItems))
 	for i, transferItem := range transferItems {
 		mappedTransferItems[i] = &models.ChannelTransferTransferItem{
 			Token:  transferItem.Token,

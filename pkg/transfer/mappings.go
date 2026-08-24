@@ -45,10 +45,8 @@ func dtoBeginAdminToModelTransferRequest(
 		Token:     in.GetToken(),
 		Amount:    in.GetAmount(),
 		User:      model.ID(in.GetAddress()),
-		TransferResult: model.TransferResult{
-			Status:  dto.TransferStatusResponse_STATUS_IN_PROCESS.String(),
-			Message: "",
-		},
+		Status:    dto.TransferStatusResponse_STATUS_IN_PROCESS.String(),
+		Message:   "",
 	}, nil
 }
 
@@ -76,10 +74,8 @@ func dtoBeginCustomerToModelTransferRequest(
 		To:        in.GetChannelTo(),
 		Token:     in.GetToken(),
 		Amount:    in.GetAmount(),
-		TransferResult: model.TransferResult{
-			Status:  dto.TransferStatusResponse_STATUS_IN_PROCESS.String(),
-			Message: "",
-		},
+		Status:    dto.TransferStatusResponse_STATUS_IN_PROCESS.String(),
+		Message:   "",
 	}, nil
 }
 
@@ -117,10 +113,8 @@ func dtoBeginAdminToModelMultiTransferRequest(
 		To:        in.GetChannelTo(),
 		Items:     mappedItems,
 		User:      model.ID(in.GetAddress()),
-		TransferResult: model.TransferResult{
-			Status:  dto.TransferStatusResponse_STATUS_IN_PROCESS.String(),
-			Message: "",
-		},
+		Status:    dto.TransferStatusResponse_STATUS_IN_PROCESS.String(),
+		Message:   "",
 	}, nil
 }
 
@@ -157,10 +151,8 @@ func dtoBeginCustomerToModelMultiTransferRequest(
 		Transfer:  model.ID(in.GetIdTransfer()),
 		To:        in.GetChannelTo(),
 		Items:     mappedItems,
-		TransferResult: model.TransferResult{
-			Status:  dto.TransferStatusResponse_STATUS_IN_PROCESS.String(),
-			Message: "",
-		},
+		Status:    dto.TransferStatusResponse_STATUS_IN_PROCESS.String(),
+		Message:   "",
 	}, nil
 }
 

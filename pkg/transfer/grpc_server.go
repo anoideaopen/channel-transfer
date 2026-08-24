@@ -54,10 +54,11 @@ func runGRPC(ctx context.Context, transferServer *APIServer, tlsConfig *tls.Conf
 
 	serverOptions = append(
 		serverOptions,
-		grpc.StatsHandler(otelgrpc.NewServerHandler(
-			otelgrpc.WithPropagators(otel.GetTextMapPropagator()),
-			otelgrpc.WithTracerProvider(otel.GetTracerProvider()),
-		),
+		grpc.StatsHandler(
+			otelgrpc.NewServerHandler(
+				otelgrpc.WithPropagators(otel.GetTextMapPropagator()),
+				otelgrpc.WithTracerProvider(otel.GetTracerProvider()),
+			),
 		),
 	)
 

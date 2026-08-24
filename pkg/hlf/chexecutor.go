@@ -119,14 +119,15 @@ func (che *ChExecutor) Close() {
 
 func (che *ChExecutor) executeWithRetry(ctx context.Context, f func() (channel.Response, error)) (channel.Response, error) {
 	var resp channel.Response
-	err := retry.Do(func() error {
-		r, err := f()
-		if err != nil {
-			return err
-		}
-		resp = r
-		return nil
-	},
+	err := retry.Do(
+		func() error {
+			r, err := f()
+			if err != nil {
+				return err
+			}
+			resp = r
+			return nil
+		},
 		retry.LastErrorOnly(true),
 		retry.Attempts(che.retryExecuteAttempts),
 		retry.Delay(che.retryExecuteDelay),

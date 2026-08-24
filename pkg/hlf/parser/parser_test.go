@@ -11,7 +11,7 @@ import (
 	"github.com/anoideaopen/glog"
 	"github.com/hyperledger/fabric-protos-go-apiv2/common"
 	"github.com/hyperledger/fabric-protos-go-apiv2/peer"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -123,7 +123,8 @@ func TestExtractData_ExecuteTasksMethod(t *testing.T) {
 		validationCode int32  = 0
 	)
 
-	expectedArgs := [][]byte{[]byte(funcName)}
+	expectedArgs := make([][]byte, 0, 1+len(args))
+	expectedArgs = append(expectedArgs, []byte(funcName))
 	for _, arg := range args {
 		expectedArgs = append(expectedArgs, []byte(arg))
 	}
@@ -144,17 +145,17 @@ func TestExtractData_ExecuteTasksMethod(t *testing.T) {
 		t.Fatalf("ExtractData failed: %v", err)
 	}
 
-	assert.NotNil(t, blockData, "BlockData should not be nil")
-	assert.NotEmpty(t, blockData.Txs, "Transactions should not be empty")
-	assert.Len(t, blockData.Txs, 1)
+	require.NotNil(t, blockData, "BlockData should not be nil")
+	require.NotEmpty(t, blockData.Txs, "Transactions should not be empty")
+	require.Len(t, blockData.Txs, 1)
 
 	operationTask := blockData.Txs[0]
-	assert.Equal(t, channel, operationTask.Channel)
-	assert.Equal(t, blockNum, operationTask.BlockNum)
-	assert.Equal(t, txId, operationTask.TxID)
-	assert.Equal(t, funcName, operationTask.FuncName)
-	assert.Equal(t, expectedArgs, operationTask.Args)
-	assert.Equal(t, timeNs, operationTask.TimeNs)
-	assert.Equal(t, validationCode, operationTask.ValidationCode)
-	assert.NotNil(t, operationTask.Response)
+	require.Equal(t, channel, operationTask.Channel)
+	require.Equal(t, blockNum, operationTask.BlockNum)
+	require.Equal(t, txId, operationTask.TxID)
+	require.Equal(t, funcName, operationTask.FuncName)
+	require.Equal(t, expectedArgs, operationTask.Args)
+	require.Equal(t, timeNs, operationTask.TimeNs)
+	require.Equal(t, validationCode, operationTask.ValidationCode)
+	require.NotNil(t, operationTask.Response)
 }

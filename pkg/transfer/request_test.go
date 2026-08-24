@@ -9,7 +9,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/data/redis"
 	"github.com/anoideaopen/channel-transfer/pkg/model"
 	redis2 "github.com/redis/go-redis/v9"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRequest(t *testing.T) {
@@ -21,7 +21,7 @@ func TestRequest(t *testing.T) {
 		time.Hour,
 		"test",
 	)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	user := model.ID("ID3")
 
@@ -53,9 +53,9 @@ func TestRequest(t *testing.T) {
 	request := NewRequest(storage)
 
 	err = request.TransferKeep(context.TODO(), transferRequest)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	got, err := request.TransferFetch(context.TODO(), transferRequest.Transfer)
-	assert.NoError(t, err)
-	assert.Equal(t, user, got.User)
+	require.NoError(t, err)
+	require.Equal(t, user, got.User)
 }

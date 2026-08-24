@@ -1,7 +1,6 @@
 package hlf
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -17,12 +16,12 @@ func TestNewConnectionProfileWithPath(t *testing.T) {
 
 func TestNewConnectionProfileWithRaw(t *testing.T) {
 	testHlfConnectionYaml := "connection.yaml"
-	t.Setenv(fmt.Sprintf(ConnectionYamlEnvName), testHlfConnectionYaml)
+	t.Setenv(ConnectionYamlEnvName, testHlfConnectionYaml)
 
 	profile, err := NewConnectionProfile("")
 	require.NoError(t, err)
 
-	require.Equal(t, testHlfConnectionYaml, profile.Raw)
+	require.YAMLEq(t, testHlfConnectionYaml, profile.Raw)
 }
 
 func TestNewConnectionProfileWithInvalidRaw(t *testing.T) {

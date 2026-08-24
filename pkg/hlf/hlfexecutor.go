@@ -51,7 +51,8 @@ func (he *hlfExecutor) invoke(ctx context.Context, request channel.Request, opti
 		argsListForTracing = strings.Join([]string{argsListForTracing, string(arg)}, ", ")
 	}
 
-	ctx, span := tracer.Start(ctx,
+	ctx, span := tracer.Start(
+		ctx,
 		"hlfexecutor: invoke",
 		trace.WithAttributes(
 			attribute.String("invoke.method", request.Fcn),
@@ -72,7 +73,9 @@ func (he *hlfExecutor) invoke(ctx context.Context, request channel.Request, opti
 	options = append(options,
 		channel.WithTargetFilter(
 			filter.NewEndpointFilter(
-				he.chCtx, filter.EndorsingPeer)))
+				he.chCtx, filter.EndorsingPeer,
+			),
+		))
 
 	h := invoke.NewSelectAndEndorseHandler(
 		invoke.NewEndorsementValidationHandler(
@@ -109,7 +112,8 @@ func (he *hlfExecutor) query(ctx context.Context, request channel.Request, optio
 		argsListForTracing = strings.Join([]string{argsListForTracing, string(arg)}, ", ")
 	}
 
-	ctx, span := tracer.Start(ctx,
+	ctx, span := tracer.Start(
+		ctx,
 		"hlfexecutor: query",
 		trace.WithAttributes(
 			attribute.String("query.method", request.Fcn),
@@ -130,7 +134,9 @@ func (he *hlfExecutor) query(ctx context.Context, request channel.Request, optio
 	options = append(options,
 		channel.WithTargetFilter(
 			filter.NewEndpointFilter(
-				he.chCtx, filter.EndorsingPeer)))
+				he.chCtx, filter.EndorsingPeer,
+			),
+		))
 
 	request.TransientMap = telemetry.TransientMapFromContext(ctx)
 
@@ -153,7 +159,8 @@ func (cth *commitTxHandler) Handle(reqCtx *invoke.RequestContext, clientCtx *inv
 	// register tx event
 	reg, statusNotifier, err := clientCtx.
 		EventService.RegisterTxStatusEvent(
-		string(reqCtx.Response.TransactionID))
+		string(reqCtx.Response.TransactionID),
+	)
 	if err != nil {
 		reqCtx.Error = errors.Errorf("error registering for TxStatus event: %w", err)
 		return
@@ -164,7 +171,8 @@ func (cth *commitTxHandler) Handle(reqCtx *invoke.RequestContext, clientCtx *inv
 		fab.TransactionRequest{
 			Proposal:          reqCtx.Response.Proposal,
 			ProposalResponses: reqCtx.Response.Responses,
-		})
+		},
+	)
 	if err != nil {
 		reqCtx.Error = errors.Errorf("createTransaction failed: %w", err)
 		return
@@ -183,18 +191,21 @@ func (cth *commitTxHandler) Handle(reqCtx *invoke.RequestContext, clientCtx *inv
 		if txStatus.TxValidationCode != pb.TxValidationCode_VALID {
 			reqCtx.Error = errors.New(
 				status.New(status.EventServerStatus, int32(txStatus.TxValidationCode),
-					"received invalid transaction", nil))
+					"received invalid transaction", nil),
+			)
 		}
 		return
 	case <-cth.ctx.Done():
 		reqCtx.Error = errors.New(
 			status.New(status.ClientStatus, status.Unknown.ToInt32(),
-				"Execute didn't receive block event (context done)", nil))
+				"Execute didn't receive block event (context done)", nil),
+		)
 		return
 	case <-reqCtx.Ctx.Done():
 		reqCtx.Error = errors.New(
 			status.New(status.ClientStatus, status.Timeout.ToInt32(),
-				"Execute didn't receive block event", nil))
+				"Execute didn't receive block event", nil),
+		)
 		return
 	}
 }

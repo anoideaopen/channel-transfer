@@ -104,7 +104,8 @@ func (api *APIServer) TransferByCustomer(
 				IdTransfer: req.GetIdTransfer(),
 				Status:     dto.TransferStatusResponse_STATUS_ERROR,
 				Message:    err.Error(),
-			}, status.Error(
+			},
+			status.Error(
 				codes.InvalidArgument,
 				err.Error(),
 			)
@@ -164,7 +165,8 @@ func (api *APIServer) TransferByAdmin(
 				IdTransfer: req.GetIdTransfer(),
 				Status:     dto.TransferStatusResponse_STATUS_ERROR,
 				Message:    err.Error(),
-			}, status.Error(
+			},
+			status.Error(
 				codes.InvalidArgument,
 				err.Error(),
 			)
@@ -225,7 +227,8 @@ func (api *APIServer) MultiTransferByCustomer(
 				IdTransfer: req.GetIdTransfer(),
 				Status:     dto.TransferStatusResponse_STATUS_ERROR,
 				Message:    err.Error(),
-			}, status.Error(
+			},
+			status.Error(
 				codes.InvalidArgument,
 				err.Error(),
 			)
@@ -285,7 +288,8 @@ func (api *APIServer) MultiTransferByAdmin(
 				IdTransfer: req.GetIdTransfer(),
 				Status:     dto.TransferStatusResponse_STATUS_ERROR,
 				Message:    err.Error(),
-			}, status.Error(
+			},
+			status.Error(
 				codes.InvalidArgument,
 				err.Error(),
 			)
@@ -329,7 +333,8 @@ func (api *APIServer) TransferStatus(
 				IdTransfer: req.GetIdTransfer(),
 				Status:     dto.TransferStatusResponse_STATUS_ERROR,
 				Message:    err.Error(),
-			}, status.Error(
+			},
+			status.Error(
 				codes.InvalidArgument,
 				err.Error(),
 			)

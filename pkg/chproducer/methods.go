@@ -46,7 +46,8 @@ var re = regexp.MustCompile(`no channel peers configured for channel \[`)
 func (h *Handler) transferProcessing(ctx context.Context, initStatus model.StatusKind, transfer *fpb.CCTransfer, lastErr error) error {
 	var err error
 
-	ctx, span := tracer.Start(ctx,
+	ctx, span := tracer.Start(
+		ctx,
 		"chproducer: transferProcessing",
 		trace.WithAttributes(
 			attribute.String("id", transfer.GetId()),
@@ -112,7 +113,8 @@ func (h *Handler) transferProcessing(ctx context.Context, initStatus model.Statu
 				failTag = expiredTransferTag
 			}
 
-			h.log.Debugf("event status %s, id %s, channel from %s, channel to %s",
+			h.log.Debugf(
+				"event status %s, id %s, channel from %s, channel to %s",
 				status.String(), transfer.GetId(), transfer.GetFrom(), transfer.GetTo(),
 			)
 			request, err := h.requestStorage.TransferFetch(ctx, model.ID(transfer.GetId()))
@@ -289,7 +291,8 @@ func (h *Handler) resolveStatus(ctx context.Context, transfer *fpb.CCTransfer) (
 		request model.TransferRequest
 	)
 
-	ctx, span := tracer.Start(ctx,
+	ctx, span := tracer.Start(
+		ctx,
 		"chproducer: resolveStatus",
 		trace.WithAttributes(
 			attribute.String("id", transfer.GetId()),
@@ -348,32 +351,34 @@ func (h *Handler) fromBatchResponse(ctx context.Context, transferID string) (mod
 		"chproducer: fromBatchResponse",
 		trace.WithAttributes(
 			attribute.String("id", transferID),
-		))
+		),
+	)
 	defer func() {
 		telemetry.FinishSpan(span, err)
 	}()
-	err = retry.Do(func() error {
-		blocks, err := h.responseWithAttempt(ctx, h.channel, transferID)
-		h.log.Debugf("find batchResponse in fromBatchResponse: %s; error: %v", transferID, err)
-		if err != nil {
-			err = errors.Errorf("batch FROM: %w", err)
-			if strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
-				m = model.FromBatchNotFound
+	err = retry.Do(
+		func() error {
+			blocks, err := h.responseWithAttempt(ctx, h.channel, transferID)
+			h.log.Debugf("find batchResponse in fromBatchResponse: %s; error: %v", transferID, err)
+			if err != nil {
+				err = errors.Errorf("batch FROM: %w", err)
+				if strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
+					m = model.FromBatchNotFound
+					return err
+				}
+				m = model.InternalErrorTransferStatus
 				return err
 			}
-			m = model.InternalErrorTransferStatus
-			return err
-		}
 
-		for _, transaction := range blocks.Transactions {
-			if methods.IsTransferFromMethod(transaction.FuncName) && transaction.BatchResponse != nil {
-				batchResponse = transaction.BatchResponse
-				return nil
+			for _, transaction := range blocks.Transactions {
+				if methods.IsTransferFromMethod(transaction.FuncName) && transaction.BatchResponse != nil {
+					batchResponse = transaction.BatchResponse
+					return nil
+				}
 			}
-		}
 
-		return errBatchFromNotFound
-	},
+			return errBatchFromNotFound
+		},
 		retry.LastErrorOnly(true),
 		retry.Attempts(repeatAttempt),
 		retry.Delay(sleepAttempt),
@@ -407,34 +412,36 @@ func (h *Handler) toBatchResponse(ctx context.Context, channelName string, trans
 		"chproducer: toBatchResponse",
 		trace.WithAttributes(
 			attribute.String("id", transferID),
-		))
+		),
+	)
 	defer func() {
 		telemetry.FinishSpan(span, err)
 	}()
 
-	err = retry.Do(func() error {
-		blocks, err := h.responseWithAttempt(ctx, channelName, transferID)
-		h.log.Debugf("find batchResponse in toBatchResponse: %s; error: %v", transferID, err)
-		if err != nil {
-			err = errors.Errorf("batch TO: %w", err)
-			if strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
-				m = model.ToBatchNotFound
+	err = retry.Do(
+		func() error {
+			blocks, err := h.responseWithAttempt(ctx, channelName, transferID)
+			h.log.Debugf("find batchResponse in toBatchResponse: %s; error: %v", transferID, err)
+			if err != nil {
+				err = errors.Errorf("batch TO: %w", err)
+				if strings.Contains(err.Error(), data.ErrObjectNotFound.Error()) {
+					m = model.ToBatchNotFound
+					return err
+				}
+				m = model.InternalErrorTransferStatus
 				return err
 			}
-			m = model.InternalErrorTransferStatus
-			return err
-		}
 
-		for _, transaction := range blocks.Transactions {
-			if transaction.FuncName == model.TxCreateCCTransferTo.String() &&
-				transaction.BatchResponse != nil {
-				batchResponse = transaction.BatchResponse
-				return nil
+			for _, transaction := range blocks.Transactions {
+				if transaction.FuncName == model.TxCreateCCTransferTo.String() &&
+					transaction.BatchResponse != nil {
+					batchResponse = transaction.BatchResponse
+					return nil
+				}
 			}
-		}
 
-		return errBatchToNotFound
-	},
+			return errBatchToNotFound
+		},
 		retry.LastErrorOnly(true),
 		retry.Attempts(repeatAttempt),
 		retry.Delay(sleepAttempt),
@@ -471,21 +478,23 @@ func (h *Handler) responseWithAttempt(ctx context.Context, channel string, trans
 		"chproducer: responseWithAttempt",
 		trace.WithAttributes(
 			attribute.String("id", transferID),
-		))
+		),
+	)
 	defer func() {
 		telemetry.FinishSpan(span, err)
 	}()
 
-	err = retry.Do(func() error {
-		blocks, err := h.blockStorage.BlockLoad(ctx, h.blockStorage.Key(model.ID(channel), model.ID(transferID)))
-		h.log.Debugf("block load in responseWithAttempt: %s; error: %v", transferID, err)
-		if err != nil {
-			resp = model.TransferBlock{}
-			return err
-		}
-		resp = blocks
-		return nil
-	},
+	err = retry.Do(
+		func() error {
+			blocks, err := h.blockStorage.BlockLoad(ctx, h.blockStorage.Key(model.ID(channel), model.ID(transferID)))
+			h.log.Debugf("block load in responseWithAttempt: %s; error: %v", transferID, err)
+			if err != nil {
+				resp = model.TransferBlock{}
+				return err
+			}
+			resp = blocks
+			return nil
+		},
 		retry.LastErrorOnly(true),
 		retry.Attempts(repeatAttempt),
 		retry.Delay(sleepAttempt),

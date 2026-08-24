@@ -118,7 +118,7 @@ var _ = Describe("Channel transfer chaos tests", func() {
 
 		By("creating http connection")
 		networkFound := ts.NetworkFound
-		clientCtx = metadata.NewOutgoingContext(
+		clientCtx = metadata.NewOutgoingContext( //nolint:fatcontext
 			context.Background(),
 			metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken),
 		)
@@ -924,7 +924,7 @@ func checkResponseStatus(
 	if payload.Status == models.ChannelTransferTransferStatusResponseStatusSTATUSERROR &&
 		expectedStatus != models.ChannelTransferTransferStatusResponseStatusSTATUSERROR &&
 		expectedError == "" {
-		return fmt.Errorf("error occured: %s", payload.Message)
+		return fmt.Errorf("error occurred: %s", payload.Message)
 	}
 	if expectedError != "" && !strings.Contains(payload.Message, expectedError) {
 		return fmt.Errorf("expected %s, got %s", expectedError, payload.Message)
@@ -941,7 +941,7 @@ func waitForAnswerAndCheckStatus(
 	transferCli *clihttp.CrossChanelTransfer,
 	transferID string,
 	expectedStatus models.ChannelTransferTransferStatusResponseStatus,
-	expectedError string,
+	expectedError string, //nolint:unparam
 	eventuallyTimeout time.Duration,
 ) {
 	Eventually(func() error {
@@ -950,7 +950,7 @@ func waitForAnswerAndCheckStatus(
 			return err
 		}
 		if expectedStatus != models.ChannelTransferTransferStatusResponseStatusSTATUSERROR && response.Payload.Status == models.ChannelTransferTransferStatusResponseStatusSTATUSERROR {
-			return fmt.Errorf("error occured: %s", response.Payload.Message)
+			return fmt.Errorf("error occurred: %s", response.Payload.Message)
 		}
 		if err = checkResponseStatus(response.Payload, expectedStatus, expectedError); err != nil {
 			return err

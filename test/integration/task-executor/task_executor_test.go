@@ -25,7 +25,6 @@ var _ = Describe("Channel transfer with task executor tests", func() {
 		ts           *client.FoundationTestSuite
 		taskExecutor *grpc.Server
 		networkFound *cmn.NetworkFoundation
-		clientCtx    context.Context
 		apiClient    cligrpc.APIClient
 		conn         *grpc.ClientConn
 		user         *mocks.UserFoundation
@@ -74,7 +73,7 @@ var _ = Describe("Channel transfer with task executor tests", func() {
 
 	It("Submit transaction", func() {
 		By("creating grpc connection")
-		clientCtx = metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
+		clientCtx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", networkFound.ChannelTransfer.AccessToken))
 
 		transportCredentials := insecure.NewCredentials()
 		grpcAddress := networkFound.ChannelTransfer.HostAddress + ":" + strconv.FormatUint(uint64(networkFound.ChannelTransfer.Ports[cmn.GrpcPort]), 10)
@@ -121,6 +120,6 @@ var _ = Describe("Channel transfer with task executor tests", func() {
 		By("sending transfer request")
 		r, err := apiClient.TransferByAdmin(clientCtx, transfer)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(r.Status).To(Equal(cligrpc.TransferStatusResponse_STATUS_IN_PROCESS))
+		Expect(r.GetStatus()).To(Equal(cligrpc.TransferStatusResponse_STATUS_IN_PROCESS))
 	})
 })

@@ -268,10 +268,12 @@ func initMetrics(
 				metrics.Labels().TransferStatus.Create(i.String()),
 			)
 		}
-		m.FabricConnectionStatus().Set(0,
+		m.FabricConnectionStatus().Set(
+			0,
 			metrics.Labels().Channel.Create(channel.Name),
 		)
-		m.CollectorProcessBlockNum().Set(0,
+		m.CollectorProcessBlockNum().Set(
+			0,
 			metrics.Labels().Channel.Create(channel.Name),
 		)
 	}

@@ -47,7 +47,8 @@ func NewMetrics(ctx context.Context, mPrefix string) (*MetricsBus, error) {
 		},
 		"app_info", "Application info",
 		metrics.Labels().AppVer,
-		metrics.Labels().AppSdkFabricVer); err != nil {
+		metrics.Labels().AppSdkFabricVer,
+	); err != nil {
 		return nil, err
 	}
 
@@ -56,7 +57,8 @@ func NewMetrics(ctx context.Context, mPrefix string) (*MetricsBus, error) {
 			ch.mTotalTransferCreated = parent.mTotalTransferCreated.ChildWith(labels)
 		},
 		"total_transfer_created", "Number of created transfers",
-		metrics.Labels().Channel); err != nil {
+		metrics.Labels().Channel,
+	); err != nil {
 		return nil, err
 	}
 
@@ -65,7 +67,8 @@ func NewMetrics(ctx context.Context, mPrefix string) (*MetricsBus, error) {
 			ch.mTotalReconnectsToFabric = parent.mTotalReconnectsToFabric.ChildWith(labels)
 		},
 		"total_reconnects_to_fabric", "number of reconnect to HLF",
-		metrics.Labels().Channel); err != nil {
+		metrics.Labels().Channel,
+	); err != nil {
 		return nil, err
 	}
 
@@ -74,7 +77,8 @@ func NewMetrics(ctx context.Context, mPrefix string) (*MetricsBus, error) {
 			ch.mTotalSuccessTransfer = parent.mTotalSuccessTransfer.ChildWith(labels)
 		},
 		"total_success_transfer", "Number success of created transfers",
-		metrics.Labels().Channel); err != nil {
+		metrics.Labels().Channel,
+	); err != nil {
 		return nil, err
 	}
 
@@ -84,7 +88,8 @@ func NewMetrics(ctx context.Context, mPrefix string) (*MetricsBus, error) {
 		},
 		"total_failure_transfer", "Number of failure ended transfers",
 		metrics.Labels().Channel,
-		metrics.Labels().FailTransferTag); err != nil {
+		metrics.Labels().FailTransferTag,
+	); err != nil {
 		return nil, err
 	}
 
@@ -94,7 +99,8 @@ func NewMetrics(ctx context.Context, mPrefix string) (*MetricsBus, error) {
 		},
 		"total_in_work_transfer", "Number of transfers in work",
 		metrics.Labels().Channel,
-		metrics.Labels().TransferStatus); err != nil {
+		metrics.Labels().TransferStatus,
+	); err != nil {
 		return nil, err
 	}
 
@@ -112,7 +118,8 @@ func NewMetrics(ctx context.Context, mPrefix string) (*MetricsBus, error) {
 			ch.mFabricConnectionStatus = parent.mFabricConnectionStatus.ChildWith(labels)
 		},
 		"fabric_connection_status", "HLF connection status",
-		metrics.Labels().Channel); err != nil {
+		metrics.Labels().Channel,
+	); err != nil {
 		return nil, err
 	}
 
@@ -121,7 +128,8 @@ func NewMetrics(ctx context.Context, mPrefix string) (*MetricsBus, error) {
 			ch.mCollectorProcessBlockNum = parent.mCollectorProcessBlockNum.ChildWith(labels)
 		},
 		"collector_process_block_num", "Block number processed by the collector",
-		metrics.Labels().Channel); err != nil {
+		metrics.Labels().Channel,
+	); err != nil {
 		return nil, err
 	}
 

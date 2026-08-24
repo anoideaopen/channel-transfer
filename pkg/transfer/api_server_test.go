@@ -9,7 +9,7 @@ import (
 	"github.com/anoideaopen/channel-transfer/pkg/transfer/mock"
 	dto "github.com/anoideaopen/channel-transfer/proto"
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAPIServerTransfer(t *testing.T) {
@@ -19,7 +19,7 @@ func TestAPIServerTransfer(t *testing.T) {
 	var (
 		channels      = []string{"ch1", "ch2"}
 		ctx           = context.Background()
-		tracingCtx, _ = tracer.Start(ctx, "fake span for tracing context generation")
+		tracingCtx, _ = tracer.Start(ctx, "fake span for tracing context generation") //nolint:spancheck
 		ctrl          = gomock.NewController(t)
 		mc            = mock.NewMockRequestController(ctrl)
 		srv           = NewAPIServer(ctx, requests, mc, channels)
@@ -45,25 +45,23 @@ func TestAPIServerTransfer(t *testing.T) {
 		}
 
 		mdlCustomer = model.TransferRequest{
-			Channel:   inCustomer.Generals.Channel,
-			Request:   model.ID(inCustomer.Generals.RequestId),
-			Transfer:  model.ID(inCustomer.IdTransfer),
-			Method:    inCustomer.Generals.MethodName,
-			Nonce:     inCustomer.Generals.Nonce,
-			Sign:      inCustomer.Generals.Sign,
-			Chaincode: inCustomer.Generals.Chaincode,
-			PublicKey: inCustomer.Generals.PublicKey,
+			Channel:   inCustomer.GetGenerals().GetChannel(),
+			Request:   model.ID(inCustomer.GetGenerals().GetRequestId()),
+			Transfer:  model.ID(inCustomer.GetIdTransfer()),
+			Method:    inCustomer.GetGenerals().GetMethodName(),
+			Nonce:     inCustomer.GetGenerals().GetNonce(),
+			Sign:      inCustomer.GetGenerals().GetSign(),
+			Chaincode: inCustomer.GetGenerals().GetChaincode(),
+			PublicKey: inCustomer.GetGenerals().GetPublicKey(),
 			To:        "ch2",
 			Token:     "ch1",
 			Amount:    "1",
-			TransferResult: model.TransferResult{
-				Status: "STATUS_IN_PROCESS",
-			},
-			Metadata: make(model.TransferMetadata),
+			Status:    "STATUS_IN_PROCESS",
+			Metadata:  make(model.TransferMetadata),
 		}
 
 		outCustomer = &dto.TransferStatusResponse{
-			IdTransfer: inCustomer.IdTransfer,
+			IdTransfer: inCustomer.GetIdTransfer(),
 			Status:     dto.TransferStatusResponse_STATUS_IN_PROCESS,
 		}
 
@@ -86,26 +84,24 @@ func TestAPIServerTransfer(t *testing.T) {
 		}
 
 		mdlAdmin = model.TransferRequest{
-			Channel:   inAdmin.Generals.Channel,
-			Request:   model.ID(inAdmin.Generals.RequestId),
-			Transfer:  model.ID(inAdmin.IdTransfer),
-			User:      model.ID(inAdmin.Address),
-			Method:    inAdmin.Generals.MethodName,
-			Nonce:     inCustomer.Generals.Nonce,
-			Sign:      inCustomer.Generals.Sign,
-			Chaincode: inCustomer.Generals.Chaincode,
-			PublicKey: inCustomer.Generals.PublicKey,
+			Channel:   inAdmin.GetGenerals().GetChannel(),
+			Request:   model.ID(inAdmin.GetGenerals().GetRequestId()),
+			Transfer:  model.ID(inAdmin.GetIdTransfer()),
+			User:      model.ID(inAdmin.GetAddress()),
+			Method:    inAdmin.GetGenerals().GetMethodName(),
+			Nonce:     inCustomer.GetGenerals().GetNonce(),
+			Sign:      inCustomer.GetGenerals().GetSign(),
+			Chaincode: inCustomer.GetGenerals().GetChaincode(),
+			PublicKey: inCustomer.GetGenerals().GetPublicKey(),
 			To:        "ch2",
 			Token:     "ch2",
 			Amount:    "1",
-			TransferResult: model.TransferResult{
-				Status: "STATUS_IN_PROCESS",
-			},
-			Metadata: make(model.TransferMetadata),
+			Status:    "STATUS_IN_PROCESS",
+			Metadata:  make(model.TransferMetadata),
 		}
 
 		outAdmin = &dto.TransferStatusResponse{
-			IdTransfer: inAdmin.IdTransfer,
+			IdTransfer: inAdmin.GetIdTransfer(),
 			Status:     dto.TransferStatusResponse_STATUS_IN_PROCESS,
 		}
 	)
@@ -116,21 +112,21 @@ func TestAPIServerTransfer(t *testing.T) {
 	)
 
 	resp, err := srv.TransferByCustomer(ctx, inCustomer)
-	assert.NoError(t, err)
-	assert.Equal(t, resp, outCustomer)
+	require.NoError(t, err)
+	require.Equal(t, resp, outCustomer)
 
 	resp, err = srv.TransferByAdmin(ctx, inAdmin)
-	assert.NoError(t, err)
-	assert.Equal(t, resp, outAdmin)
+	require.NoError(t, err)
+	require.Equal(t, resp, outAdmin)
 
 	inCustomer.Generals.Channel = "ch3"
 	resp, err = srv.TransferByCustomer(ctx, inCustomer)
-	assert.Error(t, err)
-	assert.Equal(t, resp, &dto.TransferStatusResponse{
-		IdTransfer: inCustomer.IdTransfer,
+	require.Error(t, err)
+	require.Equal(t, &dto.TransferStatusResponse{
+		IdTransfer: inCustomer.GetIdTransfer(),
 		Status:     dto.TransferStatusResponse_STATUS_ERROR,
 		Message:    "parse transfer request: " + ErrBadChannel.Error(),
-	})
+	}, resp)
 }
 
 func TestAPIServerTransferStatus(t *testing.T) {
@@ -150,16 +146,14 @@ func TestAPIServerTransferStatus(t *testing.T) {
 		}
 
 		out = &dto.TransferStatusResponse{
-			IdTransfer: in.IdTransfer,
+			IdTransfer: in.GetIdTransfer(),
 			Status:     dto.TransferStatusResponse_STATUS_IN_PROCESS,
 		}
 
 		mdl = model.TransferRequest{
-			Request: model.ID(in.IdTransfer),
+			Request: model.ID(in.GetIdTransfer()),
 			Method:  "test3",
-			TransferResult: model.TransferResult{
-				Status: "STATUS_IN_PROCESS",
-			},
+			Status:  "STATUS_IN_PROCESS",
 		}
 	)
 
@@ -169,13 +163,13 @@ func TestAPIServerTransferStatus(t *testing.T) {
 	)
 
 	resp, err := srv.TransferStatus(ctx, in)
-	assert.NoError(t, err)
-	assert.Equal(t, resp, out)
+	require.NoError(t, err)
+	require.Equal(t, resp, out)
 
 	// --------
 
 	_, err = srv.TransferStatus(ctx, in)
-	assert.ErrorContains(t, err, data.ErrObjectNotFound.Error())
+	require.ErrorContains(t, err, data.ErrObjectNotFound.Error())
 }
 
 func TestAPIServerMultiTransfer(t *testing.T) {
@@ -185,7 +179,7 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 	var (
 		channels      = []string{"ch1", "ch2"}
 		ctx           = context.Background()
-		tracingCtx, _ = tracer.Start(ctx, "fake span for tracing context generation")
+		tracingCtx, _ = tracer.Start(ctx, "fake span for tracing context generation") //nolint:spancheck
 		ctrl          = gomock.NewController(t)
 		mc            = mock.NewMockRequestController(ctrl)
 		srv           = NewAPIServer(ctx, requests, mc, channels)
@@ -219,14 +213,14 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 		}
 
 		mdlCustomer = model.TransferRequest{
-			Channel:   inCustomer.Generals.Channel,
-			Request:   model.ID(inCustomer.Generals.RequestId),
-			Transfer:  model.ID(inCustomer.IdTransfer),
-			Method:    inCustomer.Generals.MethodName,
-			Nonce:     inCustomer.Generals.Nonce,
-			Sign:      inCustomer.Generals.Sign,
-			Chaincode: inCustomer.Generals.Chaincode,
-			PublicKey: inCustomer.Generals.PublicKey,
+			Channel:   inCustomer.GetGenerals().GetChannel(),
+			Request:   model.ID(inCustomer.GetGenerals().GetRequestId()),
+			Transfer:  model.ID(inCustomer.GetIdTransfer()),
+			Method:    inCustomer.GetGenerals().GetMethodName(),
+			Nonce:     inCustomer.GetGenerals().GetNonce(),
+			Sign:      inCustomer.GetGenerals().GetSign(),
+			Chaincode: inCustomer.GetGenerals().GetChaincode(),
+			PublicKey: inCustomer.GetGenerals().GetPublicKey(),
 			To:        "ch2",
 			Items: []model.TransferItem{
 				{
@@ -238,14 +232,12 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 					Amount: "1",
 				},
 			},
-			TransferResult: model.TransferResult{
-				Status: "STATUS_IN_PROCESS",
-			},
+			Status:   "STATUS_IN_PROCESS",
 			Metadata: make(model.TransferMetadata),
 		}
 
 		outCustomer = &dto.TransferStatusResponse{
-			IdTransfer: inCustomer.IdTransfer,
+			IdTransfer: inCustomer.GetIdTransfer(),
 			Status:     dto.TransferStatusResponse_STATUS_IN_PROCESS,
 		}
 
@@ -276,15 +268,15 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 		}
 
 		mdlAdmin = model.TransferRequest{
-			Channel:   inAdmin.Generals.Channel,
-			Request:   model.ID(inAdmin.Generals.RequestId),
-			Transfer:  model.ID(inAdmin.IdTransfer),
-			User:      model.ID(inAdmin.Address),
-			Method:    inAdmin.Generals.MethodName,
-			Nonce:     inCustomer.Generals.Nonce,
-			Sign:      inCustomer.Generals.Sign,
-			Chaincode: inCustomer.Generals.Chaincode,
-			PublicKey: inCustomer.Generals.PublicKey,
+			Channel:   inAdmin.GetGenerals().GetChannel(),
+			Request:   model.ID(inAdmin.GetGenerals().GetRequestId()),
+			Transfer:  model.ID(inAdmin.GetIdTransfer()),
+			User:      model.ID(inAdmin.GetAddress()),
+			Method:    inAdmin.GetGenerals().GetMethodName(),
+			Nonce:     inCustomer.GetGenerals().GetNonce(),
+			Sign:      inCustomer.GetGenerals().GetSign(),
+			Chaincode: inCustomer.GetGenerals().GetChaincode(),
+			PublicKey: inCustomer.GetGenerals().GetPublicKey(),
 			To:        "ch2",
 			Items: []model.TransferItem{
 				{
@@ -296,14 +288,12 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 					Amount: "1",
 				},
 			},
-			TransferResult: model.TransferResult{
-				Status: "STATUS_IN_PROCESS",
-			},
+			Status:   "STATUS_IN_PROCESS",
 			Metadata: make(model.TransferMetadata),
 		}
 
 		outAdmin = &dto.TransferStatusResponse{
-			IdTransfer: inAdmin.IdTransfer,
+			IdTransfer: inAdmin.GetIdTransfer(),
 			Status:     dto.TransferStatusResponse_STATUS_IN_PROCESS,
 		}
 	)
@@ -314,19 +304,19 @@ func TestAPIServerMultiTransfer(t *testing.T) {
 	)
 
 	resp, err := srv.MultiTransferByCustomer(ctx, inCustomer)
-	assert.NoError(t, err)
-	assert.Equal(t, resp, outCustomer)
+	require.NoError(t, err)
+	require.Equal(t, resp, outCustomer)
 
 	resp, err = srv.MultiTransferByAdmin(ctx, inAdmin)
-	assert.NoError(t, err)
-	assert.Equal(t, resp, outAdmin)
+	require.NoError(t, err)
+	require.Equal(t, resp, outAdmin)
 
 	inCustomer.Generals.Channel = "ch3"
 	resp, err = srv.MultiTransferByCustomer(ctx, inCustomer)
-	assert.Error(t, err)
-	assert.Equal(t, resp, &dto.TransferStatusResponse{
-		IdTransfer: inCustomer.IdTransfer,
+	require.Error(t, err)
+	require.Equal(t, &dto.TransferStatusResponse{
+		IdTransfer: inCustomer.GetIdTransfer(),
 		Status:     dto.TransferStatusResponse_STATUS_ERROR,
 		Message:    "parse transfer request: " + ErrBadChannel.Error(),
-	})
+	}, resp)
 }
